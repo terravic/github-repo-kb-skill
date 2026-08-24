@@ -1,4 +1,4 @@
-# GitHub Repository Knowledge Base and Canvas UI Dashboard (github-repo-kb)
+# GitHub Repository Knowledge Base Dashboard
 
 An agent skill and Python engine that analyzes GitHub organizations, user profiles, or repository collections to generate a thematic domain knowledge base, architecture knowledge graph, an interactive HTML5 Canvas UI dashboard, and conversational repository search.
 
@@ -14,6 +14,7 @@ An agent skill and Python engine that analyzes GitHub organizations, user profil
   - [What This Skill Does in Plain Terms](#what-this-skill-does-in-plain-terms)
   - [Core Concepts Explained](#core-concepts-explained)
   - [Step-by-Step Instructions](#step-by-step-instructions)
+  - [Scanning Private Organizations or Restricted Repositories with a Token (PAT)](#scanning-private-organizations-or-restricted-repositories-with-a-token-pat)
   - [Real-World Usage Scenarios and Example Prompts](#real-world-usage-scenarios-and-example-prompts)
   - [Asking Questions and Searching for Programs in Chat](#asking-questions-and-searching-for-programs-in-chat)
   - [How to Interact with the Visual Canvas Dashboard](#how-to-interact-with-the-visual-canvas-dashboard)
@@ -24,11 +25,12 @@ An agent skill and Python engine that analyzes GitHub organizations, user profil
 - [Configuration Guide](#configuration-guide)
 - [Running the Python Code Directly](#running-the-python-code-directly)
   - [1. Quick Start with Offline Synthetic Data](#1-quick-start-with-offline-synthetic-data)
-  - [2. Scanning a Live GitHub Organization or User](#2-scanning-a-live-github-organization-or-user)
-  - [3. Querying the Knowledge Base via CLI](#3-querying-the-knowledge-base-via-cli)
-  - [4. Scanning a Single Repository](#4-scanning-a-single-repository)
-  - [5. CLI Reference](#5-cli-reference)
-  - [6. Running Automated Tests](#6-running-automated-tests)
+  - [2. Scanning a Live Public GitHub Organization or User](#2-scanning-a-live-public-github-organization-or-user)
+  - [3. Scanning Private Organizations, Enterprise Accounts, and Restricted Repositories with a PAT](#3-scanning-private-organizations-enterprise-accounts-and-restricted-repositories-with-a-pat)
+  - [4. Querying the Knowledge Base via CLI](#4-querying-the-knowledge-base-via-cli)
+  - [5. Scanning a Single Repository](#5-scanning-a-single-repository)
+  - [6. CLI Reference](#6-cli-reference)
+  - [7. Running Automated Tests](#7-running-automated-tests)
 - [Architecture and Data Model](#architecture-and-data-model)
   - [Thematic Domain Taxonomy](#thematic-domain-taxonomy)
   - [Knowledge Graph Schema](#knowledge-graph-schema)
@@ -44,7 +46,7 @@ An agent skill and Python engine that analyzes GitHub organizations, user profil
 Modern software organizations often maintain dozens or hundreds of repositories spanning clinical health apps, genomics workflows, billing systems, authentication servers, SDKs, and infrastructure. Navigating and understanding the thematic landscape across these codebases is challenging.
 
 The `github-repo-kb` skill automates the entire ingestion, analysis, and visualization process:
-1. Ingests metadata from live GitHub accounts (organizations, users, single repos) or offline synthetic datasets.
+1. Ingests metadata from live GitHub accounts (public organizations, private enterprise organizations, user profiles, single repos) or offline synthetic datasets.
 2. Classifies repositories into logical **thematic domain clusters** (e.g. Medical & Healthcare, Life Sciences & Bioinformatics, Finance & Billing, Security & Identity, AI/ML, Developer Tooling, Infrastructure, Utilities) based on project purpose and subject matter rather than technical frameworks.
 3. Constructs an architectural knowledge graph mapping intra-cluster and cross-cluster relationships (dependencies, integrations, client SDKs, shared infrastructure).
 4. Provides semantic repository search so users can ask questions in natural language and find the best-suited repository for any capability.
@@ -57,7 +59,7 @@ The `github-repo-kb` skill automates the entire ingestion, analysis, and visuali
 ![Architecture and Workflow Overview](assets/workflow_overview.png)
 
 The diagram above illustrates the end-to-end processing pipeline:
-- **Input**: GitHub target address (organization or user URL), configuration settings in `scanner_config.json`, or offline synthetic datasets.
+- **Input**: GitHub target address (public or private organization URL, user account, or single repo), configuration settings in `scanner_config.json`, GitHub Personal Access Token (PAT) for private/restricted access, or offline synthetic datasets.
 - **Processing Engine**:
   1. *Repository Scanner*: Fetches repository metadata, dependencies, topics, languages, and star metrics.
   2. *Thematic Domain Clustering*: Evaluates project mission, topics, and descriptions to cluster codebases into thematic business and scientific domains.
@@ -140,7 +142,7 @@ Rather than grouping repositories solely by technical implementation (such as gr
 
 You do not need to write code or use complex developer commands to use this tool.
 
-When you point this skill at any public GitHub account (such as `https://github.com/pallets`, `https://github.com/fastapi`, or your own company GitHub page), the skill automatically inspects all the code projects in that account, organizes them into thematic categories (like Medical & Healthcare, Life Sciences, Billing, or Security), figures out how those projects connect to each other, builds an interactive visual dashboard in Canvas, and allows you to chat about any program or software capability you need.
+When you point this skill at any GitHub account (public open-source organizations like `https://github.com/pallets`, individual user profiles, or private corporate accounts requiring a Personal Access Token), the skill automatically inspects all the code projects, organizes them into thematic categories (like Medical & Healthcare, Life Sciences, Billing, or Security), figures out how those projects connect to each other, builds an interactive visual dashboard in Canvas, and allows you to chat about any program or software capability you need.
 
 ---
 
@@ -148,6 +150,7 @@ When you point this skill at any public GitHub account (such as `https://github.
 
 - **Repository (Repo)**: A single project or software folder stored on GitHub.
 - **Organization / Account**: A collection of multiple repositories belonging to a company, open-source project, or individual.
+- **Personal Access Token (PAT)**: A secure digital key from GitHub that proves you have permission to access private repositories or restricted company accounts.
 - **Thematic Domain Cluster**: A subject-matter grouping of related projects. For example, grouping clinical patient systems in "Medical & Healthcare", DNA sequencing in "Life Sciences", and billing in "Finance & Billing".
 - **Knowledge Graph**: An interactive visual map where every circle is a software project and the lines connecting them show how projects share code, talk to each other, or depend on one another.
 - **Repository Matcher & Search**: A search engine that tells you exactly which repository in the organization is best suited to your request, or tells you if no repository fits your need.
@@ -173,6 +176,52 @@ The AI assistant will:
 
 #### Step 4: Ask Questions or Explore the Dashboard
 You can ask questions directly in the chat (e.g. *"Which repository should I use for patient electronic health records?"*) or click the **Repository Matcher** tab inside Canvas to search visually.
+
+---
+
+### Scanning Private Organizations or Restricted Repositories with a Token (PAT)
+
+If the GitHub link belongs to a company, private organization, or restricted account whose repositories are not public, you must provide a **Personal Access Token (PAT)** so the scanner can authenticate:
+
+#### 1. Generating a GitHub Token
+1. In GitHub, click your profile picture in the top-right and select **Settings**.
+2. Scroll down on the left sidebar and click **Developer settings**.
+3. Select **Personal access tokens** and choose **Tokens (classic)** (or Fine-grained tokens).
+4. Click **Generate new token** and check the following permission scopes:
+   - `repo` (Full control of private repositories).
+   - `read:org` (Read organization and team membership).
+5. If your company enforces **SAML Single Sign-On (SSO)**:
+   - Click **Configure SSO** next to your newly created token on GitHub and click **Authorize** for your company organization.
+6. Copy the generated token string (e.g. `ghp_xxxxxxxxxxxx`).
+
+#### 2. Providing the Token to the Skill
+
+You can supply the token using any of the following methods:
+
+- **Method A: Via Environment Variable (Recommended)**
+  ```bash
+  export GITHUB_TOKEN="ghp_yourPersonalAccessTokenHere"
+  ```
+  Then ask the AI in chat:
+  > "Please analyze our private organization https://github.com/your-company-org using the GITHUB_TOKEN environment variable."
+
+- **Method B: In the Configuration File (`scanner_config.json`)**
+  Open `scanner_config.json` and paste your token and private organization URL:
+  ```json
+  {
+    "target_url": "https://github.com/your-company-org",
+    "auth_token": "ghp_yourPersonalAccessTokenHere"
+  }
+  ```
+  Then ask the AI:
+  > "Please run the github-repo-kb skill using scanner_config.json."
+
+- **Method C: Directly in the Terminal Command**
+  ```bash
+  python3 scripts/cli.py --url https://github.com/your-company-org --token ghp_yourPersonalAccessTokenHere
+  ```
+
+*Security Note: Your access token is used solely for authenticated HTTPS requests to `api.github.com`. It is never written to output files, Markdown reports, or dashboard HTML files.*
 
 ---
 
@@ -216,16 +265,22 @@ After an organization is analyzed, you can ask the AI about any tool or capabili
 Please run the github-repo-kb skill on https://github.com/pallets. Group all projects into thematic domains, map out the architecture knowledge graph, and display the dashboard in Canvas.
 ```
 
-#### Scenario 2: Running a Quick Safe Demonstration (Offline)
+#### Scenario 2: Scanning a Private Company Organization with a Token
+```
+Please run the github-repo-kb skill on https://github.com/my-company-org using the token in GITHUB_TOKEN, classify all internal microservices into thematic domains, and open the interactive dashboard.
+```
+
+#### Scenario 3: Running a Quick Safe Demonstration (Offline)
 ```
 Run the github-repo-kb skill using the built-in synthetic sample dataset in examples/synthetic_sample_org.json and show the interactive dashboard.
 ```
 
-#### Scenario 3: Customizing Scan Settings in a File
+#### Scenario 4: Customizing Scan Settings in a File
 1. Open the file `scanner_config.json` in your file editor.
 2. Change the `"target_url"` field to your organization (e.g. `"https://github.com/your-organization"`).
-3. Save the file.
-4. Send this prompt:
+3. Optionally set `"auth_token"` to your GitHub token if the organization is private.
+4. Save the file.
+5. Send this prompt:
 ```
 Please execute the github-repo-kb skill using the settings configured in scanner_config.json.
 ```
@@ -245,9 +300,10 @@ Once the dashboard loads in your Canvas panel:
    - Use the **Presets** dropdown to quickly switch between the Synthetic demo platform, Pallets (Flask ecosystem), or FastAPI.
 3. **Knowledge Graph Canvas**:
    - **Zoom and Pan**: Scroll with your mouse wheel or trackpad to zoom in and out. Click and drag the canvas background to move around.
+   - **All Clusters in View**: The graph automatically frames all thematic clusters into view on load and reset.
+   - **Zoom to Selected Cluster**: Selecting any domain from the "All Clusters" dropdown automatically centers and zooms directly into that cluster.
    - **Move Nodes**: Click and drag any circle to rearrange the visual layout.
    - **Pause Physics**: Click the "Pause Physics" button to lock the visual map in place.
-   - **Filter Categories**: Use the "All Clusters" dropdown to isolate one area (such as "Medical & Healthcare" or "Security, Identity & Access").
 4. **Inspection Side Drawer**:
    - When you click on any repository circle, a detailed panel slides in from the right.
    - It shows the repository description, star count, programming language, and exact list of dependencies.
@@ -260,7 +316,12 @@ Once the dashboard loads in your Canvas panel:
 
 - **GitHub Rate Limit Warning**:
   - Unauthenticated public GitHub searches are limited to 60 requests per hour.
-  - Paste a GitHub Personal Access Token into `"auth_token"` in `scanner_config.json`, or ask the AI: "Run the skill in offline mode using the synthetic sample dataset."
+  - Providing a Personal Access Token upgrades your limit to 5,000 requests per hour.
+  - Set `export GITHUB_TOKEN="ghp_xxx"`, paste your token into `"auth_token"` in `scanner_config.json`, or ask the AI: "Run the skill in offline mode using the synthetic sample dataset."
+- **Private Organization Returning HTTP 404 / 403**:
+  - If a private organization returns 404, GitHub is hiding the organization because the request is unauthenticated or the token lacks permission.
+  - Ensure your token has the `repo` and `read:org` scopes.
+  - If your company uses SAML SSO, make sure you clicked **Configure SSO** $\rightarrow$ **Authorize** for that token in GitHub.
 - **Opening the Dashboard Outside the AI Chat**:
   - The generated file `output/dashboard.html` is a standalone web page. You can double-click it or open it in Google Chrome, Mozilla Firefox, Apple Safari, or Microsoft Edge at any time without needing an internet connection.
 
@@ -283,10 +344,11 @@ This skill is architected specifically to maximize the Canvas experience:
 
 - Standard Library Python Implementation: Runs directly with Python 3.8+ without mandatory external pip dependencies.
 - Thematic Domain Taxonomy: Categorizes codebases by business and scientific domains including Medical, Life Sciences, Finance, Security, AI/ML, Tooling, and Infrastructure.
-- Dual Ingestion Modes: Works against the live GitHub REST API v3 for any public account or completely offline using synthetic JSON fixtures.
+- Public and Private Repository Ingestion: Supports public GitHub accounts, private enterprise organizations with Personal Access Tokens, single repositories, and offline synthetic JSON fixtures.
 - Embedded Client-Side Scanner: The Canvas UI includes a live GitHub API scanner that can fetch public repositories and re-render the knowledge graph directly in the browser/iframe.
 - Conversational Repository Matcher: Evaluates natural language queries to recommend best-suited codebases or report when requirements cannot be met.
 - Clean Architecture Knowledge Graph: Builds directed relationships between repositories with concise labels, detailed relationship descriptions, degree centrality scoring, and automated hub/bridge detection.
+- Multi-Cluster Auto-Framing & Zoom: Automatically scales to keep all thematic clusters in view initially and smoothly zooms in when a cluster is selected.
 - Interactive Inspection Side Drawer: Slide-in panel displaying repository details, stars, forks, issues, language, topics, and clickable incoming/outgoing connections.
 - Agent Skill Standard: Full compatibility with Gemini Enterprise App, Spark, Antigravity, Claude Code, Cursor, and standard Skill Plug-in architectures via `SKILL.md`.
 - Fully Synthetic Test Suite: Includes realistic, non-PHI synthetic datasets and a complete automated unit test suite.
@@ -380,17 +442,30 @@ python3 scripts/cli.py --config scanner_config.json
 python3 scripts/cli.py --fixture examples/synthetic_sample_org.json --output-dir output/
 ```
 
-### 2. Scanning a Live GitHub Organization or User
+### 2. Scanning a Live Public GitHub Organization or User
 
 ```bash
 # Scan any public GitHub organization or user
 python3 scripts/cli.py --url https://github.com/pallets
-
-# Scan with an authenticated token
-python3 scripts/cli.py --url https://github.com/pallets --token ghp_yourPersonalAccessTokenHere
 ```
 
-### 3. Querying the Knowledge Base via CLI
+### 3. Scanning Private Organizations, Enterprise Accounts, and Restricted Repositories with a PAT
+
+When scanning private repositories or restricted company accounts, provide a Personal Access Token via environment variable, CLI argument, or configuration file:
+
+```bash
+# Option A: Via environment variable (Recommended)
+export GITHUB_TOKEN="ghp_yourPersonalAccessTokenHere"
+python3 scripts/cli.py --url https://github.com/your-private-org
+
+# Option B: Via CLI argument
+python3 scripts/cli.py --url https://github.com/your-private-org --token ghp_yourPersonalAccessTokenHere
+
+# Option C: Via scanner_config.json with auth_token populated
+python3 scripts/cli.py --config scanner_config.json
+```
+
+### 4. Querying the Knowledge Base via CLI
 
 Search for the best-suited repository for any software request directly from the terminal:
 
@@ -405,13 +480,17 @@ python3 scripts/cli.py --query "Bioinformatics DNA variant analysis"
 python3 scripts/cli.py --query "Blockchain cryptocurrency mining smart contract"
 ```
 
-### 4. Scanning a Single Repository
+### 5. Scanning a Single Repository
 
 ```bash
+# Public single repository
 python3 scripts/cli.py --url https://github.com/pallets/flask
+
+# Private single repository with a token
+python3 scripts/cli.py --url https://github.com/your-private-org/private-service --token ghp_yourPersonalAccessTokenHere
 ```
 
-### 5. CLI Reference
+### 6. CLI Reference
 
 ```
 usage: cli.py [-h] [--url URL] [--config CONFIG] [--fixture FIXTURE]
@@ -437,7 +516,7 @@ Options:
   --verbose, -v         Enable verbose logging
 ```
 
-### 6. Running Automated Tests
+### 7. Running Automated Tests
 
 Run the complete test suite using Python's built-in `unittest`:
 
@@ -561,7 +640,7 @@ The generated Canvas UI (`output/dashboard.html`) provides the following interac
 ## Security and Synthetic Data Compliance
 
 - **No PHI/PII**: All sample files in `examples/` and test suites use 100% synthetic, fictional project names, repositories, and documentation. No Protected Health Information (PHI) or Personally Identifiable Information (PII) is included.
-- **Token Protection**: Configuration files and CLI flags sanitize tokens from output logs. Tokens are only passed as authorization headers directly to the standard GitHub REST API endpoint over HTTPS.
+- **Token Protection & Sanitization**: Configuration files and CLI flags sanitize tokens from output logs. Tokens are only passed as authorization headers directly to the standard GitHub REST API endpoint over HTTPS and are never written to generated JSON, Markdown, or HTML files.
 - **Offline Capable**: The skill can operate completely disconnected from external networks when provided an offline fixture JSON.
 
 ---
