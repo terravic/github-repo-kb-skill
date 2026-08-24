@@ -128,7 +128,7 @@ def run_pipeline(
             )
         except Exception as e:
             print(f"[Notice] Online scan encountered: {e}")
-            fallback_fixture = os.path.join("examples", "synthetic_terravic_org.json")
+            fallback_fixture = os.path.join("examples", "synthetic_sample_org.json")
             if os.path.isfile(fallback_fixture):
                 print(f"[Fallback] Using synthetic dataset for demonstration: {fallback_fixture}")
                 raw_result = scanner.load_fixture(fallback_fixture)
@@ -139,24 +139,32 @@ def run_pipeline(
         print(f"Loading configured offline dataset: {scan_opts.get('offline_fixture')}")
         raw_result = scanner.load_fixture(scan_opts.get("offline_fixture"))
     else:
-        # Use target_url from config or default
-        resolved_target = config.get("target_url") or "https://github.com/terravic"
-        print(f"Scanning public GitHub target: {resolved_target}")
-        try:
-            raw_result = scanner.scan_online(
-                url=resolved_target,
-                include_forks=resolved_include_forks,
-                include_archived=resolved_include_archived,
-                max_repos=resolved_max_repos,
-            )
-        except Exception as e:
-            print(f"[Notice] Online scan encountered: {e}")
-            fallback_fixture = os.path.join("examples", "synthetic_terravic_org.json")
+        # Use target_url from config or fallback to synthetic sample
+        resolved_target = config.get("target_url")
+        if resolved_target:
+            print(f"Scanning public GitHub target: {resolved_target}")
+            try:
+                raw_result = scanner.scan_online(
+                    url=resolved_target,
+                    include_forks=resolved_include_forks,
+                    include_archived=resolved_include_archived,
+                    max_repos=resolved_max_repos,
+                )
+            except Exception as e:
+                print(f"[Notice] Online scan encountered: {e}")
+                fallback_fixture = os.path.join("examples", "synthetic_sample_org.json")
+                if os.path.isfile(fallback_fixture):
+                    print(f"[Fallback] Using synthetic dataset for demonstration: {fallback_fixture}")
+                    raw_result = scanner.load_fixture(fallback_fixture)
+                else:
+                    raise e
+        else:
+            fallback_fixture = os.path.join("examples", "synthetic_sample_org.json")
             if os.path.isfile(fallback_fixture):
-                print(f"[Fallback] Using synthetic dataset for demonstration: {fallback_fixture}")
+                print(f"No target URL specified. Loading sample demonstration dataset: {fallback_fixture}")
                 raw_result = scanner.load_fixture(fallback_fixture)
             else:
-                raise e
+                raise ValueError("No target GitHub URL or fixture specified. Please provide --url <github-address>.")
 
     repositories = raw_result.get("repositories", [])
     metadata = raw_result.get("metadata", {})

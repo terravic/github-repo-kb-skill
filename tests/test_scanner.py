@@ -9,13 +9,13 @@ class TestGitHubScanner(unittest.TestCase):
         self.fixture_path = os.path.join(
             os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
             "examples",
-            "synthetic_terravic_org.json",
+            "synthetic_sample_org.json",
         )
 
     def test_parse_github_url_org(self):
-        target_type, owner, repo = GitHubScanner.parse_github_url("https://github.com/terravic")
+        target_type, owner, repo = GitHubScanner.parse_github_url("https://github.com/pallets")
         self.assertEqual(target_type, "owner")
-        self.assertEqual(owner, "terravic")
+        self.assertEqual(owner, "pallets")
         self.assertIsNone(repo)
 
     def test_parse_github_url_user(self):
@@ -25,15 +25,15 @@ class TestGitHubScanner(unittest.TestCase):
         self.assertIsNone(repo)
 
     def test_parse_github_url_repo(self):
-        target_type, owner, repo = GitHubScanner.parse_github_url("https://github.com/terravic/core-api")
+        target_type, owner, repo = GitHubScanner.parse_github_url("https://github.com/pallets/flask")
         self.assertEqual(target_type, "repo")
-        self.assertEqual(owner, "terravic")
-        self.assertEqual(repo, "core-api")
+        self.assertEqual(owner, "pallets")
+        self.assertEqual(repo, "flask")
 
     def test_parse_github_url_raw_handle(self):
-        target_type, owner, repo = GitHubScanner.parse_github_url("terravic")
+        target_type, owner, repo = GitHubScanner.parse_github_url("pallets")
         self.assertEqual(target_type, "owner")
-        self.assertEqual(owner, "terravic")
+        self.assertEqual(owner, "pallets")
         self.assertIsNone(repo)
 
     def test_load_fixture(self):
@@ -41,7 +41,7 @@ class TestGitHubScanner(unittest.TestCase):
         self.assertIn("repositories", result)
         self.assertIn("metadata", result)
         self.assertEqual(result["total_count"], 16)
-        self.assertEqual(result["metadata"]["owner"], "terravic")
+        self.assertEqual(result["metadata"]["owner"], "sample-platform")
 
     def test_normalize_repo(self):
         raw = {

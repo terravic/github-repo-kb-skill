@@ -11,7 +11,7 @@ class TestEndToEndPipeline(unittest.TestCase):
         self.fixture_path = os.path.join(
             os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
             "examples",
-            "synthetic_terravic_org.json",
+            "synthetic_sample_org.json",
         )
 
     def tearDown(self):

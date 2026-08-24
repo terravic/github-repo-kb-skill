@@ -1,12 +1,12 @@
 {
   "metadata": {
-    "input_url": "https://github.com/terravic",
-    "target_url": "https://github.com/terravic",
+    "input_url": "https://github.com/sample-platform",
+    "target_url": "https://github.com/sample-platform",
     "target_type": "organization",
-    "owner": "terravic",
+    "owner": "sample-platform",
     "description": "Synthetic multi-domain health-tech, life sciences, and cloud platform enterprise organization.",
     "is_offline_fixture": true,
-    "generated_at": "2026-08-24 20:23:27 UTC"
+    "generated_at": "2026-08-24 20:31:55 UTC"
   },
   "summary": {
     "total_repositories": 16,
@@ -16,32 +16,32 @@
     "cross_cluster_edges": 33,
     "intra_cluster_edges": 5,
     "hub_repositories": [
-      "terravic-api-gateway",
-      "terravic-auth-service",
-      "terravic-patient-records",
-      "terravic-clinical-trials",
-      "terravic-billing-engine",
-      "terravic-ai-engine",
-      "terravic-data-pipeline",
-      "terravic-user-service",
-      "terravic-notification-service",
-      "terravic-infrastructure",
-      "terravic-common-lib"
+      "sample-api-gateway",
+      "sample-auth-service",
+      "sample-patient-records",
+      "sample-clinical-trials",
+      "sample-billing-engine",
+      "sample-ai-engine",
+      "sample-data-pipeline",
+      "sample-user-service",
+      "sample-notification-service",
+      "sample-infrastructure",
+      "sample-common-lib"
     ],
     "bridge_repositories": [
-      "terravic-api-gateway",
-      "terravic-auth-service",
-      "terravic-patient-records",
-      "terravic-genomics-pipeline",
-      "terravic-clinical-trials",
-      "terravic-billing-engine",
-      "terravic-ai-engine",
-      "terravic-data-pipeline",
-      "terravic-user-service",
-      "terravic-notification-service",
-      "terravic-js-sdk",
-      "terravic-infrastructure",
-      "terravic-common-lib"
+      "sample-api-gateway",
+      "sample-auth-service",
+      "sample-patient-records",
+      "sample-genomics-pipeline",
+      "sample-clinical-trials",
+      "sample-billing-engine",
+      "sample-ai-engine",
+      "sample-data-pipeline",
+      "sample-user-service",
+      "sample-notification-service",
+      "sample-js-sdk",
+      "sample-infrastructure",
+      "sample-common-lib"
     ]
   },
   "clusters": [
@@ -195,17 +195,17 @@
   "repositories": [
     {
       "id": 101,
-      "name": "terravic-api-gateway",
-      "full_name": "terravic/terravic-api-gateway",
-      "html_url": "https://github.com/terravic/terravic-api-gateway",
+      "name": "sample-api-gateway",
+      "full_name": "sample-platform/sample-api-gateway",
+      "html_url": "https://github.com/sample-platform/sample-api-gateway",
       "description": "High-performance edge reverse proxy and authentication gateway routing traffic to core microservices.",
       "primary_language": "Other",
       "topics": [
-        "gateway",
-        "grpc",
-        "proxy",
+        "router",
         "core-service",
-        "router"
+        "grpc",
+        "gateway",
+        "proxy"
       ],
       "stars": 482,
       "forks": 65,
@@ -217,8 +217,8 @@
       "is_archived": false,
       "license": "Apache-2.0",
       "dependencies": [
-        "terravic-common-lib",
-        "terravic-auth-service"
+        "sample-common-lib",
+        "sample-auth-service"
       ],
       "tech_stack": [
         "Docker",
@@ -234,20 +234,20 @@
     },
     {
       "id": 102,
-      "name": "terravic-auth-service",
-      "full_name": "terravic/terravic-auth-service",
-      "html_url": "https://github.com/terravic/terravic-auth-service",
+      "name": "sample-auth-service",
+      "full_name": "sample-platform/sample-auth-service",
+      "html_url": "https://github.com/sample-platform/sample-auth-service",
       "description": "OAuth2 / OIDC identity provider, JWT token manager, and role-based access control (RBAC) security enforcement service.",
       "primary_language": "Other",
       "topics": [
         "security",
-        "identity",
-        "authentication",
         "oauth2",
-        "oidc",
+        "identity",
         "jwt",
+        "auth",
         "rbac",
-        "auth"
+        "oidc",
+        "authentication"
       ],
       "stars": 612,
       "forks": 94,
@@ -259,7 +259,7 @@
       "is_archived": false,
       "license": "Apache-2.0",
       "dependencies": [
-        "terravic-common-lib"
+        "sample-common-lib"
       ],
       "tech_stack": [
         "Go",
@@ -274,20 +274,20 @@
     },
     {
       "id": 103,
-      "name": "terravic-patient-records",
-      "full_name": "terravic/terravic-patient-records",
-      "html_url": "https://github.com/terravic/terravic-patient-records",
+      "name": "sample-patient-records",
+      "full_name": "sample-platform/sample-patient-records",
+      "html_url": "https://github.com/sample-platform/sample-patient-records",
       "description": "Electronic health record (EHR/EMR) service with HL7 FHIR interoperability, clinical notes, and HIPAA compliant patient store.",
       "primary_language": "Other",
       "topics": [
-        "healthcare",
-        "clinical",
-        "patient",
-        "ehr",
-        "fhir",
-        "hipaa",
+        "medical",
         "records",
-        "medical"
+        "clinical",
+        "ehr",
+        "healthcare",
+        "fhir",
+        "patient",
+        "hipaa"
       ],
       "stars": 340,
       "forks": 42,
@@ -299,8 +299,8 @@
       "is_archived": false,
       "license": "Apache-2.0",
       "dependencies": [
-        "terravic-auth-service",
-        "terravic-common-lib"
+        "sample-auth-service",
+        "sample-common-lib"
       ],
       "tech_stack": [
         "Docker",
@@ -315,19 +315,19 @@
     },
     {
       "id": 104,
-      "name": "terravic-telehealth-portal",
-      "full_name": "terravic/terravic-telehealth-portal",
-      "html_url": "https://github.com/terravic/terravic-telehealth-portal",
+      "name": "sample-telehealth-portal",
+      "full_name": "sample-platform/sample-telehealth-portal",
+      "html_url": "https://github.com/sample-platform/sample-telehealth-portal",
       "description": "Clinical patient and physician portal for telemedicine appointments, medical charts, and telehealth video consultations.",
       "primary_language": "Other",
       "topics": [
-        "healthcare",
+        "medical",
         "clinical",
-        "patient",
-        "react",
-        "telehealth",
         "portal",
-        "medical"
+        "react",
+        "healthcare",
+        "telehealth",
+        "patient"
       ],
       "stars": 295,
       "forks": 38,
@@ -339,8 +339,8 @@
       "is_archived": false,
       "license": "Apache-2.0",
       "dependencies": [
-        "terravic-js-sdk",
-        "terravic-patient-records"
+        "sample-js-sdk",
+        "sample-patient-records"
       ],
       "tech_stack": [
         "Next.js",
@@ -355,19 +355,19 @@
     },
     {
       "id": 105,
-      "name": "terravic-genomics-pipeline",
-      "full_name": "terravic/terravic-genomics-pipeline",
-      "html_url": "https://github.com/terravic/terravic-genomics-pipeline",
+      "name": "sample-genomics-pipeline",
+      "full_name": "sample-platform/sample-genomics-pipeline",
+      "html_url": "https://github.com/sample-platform/sample-genomics-pipeline",
       "description": "High-throughput bioinformatics pipeline for DNA/RNA sequencing variant analysis and molecular genetics assays.",
       "primary_language": "Other",
       "topics": [
         "biotech",
-        "bioinformatics",
-        "dna",
+        "genetics",
         "sequencing",
-        "biology",
+        "bioinformatics",
         "genomics",
-        "genetics"
+        "biology",
+        "dna"
       ],
       "stars": 510,
       "forks": 76,
@@ -379,8 +379,8 @@
       "is_archived": false,
       "license": "Apache-2.0",
       "dependencies": [
-        "terravic-common-lib",
-        "terravic-data-pipeline"
+        "sample-common-lib",
+        "sample-data-pipeline"
       ],
       "tech_stack": [
         "C++",
@@ -395,19 +395,19 @@
     },
     {
       "id": 106,
-      "name": "terravic-clinical-trials",
-      "full_name": "terravic/terravic-clinical-trials",
-      "html_url": "https://github.com/terravic/terravic-clinical-trials",
+      "name": "sample-clinical-trials",
+      "full_name": "sample-platform/sample-clinical-trials",
+      "html_url": "https://github.com/sample-platform/sample-clinical-trials",
       "description": "Life sciences research platform for managing clinical trials, participant cohorts, biomarker datasets, and bio-specimens.",
       "primary_language": "Other",
       "topics": [
-        "pharma",
-        "biomarker",
-        "bioinformatics",
         "laboratory",
-        "specimen",
+        "pharma",
         "research",
-        "clinical-trials"
+        "biomarker",
+        "clinical-trials",
+        "specimen",
+        "bioinformatics"
       ],
       "stars": 230,
       "forks": 25,
@@ -419,8 +419,8 @@
       "is_archived": false,
       "license": "Apache-2.0",
       "dependencies": [
-        "terravic-auth-service",
-        "terravic-common-lib"
+        "sample-auth-service",
+        "sample-common-lib"
       ],
       "tech_stack": [
         "FastAPI",
@@ -434,19 +434,19 @@
     },
     {
       "id": 107,
-      "name": "terravic-billing-engine",
-      "full_name": "terravic/terravic-billing-engine",
-      "html_url": "https://github.com/terravic/terravic-billing-engine",
+      "name": "sample-billing-engine",
+      "full_name": "sample-platform/sample-billing-engine",
+      "html_url": "https://github.com/sample-platform/sample-billing-engine",
       "description": "Subscription lifecycle, usage meter aggregation, invoice generation, and Stripe payment webhook processing service.",
       "primary_language": "Other",
       "topics": [
-        "finance",
         "accounting",
         "subscription",
-        "stripe",
-        "payment",
         "billing",
-        "invoice"
+        "finance",
+        "invoice",
+        "stripe",
+        "payment"
       ],
       "stars": 328,
       "forks": 41,
@@ -458,8 +458,8 @@
       "is_archived": false,
       "license": "Apache-2.0",
       "dependencies": [
-        "terravic-auth-service",
-        "terravic-common-lib"
+        "sample-auth-service",
+        "sample-common-lib"
       ],
       "tech_stack": [
         "FastAPI",
@@ -474,19 +474,19 @@
     },
     {
       "id": 108,
-      "name": "terravic-ai-engine",
-      "full_name": "terravic/terravic-ai-engine",
-      "html_url": "https://github.com/terravic/terravic-ai-engine",
+      "name": "sample-ai-engine",
+      "full_name": "sample-platform/sample-ai-engine",
+      "html_url": "https://github.com/sample-platform/sample-ai-engine",
       "description": "LLM inference orchestrator, vector embeddings pipeline, and automated anomaly detection model.",
       "primary_language": "Other",
       "topics": [
-        "rag",
-        "llm",
-        "ai",
         "inference",
+        "ml",
         "vector",
+        "llm",
+        "rag",
         "embeddings",
-        "ml"
+        "ai"
       ],
       "stars": 845,
       "forks": 132,
@@ -498,8 +498,8 @@
       "is_archived": false,
       "license": "Apache-2.0",
       "dependencies": [
-        "terravic-data-pipeline",
-        "terravic-common-lib"
+        "sample-data-pipeline",
+        "sample-common-lib"
       ],
       "tech_stack": [
         "ClickHouse",
@@ -514,19 +514,19 @@
     },
     {
       "id": 109,
-      "name": "terravic-data-pipeline",
-      "full_name": "terravic/terravic-data-pipeline",
-      "html_url": "https://github.com/terravic/terravic-data-pipeline",
+      "name": "sample-data-pipeline",
+      "full_name": "sample-platform/sample-data-pipeline",
+      "html_url": "https://github.com/sample-platform/sample-data-pipeline",
       "description": "Distributed real-time streaming pipeline and ETL workers aggregating telemetry events into data warehouse.",
       "primary_language": "Other",
       "topics": [
-        "pipeline",
-        "etl",
-        "data",
         "analytics",
         "spark",
+        "warehouse",
         "kafka",
-        "warehouse"
+        "data",
+        "etl",
+        "pipeline"
       ],
       "stars": 419,
       "forks": 58,
@@ -538,7 +538,7 @@
       "is_archived": false,
       "license": "Apache-2.0",
       "dependencies": [
-        "terravic-common-lib"
+        "sample-common-lib"
       ],
       "tech_stack": [
         "ClickHouse",
@@ -553,18 +553,18 @@
     },
     {
       "id": 110,
-      "name": "terravic-user-service",
-      "full_name": "terravic/terravic-user-service",
-      "html_url": "https://github.com/terravic/terravic-user-service",
+      "name": "sample-user-service",
+      "full_name": "sample-platform/sample-user-service",
+      "html_url": "https://github.com/sample-platform/sample-user-service",
       "description": "User profiles, tenant management, and organization membership service.",
       "primary_language": "Other",
       "topics": [
-        "membership",
-        "tenant",
         "grpc",
-        "user-service",
         "organization",
-        "tenancy"
+        "tenancy",
+        "tenant",
+        "user-service",
+        "membership"
       ],
       "stars": 275,
       "forks": 32,
@@ -576,8 +576,8 @@
       "is_archived": false,
       "license": "Apache-2.0",
       "dependencies": [
-        "terravic-auth-service",
-        "terravic-common-lib"
+        "sample-auth-service",
+        "sample-common-lib"
       ],
       "tech_stack": [
         "Go",
@@ -592,18 +592,18 @@
     },
     {
       "id": 111,
-      "name": "terravic-notification-service",
-      "full_name": "terravic/terravic-notification-service",
-      "html_url": "https://github.com/terravic/terravic-notification-service",
+      "name": "sample-notification-service",
+      "full_name": "sample-platform/sample-notification-service",
+      "html_url": "https://github.com/sample-platform/sample-notification-service",
       "description": "Multi-channel notification dispatcher for transactional email, SMS, and webhook alerts.",
       "primary_language": "Other",
       "topics": [
         "service",
-        "alerts",
         "dispatch",
         "notification",
         "sms",
-        "email"
+        "email",
+        "alerts"
       ],
       "stars": 190,
       "forks": 22,
@@ -615,8 +615,8 @@
       "is_archived": false,
       "license": "Apache-2.0",
       "dependencies": [
-        "terravic-auth-service",
-        "terravic-common-lib"
+        "sample-auth-service",
+        "sample-common-lib"
       ],
       "tech_stack": [
         "Docker",
@@ -630,17 +630,17 @@
     },
     {
       "id": 112,
-      "name": "terravic-python-sdk",
-      "full_name": "terravic/terravic-python-sdk",
-      "html_url": "https://github.com/terravic/terravic-python-sdk",
+      "name": "sample-python-sdk",
+      "full_name": "sample-platform/sample-python-sdk",
+      "html_url": "https://github.com/sample-platform/sample-python-sdk",
       "description": "Python SDK and CLI client for automation scripts, data science workloads, and backend integration.",
       "primary_language": "Other",
       "topics": [
-        "cli",
+        "tooling",
         "sdk",
         "client-library",
         "python",
-        "tooling"
+        "cli"
       ],
       "stars": 365,
       "forks": 47,
@@ -652,31 +652,31 @@
       "is_archived": false,
       "license": "Apache-2.0",
       "dependencies": [
-        "terravic-api-gateway"
+        "sample-api-gateway"
       ],
       "tech_stack": [
         "PyPI",
         "Pydantic",
         "Python"
       ],
-      "readme_summary": "Official Python library for querying the Terravic APIs and executing automation scripts.",
+      "readme_summary": "Official Python library for querying the platform APIs and executing automation scripts.",
       "cluster_id": "developer-tooling",
       "cluster_name": "Developer Tooling & SDKs",
       "cluster_color": "#F59E0B"
     },
     {
       "id": 113,
-      "name": "terravic-js-sdk",
-      "full_name": "terravic/terravic-js-sdk",
-      "html_url": "https://github.com/terravic/terravic-js-sdk",
-      "description": "Official TypeScript and JavaScript client SDK for integrating with Terravic platform APIs.",
+      "name": "sample-js-sdk",
+      "full_name": "sample-platform/sample-js-sdk",
+      "html_url": "https://github.com/sample-platform/sample-js-sdk",
+      "description": "Official TypeScript and JavaScript client SDK for integrating with platform APIs.",
       "primary_language": "Other",
       "topics": [
-        "typescript",
+        "tooling",
         "sdk",
         "client-library",
         "npm",
-        "tooling"
+        "typescript"
       ],
       "stars": 420,
       "forks": 63,
@@ -688,7 +688,7 @@
       "is_archived": false,
       "license": "Apache-2.0",
       "dependencies": [
-        "terravic-api-gateway"
+        "sample-api-gateway"
       ],
       "tech_stack": [
         "Node.js",
@@ -702,20 +702,20 @@
     },
     {
       "id": 114,
-      "name": "terravic-infrastructure",
-      "full_name": "terravic/terravic-infrastructure",
-      "html_url": "https://github.com/terravic/terravic-infrastructure",
+      "name": "sample-infrastructure",
+      "full_name": "sample-platform/sample-infrastructure",
+      "html_url": "https://github.com/sample-platform/sample-infrastructure",
       "description": "Terraform modules, Kubernetes Helm charts, and CI/CD pipelines deploying the entire platform to multi-region cloud.",
       "primary_language": "Other",
       "topics": [
-        "kubernetes",
-        "helm",
-        "infra",
-        "infrastructure",
-        "ci-cd",
-        "k8s",
         "terraform",
-        "docker"
+        "k8s",
+        "infra",
+        "docker",
+        "helm",
+        "kubernetes",
+        "ci-cd",
+        "infrastructure"
       ],
       "stars": 560,
       "forks": 88,
@@ -727,8 +727,8 @@
       "is_archived": false,
       "license": "Apache-2.0",
       "dependencies": [
-        "terravic-api-gateway",
-        "terravic-data-pipeline"
+        "sample-api-gateway",
+        "sample-data-pipeline"
       ],
       "tech_stack": [
         "Docker",
@@ -744,19 +744,19 @@
     },
     {
       "id": 115,
-      "name": "terravic-common-lib",
-      "full_name": "terravic/terravic-common-lib",
-      "html_url": "https://github.com/terravic/terravic-common-lib",
+      "name": "sample-common-lib",
+      "full_name": "sample-platform/sample-common-lib",
+      "html_url": "https://github.com/sample-platform/sample-common-lib",
       "description": "Shared Go and Python utilities, protocol buffer contracts, structured logging, and database helpers.",
       "primary_language": "Other",
       "topics": [
         "shared",
-        "common",
         "utils",
-        "core-lib",
+        "types",
         "proto",
+        "common",
         "schemas",
-        "types"
+        "core-lib"
       ],
       "stars": 310,
       "forks": 35,
@@ -781,17 +781,17 @@
     },
     {
       "id": 116,
-      "name": "terravic-architecture-docs",
-      "full_name": "terravic/terravic-architecture-docs",
-      "html_url": "https://github.com/terravic/terravic-architecture-docs",
+      "name": "sample-architecture-docs",
+      "full_name": "sample-platform/sample-architecture-docs",
+      "html_url": "https://github.com/sample-platform/sample-architecture-docs",
       "description": "System architecture blueprints, technical RFCs, security whitepapers, and developer documentation.",
       "primary_language": "Other",
       "topics": [
-        "docs",
-        "architecture",
         "spec",
-        "guide",
         "documentation",
+        "architecture",
+        "guide",
+        "docs",
         "rfc"
       ],
       "stars": 180,
@@ -819,17 +819,17 @@
     "nodes": [
       {
         "id": 101,
-        "name": "terravic-api-gateway",
-        "full_name": "terravic/terravic-api-gateway",
-        "html_url": "https://github.com/terravic/terravic-api-gateway",
+        "name": "sample-api-gateway",
+        "full_name": "sample-platform/sample-api-gateway",
+        "html_url": "https://github.com/sample-platform/sample-api-gateway",
         "description": "High-performance edge reverse proxy and authentication gateway routing traffic to core microservices.",
         "primary_language": "Other",
         "topics": [
-          "gateway",
-          "grpc",
-          "proxy",
+          "router",
           "core-service",
-          "router"
+          "grpc",
+          "gateway",
+          "proxy"
         ],
         "tech_stack": [
           "Docker",
@@ -853,20 +853,20 @@
       },
       {
         "id": 102,
-        "name": "terravic-auth-service",
-        "full_name": "terravic/terravic-auth-service",
-        "html_url": "https://github.com/terravic/terravic-auth-service",
+        "name": "sample-auth-service",
+        "full_name": "sample-platform/sample-auth-service",
+        "html_url": "https://github.com/sample-platform/sample-auth-service",
         "description": "OAuth2 / OIDC identity provider, JWT token manager, and role-based access control (RBAC) security enforcement service.",
         "primary_language": "Other",
         "topics": [
           "security",
-          "identity",
-          "authentication",
           "oauth2",
-          "oidc",
+          "identity",
           "jwt",
+          "auth",
           "rbac",
-          "auth"
+          "oidc",
+          "authentication"
         ],
         "tech_stack": [
           "Go",
@@ -889,20 +889,20 @@
       },
       {
         "id": 103,
-        "name": "terravic-patient-records",
-        "full_name": "terravic/terravic-patient-records",
-        "html_url": "https://github.com/terravic/terravic-patient-records",
+        "name": "sample-patient-records",
+        "full_name": "sample-platform/sample-patient-records",
+        "html_url": "https://github.com/sample-platform/sample-patient-records",
         "description": "Electronic health record (EHR/EMR) service with HL7 FHIR interoperability, clinical notes, and HIPAA compliant patient store.",
         "primary_language": "Other",
         "topics": [
-          "healthcare",
-          "clinical",
-          "patient",
-          "ehr",
-          "fhir",
-          "hipaa",
+          "medical",
           "records",
-          "medical"
+          "clinical",
+          "ehr",
+          "healthcare",
+          "fhir",
+          "patient",
+          "hipaa"
         ],
         "tech_stack": [
           "Docker",
@@ -925,19 +925,19 @@
       },
       {
         "id": 104,
-        "name": "terravic-telehealth-portal",
-        "full_name": "terravic/terravic-telehealth-portal",
-        "html_url": "https://github.com/terravic/terravic-telehealth-portal",
+        "name": "sample-telehealth-portal",
+        "full_name": "sample-platform/sample-telehealth-portal",
+        "html_url": "https://github.com/sample-platform/sample-telehealth-portal",
         "description": "Clinical patient and physician portal for telemedicine appointments, medical charts, and telehealth video consultations.",
         "primary_language": "Other",
         "topics": [
-          "healthcare",
+          "medical",
           "clinical",
-          "patient",
-          "react",
-          "telehealth",
           "portal",
-          "medical"
+          "react",
+          "healthcare",
+          "telehealth",
+          "patient"
         ],
         "tech_stack": [
           "Next.js",
@@ -960,19 +960,19 @@
       },
       {
         "id": 105,
-        "name": "terravic-genomics-pipeline",
-        "full_name": "terravic/terravic-genomics-pipeline",
-        "html_url": "https://github.com/terravic/terravic-genomics-pipeline",
+        "name": "sample-genomics-pipeline",
+        "full_name": "sample-platform/sample-genomics-pipeline",
+        "html_url": "https://github.com/sample-platform/sample-genomics-pipeline",
         "description": "High-throughput bioinformatics pipeline for DNA/RNA sequencing variant analysis and molecular genetics assays.",
         "primary_language": "Other",
         "topics": [
           "biotech",
-          "bioinformatics",
-          "dna",
+          "genetics",
           "sequencing",
-          "biology",
+          "bioinformatics",
           "genomics",
-          "genetics"
+          "biology",
+          "dna"
         ],
         "tech_stack": [
           "C++",
@@ -995,19 +995,19 @@
       },
       {
         "id": 106,
-        "name": "terravic-clinical-trials",
-        "full_name": "terravic/terravic-clinical-trials",
-        "html_url": "https://github.com/terravic/terravic-clinical-trials",
+        "name": "sample-clinical-trials",
+        "full_name": "sample-platform/sample-clinical-trials",
+        "html_url": "https://github.com/sample-platform/sample-clinical-trials",
         "description": "Life sciences research platform for managing clinical trials, participant cohorts, biomarker datasets, and bio-specimens.",
         "primary_language": "Other",
         "topics": [
-          "pharma",
-          "biomarker",
-          "bioinformatics",
           "laboratory",
-          "specimen",
+          "pharma",
           "research",
-          "clinical-trials"
+          "biomarker",
+          "clinical-trials",
+          "specimen",
+          "bioinformatics"
         ],
         "tech_stack": [
           "FastAPI",
@@ -1029,19 +1029,19 @@
       },
       {
         "id": 107,
-        "name": "terravic-billing-engine",
-        "full_name": "terravic/terravic-billing-engine",
-        "html_url": "https://github.com/terravic/terravic-billing-engine",
+        "name": "sample-billing-engine",
+        "full_name": "sample-platform/sample-billing-engine",
+        "html_url": "https://github.com/sample-platform/sample-billing-engine",
         "description": "Subscription lifecycle, usage meter aggregation, invoice generation, and Stripe payment webhook processing service.",
         "primary_language": "Other",
         "topics": [
-          "finance",
           "accounting",
           "subscription",
-          "stripe",
-          "payment",
           "billing",
-          "invoice"
+          "finance",
+          "invoice",
+          "stripe",
+          "payment"
         ],
         "tech_stack": [
           "FastAPI",
@@ -1064,19 +1064,19 @@
       },
       {
         "id": 108,
-        "name": "terravic-ai-engine",
-        "full_name": "terravic/terravic-ai-engine",
-        "html_url": "https://github.com/terravic/terravic-ai-engine",
+        "name": "sample-ai-engine",
+        "full_name": "sample-platform/sample-ai-engine",
+        "html_url": "https://github.com/sample-platform/sample-ai-engine",
         "description": "LLM inference orchestrator, vector embeddings pipeline, and automated anomaly detection model.",
         "primary_language": "Other",
         "topics": [
-          "rag",
-          "llm",
-          "ai",
           "inference",
+          "ml",
           "vector",
+          "llm",
+          "rag",
           "embeddings",
-          "ml"
+          "ai"
         ],
         "tech_stack": [
           "ClickHouse",
@@ -1099,19 +1099,19 @@
       },
       {
         "id": 109,
-        "name": "terravic-data-pipeline",
-        "full_name": "terravic/terravic-data-pipeline",
-        "html_url": "https://github.com/terravic/terravic-data-pipeline",
+        "name": "sample-data-pipeline",
+        "full_name": "sample-platform/sample-data-pipeline",
+        "html_url": "https://github.com/sample-platform/sample-data-pipeline",
         "description": "Distributed real-time streaming pipeline and ETL workers aggregating telemetry events into data warehouse.",
         "primary_language": "Other",
         "topics": [
-          "pipeline",
-          "etl",
-          "data",
           "analytics",
           "spark",
+          "warehouse",
           "kafka",
-          "warehouse"
+          "data",
+          "etl",
+          "pipeline"
         ],
         "tech_stack": [
           "ClickHouse",
@@ -1134,18 +1134,18 @@
       },
       {
         "id": 110,
-        "name": "terravic-user-service",
-        "full_name": "terravic/terravic-user-service",
-        "html_url": "https://github.com/terravic/terravic-user-service",
+        "name": "sample-user-service",
+        "full_name": "sample-platform/sample-user-service",
+        "html_url": "https://github.com/sample-platform/sample-user-service",
         "description": "User profiles, tenant management, and organization membership service.",
         "primary_language": "Other",
         "topics": [
-          "membership",
-          "tenant",
           "grpc",
-          "user-service",
           "organization",
-          "tenancy"
+          "tenancy",
+          "tenant",
+          "user-service",
+          "membership"
         ],
         "tech_stack": [
           "Go",
@@ -1168,18 +1168,18 @@
       },
       {
         "id": 111,
-        "name": "terravic-notification-service",
-        "full_name": "terravic/terravic-notification-service",
-        "html_url": "https://github.com/terravic/terravic-notification-service",
+        "name": "sample-notification-service",
+        "full_name": "sample-platform/sample-notification-service",
+        "html_url": "https://github.com/sample-platform/sample-notification-service",
         "description": "Multi-channel notification dispatcher for transactional email, SMS, and webhook alerts.",
         "primary_language": "Other",
         "topics": [
           "service",
-          "alerts",
           "dispatch",
           "notification",
           "sms",
-          "email"
+          "email",
+          "alerts"
         ],
         "tech_stack": [
           "Docker",
@@ -1201,17 +1201,17 @@
       },
       {
         "id": 112,
-        "name": "terravic-python-sdk",
-        "full_name": "terravic/terravic-python-sdk",
-        "html_url": "https://github.com/terravic/terravic-python-sdk",
+        "name": "sample-python-sdk",
+        "full_name": "sample-platform/sample-python-sdk",
+        "html_url": "https://github.com/sample-platform/sample-python-sdk",
         "description": "Python SDK and CLI client for automation scripts, data science workloads, and backend integration.",
         "primary_language": "Other",
         "topics": [
-          "cli",
+          "tooling",
           "sdk",
           "client-library",
           "python",
-          "tooling"
+          "cli"
         ],
         "tech_stack": [
           "PyPI",
@@ -1233,17 +1233,17 @@
       },
       {
         "id": 113,
-        "name": "terravic-js-sdk",
-        "full_name": "terravic/terravic-js-sdk",
-        "html_url": "https://github.com/terravic/terravic-js-sdk",
-        "description": "Official TypeScript and JavaScript client SDK for integrating with Terravic platform APIs.",
+        "name": "sample-js-sdk",
+        "full_name": "sample-platform/sample-js-sdk",
+        "html_url": "https://github.com/sample-platform/sample-js-sdk",
+        "description": "Official TypeScript and JavaScript client SDK for integrating with platform APIs.",
         "primary_language": "Other",
         "topics": [
-          "typescript",
+          "tooling",
           "sdk",
           "client-library",
           "npm",
-          "tooling"
+          "typescript"
         ],
         "tech_stack": [
           "Node.js",
@@ -1265,20 +1265,20 @@
       },
       {
         "id": 114,
-        "name": "terravic-infrastructure",
-        "full_name": "terravic/terravic-infrastructure",
-        "html_url": "https://github.com/terravic/terravic-infrastructure",
+        "name": "sample-infrastructure",
+        "full_name": "sample-platform/sample-infrastructure",
+        "html_url": "https://github.com/sample-platform/sample-infrastructure",
         "description": "Terraform modules, Kubernetes Helm charts, and CI/CD pipelines deploying the entire platform to multi-region cloud.",
         "primary_language": "Other",
         "topics": [
-          "kubernetes",
-          "helm",
-          "infra",
-          "infrastructure",
-          "ci-cd",
-          "k8s",
           "terraform",
-          "docker"
+          "k8s",
+          "infra",
+          "docker",
+          "helm",
+          "kubernetes",
+          "ci-cd",
+          "infrastructure"
         ],
         "tech_stack": [
           "Docker",
@@ -1302,19 +1302,19 @@
       },
       {
         "id": 115,
-        "name": "terravic-common-lib",
-        "full_name": "terravic/terravic-common-lib",
-        "html_url": "https://github.com/terravic/terravic-common-lib",
+        "name": "sample-common-lib",
+        "full_name": "sample-platform/sample-common-lib",
+        "html_url": "https://github.com/sample-platform/sample-common-lib",
         "description": "Shared Go and Python utilities, protocol buffer contracts, structured logging, and database helpers.",
         "primary_language": "Other",
         "topics": [
           "shared",
-          "common",
           "utils",
-          "core-lib",
+          "types",
           "proto",
+          "common",
           "schemas",
-          "types"
+          "core-lib"
         ],
         "tech_stack": [
           "Go",
@@ -1337,17 +1337,17 @@
       },
       {
         "id": 116,
-        "name": "terravic-architecture-docs",
-        "full_name": "terravic/terravic-architecture-docs",
-        "html_url": "https://github.com/terravic/terravic-architecture-docs",
+        "name": "sample-architecture-docs",
+        "full_name": "sample-platform/sample-architecture-docs",
+        "html_url": "https://github.com/sample-platform/sample-architecture-docs",
         "description": "System architecture blueprints, technical RFCs, security whitepapers, and developer documentation.",
         "primary_language": "Other",
         "topics": [
-          "docs",
-          "architecture",
           "spec",
-          "guide",
           "documentation",
+          "architecture",
+          "guide",
+          "docs",
           "rfc"
         ],
         "tech_stack": [
@@ -1375,7 +1375,7 @@
         "target": 115,
         "type": "depends_on",
         "label": "Depends on",
-        "description": "terravic-api-gateway imports and depends on terravic-common-lib.",
+        "description": "sample-api-gateway imports and depends on sample-common-lib.",
         "weight": 2.5,
         "is_cross_cluster": true,
         "source_cluster": "core-platform",
@@ -1386,7 +1386,7 @@
         "target": 102,
         "type": "depends_on",
         "label": "Depends on",
-        "description": "terravic-api-gateway imports and depends on terravic-auth-service.",
+        "description": "sample-api-gateway imports and depends on sample-auth-service.",
         "weight": 2.5,
         "is_cross_cluster": true,
         "source_cluster": "core-platform",
@@ -1397,7 +1397,7 @@
         "target": 115,
         "type": "depends_on",
         "label": "Depends on",
-        "description": "terravic-auth-service imports and depends on terravic-common-lib.",
+        "description": "sample-auth-service imports and depends on sample-common-lib.",
         "weight": 2.5,
         "is_cross_cluster": true,
         "source_cluster": "security-identity",
@@ -1408,7 +1408,7 @@
         "target": 102,
         "type": "depends_on",
         "label": "Depends on",
-        "description": "terravic-patient-records imports and depends on terravic-auth-service.",
+        "description": "sample-patient-records imports and depends on sample-auth-service.",
         "weight": 2.5,
         "is_cross_cluster": true,
         "source_cluster": "medical-healthcare",
@@ -1419,7 +1419,7 @@
         "target": 115,
         "type": "depends_on",
         "label": "Depends on",
-        "description": "terravic-patient-records imports and depends on terravic-common-lib.",
+        "description": "sample-patient-records imports and depends on sample-common-lib.",
         "weight": 2.5,
         "is_cross_cluster": true,
         "source_cluster": "medical-healthcare",
@@ -1430,7 +1430,7 @@
         "target": 113,
         "type": "depends_on",
         "label": "Depends on",
-        "description": "terravic-telehealth-portal imports and depends on terravic-js-sdk.",
+        "description": "sample-telehealth-portal imports and depends on sample-js-sdk.",
         "weight": 2.5,
         "is_cross_cluster": true,
         "source_cluster": "medical-healthcare",
@@ -1441,7 +1441,7 @@
         "target": 103,
         "type": "depends_on",
         "label": "Depends on",
-        "description": "terravic-telehealth-portal imports and depends on terravic-patient-records.",
+        "description": "sample-telehealth-portal imports and depends on sample-patient-records.",
         "weight": 2.5,
         "is_cross_cluster": false,
         "source_cluster": "medical-healthcare",
@@ -1452,7 +1452,7 @@
         "target": 115,
         "type": "depends_on",
         "label": "Depends on",
-        "description": "terravic-genomics-pipeline imports and depends on terravic-common-lib.",
+        "description": "sample-genomics-pipeline imports and depends on sample-common-lib.",
         "weight": 2.5,
         "is_cross_cluster": true,
         "source_cluster": "life-sciences-bio",
@@ -1463,7 +1463,7 @@
         "target": 109,
         "type": "depends_on",
         "label": "Depends on",
-        "description": "terravic-genomics-pipeline imports and depends on terravic-data-pipeline.",
+        "description": "sample-genomics-pipeline imports and depends on sample-data-pipeline.",
         "weight": 2.5,
         "is_cross_cluster": true,
         "source_cluster": "life-sciences-bio",
@@ -1474,7 +1474,7 @@
         "target": 102,
         "type": "depends_on",
         "label": "Depends on",
-        "description": "terravic-clinical-trials imports and depends on terravic-auth-service.",
+        "description": "sample-clinical-trials imports and depends on sample-auth-service.",
         "weight": 2.5,
         "is_cross_cluster": true,
         "source_cluster": "medical-healthcare",
@@ -1485,7 +1485,7 @@
         "target": 115,
         "type": "depends_on",
         "label": "Depends on",
-        "description": "terravic-clinical-trials imports and depends on terravic-common-lib.",
+        "description": "sample-clinical-trials imports and depends on sample-common-lib.",
         "weight": 2.5,
         "is_cross_cluster": true,
         "source_cluster": "medical-healthcare",
@@ -1496,7 +1496,7 @@
         "target": 102,
         "type": "depends_on",
         "label": "Depends on",
-        "description": "terravic-billing-engine imports and depends on terravic-auth-service.",
+        "description": "sample-billing-engine imports and depends on sample-auth-service.",
         "weight": 2.5,
         "is_cross_cluster": true,
         "source_cluster": "finance-billing",
@@ -1507,7 +1507,7 @@
         "target": 115,
         "type": "depends_on",
         "label": "Depends on",
-        "description": "terravic-billing-engine imports and depends on terravic-common-lib.",
+        "description": "sample-billing-engine imports and depends on sample-common-lib.",
         "weight": 2.5,
         "is_cross_cluster": true,
         "source_cluster": "finance-billing",
@@ -1518,7 +1518,7 @@
         "target": 109,
         "type": "depends_on",
         "label": "Depends on",
-        "description": "terravic-ai-engine imports and depends on terravic-data-pipeline.",
+        "description": "sample-ai-engine imports and depends on sample-data-pipeline.",
         "weight": 2.5,
         "is_cross_cluster": false,
         "source_cluster": "data-ai-analytics",
@@ -1529,7 +1529,7 @@
         "target": 115,
         "type": "depends_on",
         "label": "Depends on",
-        "description": "terravic-ai-engine imports and depends on terravic-common-lib.",
+        "description": "sample-ai-engine imports and depends on sample-common-lib.",
         "weight": 2.5,
         "is_cross_cluster": true,
         "source_cluster": "data-ai-analytics",
@@ -1540,7 +1540,7 @@
         "target": 115,
         "type": "depends_on",
         "label": "Depends on",
-        "description": "terravic-data-pipeline imports and depends on terravic-common-lib.",
+        "description": "sample-data-pipeline imports and depends on sample-common-lib.",
         "weight": 2.5,
         "is_cross_cluster": true,
         "source_cluster": "data-ai-analytics",
@@ -1551,7 +1551,7 @@
         "target": 102,
         "type": "depends_on",
         "label": "Depends on",
-        "description": "terravic-user-service imports and depends on terravic-auth-service.",
+        "description": "sample-user-service imports and depends on sample-auth-service.",
         "weight": 2.5,
         "is_cross_cluster": true,
         "source_cluster": "core-platform",
@@ -1562,7 +1562,7 @@
         "target": 115,
         "type": "depends_on",
         "label": "Depends on",
-        "description": "terravic-user-service imports and depends on terravic-common-lib.",
+        "description": "sample-user-service imports and depends on sample-common-lib.",
         "weight": 2.5,
         "is_cross_cluster": true,
         "source_cluster": "core-platform",
@@ -1573,7 +1573,7 @@
         "target": 102,
         "type": "depends_on",
         "label": "Depends on",
-        "description": "terravic-notification-service imports and depends on terravic-auth-service.",
+        "description": "sample-notification-service imports and depends on sample-auth-service.",
         "weight": 2.5,
         "is_cross_cluster": true,
         "source_cluster": "core-platform",
@@ -1584,7 +1584,7 @@
         "target": 115,
         "type": "depends_on",
         "label": "Depends on",
-        "description": "terravic-notification-service imports and depends on terravic-common-lib.",
+        "description": "sample-notification-service imports and depends on sample-common-lib.",
         "weight": 2.5,
         "is_cross_cluster": true,
         "source_cluster": "core-platform",
@@ -1595,7 +1595,7 @@
         "target": 101,
         "type": "depends_on",
         "label": "Depends on",
-        "description": "terravic-python-sdk imports and depends on terravic-api-gateway.",
+        "description": "sample-python-sdk imports and depends on sample-api-gateway.",
         "weight": 2.5,
         "is_cross_cluster": true,
         "source_cluster": "developer-tooling",
@@ -1606,7 +1606,7 @@
         "target": 101,
         "type": "depends_on",
         "label": "Depends on",
-        "description": "terravic-js-sdk imports and depends on terravic-api-gateway.",
+        "description": "sample-js-sdk imports and depends on sample-api-gateway.",
         "weight": 2.5,
         "is_cross_cluster": true,
         "source_cluster": "developer-tooling",
@@ -1617,7 +1617,7 @@
         "target": 101,
         "type": "depends_on",
         "label": "Depends on",
-        "description": "terravic-infrastructure imports and depends on terravic-api-gateway.",
+        "description": "sample-infrastructure imports and depends on sample-api-gateway.",
         "weight": 2.5,
         "is_cross_cluster": true,
         "source_cluster": "infrastructure-devops",
@@ -1628,7 +1628,7 @@
         "target": 109,
         "type": "depends_on",
         "label": "Depends on",
-        "description": "terravic-infrastructure imports and depends on terravic-data-pipeline.",
+        "description": "sample-infrastructure imports and depends on sample-data-pipeline.",
         "weight": 2.5,
         "is_cross_cluster": true,
         "source_cluster": "infrastructure-devops",
@@ -1639,7 +1639,7 @@
         "target": 103,
         "type": "shares_tech",
         "label": "Shared Tech (docker)",
-        "description": "terravic-api-gateway and terravic-patient-records both utilize docker.",
+        "description": "sample-api-gateway and sample-patient-records both utilize docker.",
         "weight": 1.0,
         "is_cross_cluster": true,
         "source_cluster": "core-platform",
@@ -1650,7 +1650,7 @@
         "target": 110,
         "type": "shares_tech",
         "label": "Shared Tech (grpc)",
-        "description": "terravic-api-gateway and terravic-user-service both utilize grpc.",
+        "description": "sample-api-gateway and sample-user-service both utilize grpc.",
         "weight": 1.0,
         "is_cross_cluster": false,
         "source_cluster": "core-platform",
@@ -1661,7 +1661,7 @@
         "target": 111,
         "type": "shares_tech",
         "label": "Shared Tech (docker, redis)",
-        "description": "terravic-api-gateway and terravic-notification-service both utilize docker, redis.",
+        "description": "sample-api-gateway and sample-notification-service both utilize docker, redis.",
         "weight": 1.0,
         "is_cross_cluster": false,
         "source_cluster": "core-platform",
@@ -1672,7 +1672,7 @@
         "target": 106,
         "type": "shares_tech",
         "label": "Shared Tech (postgresql)",
-        "description": "terravic-patient-records and terravic-clinical-trials both utilize postgresql.",
+        "description": "sample-patient-records and sample-clinical-trials both utilize postgresql.",
         "weight": 1.0,
         "is_cross_cluster": false,
         "source_cluster": "medical-healthcare",
@@ -1683,7 +1683,7 @@
         "target": 107,
         "type": "shares_tech",
         "label": "Shared Tech (postgresql)",
-        "description": "terravic-patient-records and terravic-billing-engine both utilize postgresql.",
+        "description": "sample-patient-records and sample-billing-engine both utilize postgresql.",
         "weight": 1.0,
         "is_cross_cluster": true,
         "source_cluster": "medical-healthcare",
@@ -1694,7 +1694,7 @@
         "target": 110,
         "type": "shares_tech",
         "label": "Shared Tech (postgresql)",
-        "description": "terravic-patient-records and terravic-user-service both utilize postgresql.",
+        "description": "sample-patient-records and sample-user-service both utilize postgresql.",
         "weight": 1.0,
         "is_cross_cluster": true,
         "source_cluster": "medical-healthcare",
@@ -1705,7 +1705,7 @@
         "target": 111,
         "type": "shares_tech",
         "label": "Shared Tech (docker)",
-        "description": "terravic-patient-records and terravic-notification-service both utilize docker.",
+        "description": "sample-patient-records and sample-notification-service both utilize docker.",
         "weight": 1.0,
         "is_cross_cluster": true,
         "source_cluster": "medical-healthcare",
@@ -1716,7 +1716,7 @@
         "target": 114,
         "type": "shares_tech",
         "label": "Shared Tech (docker)",
-        "description": "terravic-patient-records and terravic-infrastructure both utilize docker.",
+        "description": "sample-patient-records and sample-infrastructure both utilize docker.",
         "weight": 1.0,
         "is_cross_cluster": true,
         "source_cluster": "medical-healthcare",
@@ -1727,7 +1727,7 @@
         "target": 107,
         "type": "shares_tech",
         "label": "Shared Tech (fastapi, postgresql)",
-        "description": "terravic-clinical-trials and terravic-billing-engine both utilize fastapi, postgresql.",
+        "description": "sample-clinical-trials and sample-billing-engine both utilize fastapi, postgresql.",
         "weight": 1.0,
         "is_cross_cluster": true,
         "source_cluster": "medical-healthcare",
@@ -1738,7 +1738,7 @@
         "target": 108,
         "type": "shares_tech",
         "label": "Shared Tech (fastapi)",
-        "description": "terravic-clinical-trials and terravic-ai-engine both utilize fastapi.",
+        "description": "sample-clinical-trials and sample-ai-engine both utilize fastapi.",
         "weight": 1.0,
         "is_cross_cluster": true,
         "source_cluster": "medical-healthcare",
@@ -1749,7 +1749,7 @@
         "target": 110,
         "type": "shares_tech",
         "label": "Shared Tech (postgresql)",
-        "description": "terravic-clinical-trials and terravic-user-service both utilize postgresql.",
+        "description": "sample-clinical-trials and sample-user-service both utilize postgresql.",
         "weight": 1.0,
         "is_cross_cluster": true,
         "source_cluster": "medical-healthcare",
@@ -1760,7 +1760,7 @@
         "target": 108,
         "type": "shares_tech",
         "label": "Shared Tech (fastapi)",
-        "description": "terravic-billing-engine and terravic-ai-engine both utilize fastapi.",
+        "description": "sample-billing-engine and sample-ai-engine both utilize fastapi.",
         "weight": 1.0,
         "is_cross_cluster": true,
         "source_cluster": "finance-billing",
@@ -1771,7 +1771,7 @@
         "target": 110,
         "type": "shares_tech",
         "label": "Shared Tech (postgresql)",
-        "description": "terravic-billing-engine and terravic-user-service both utilize postgresql.",
+        "description": "sample-billing-engine and sample-user-service both utilize postgresql.",
         "weight": 1.0,
         "is_cross_cluster": true,
         "source_cluster": "finance-billing",
@@ -1782,7 +1782,7 @@
         "target": 114,
         "type": "shares_tech",
         "label": "Shared Tech (docker)",
-        "description": "terravic-notification-service and terravic-infrastructure both utilize docker.",
+        "description": "sample-notification-service and sample-infrastructure both utilize docker.",
         "weight": 1.0,
         "is_cross_cluster": true,
         "source_cluster": "core-platform",

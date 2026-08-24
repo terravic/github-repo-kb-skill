@@ -1,12 +1,12 @@
-# Knowledge Base: terravic
+# Knowledge Base: sample-platform
 
-Generated on 2026-08-24 20:23:27 UTC for target `https://github.com/terravic`.
+Generated on 2026-08-24 20:31:55 UTC for target `https://github.com/sample-platform`.
 
 ## Executive Summary
 
 | Metric | Value |
 |---|---|
-| Target Address | https://github.com/terravic |
+| Target Address | https://github.com/sample-platform |
 | Total Repositories | 16 |
 | Functional Clusters | 10 |
 | Architecture Graph Nodes | 16 |
@@ -14,9 +14,9 @@ Generated on 2026-08-24 20:23:27 UTC for target `https://github.com/terravic`.
 | Cross-Cluster Connections | 33 |
 | Intra-Cluster Connections | 5 |
 
-**Key Architectural Hubs**: `terravic-api-gateway`, `terravic-auth-service`, `terravic-patient-records`, `terravic-clinical-trials`, `terravic-billing-engine`, `terravic-ai-engine`, `terravic-data-pipeline`, `terravic-user-service`, `terravic-notification-service`, `terravic-infrastructure`, `terravic-common-lib`
+**Key Architectural Hubs**: `sample-api-gateway`, `sample-auth-service`, `sample-patient-records`, `sample-clinical-trials`, `sample-billing-engine`, `sample-ai-engine`, `sample-data-pipeline`, `sample-user-service`, `sample-notification-service`, `sample-infrastructure`, `sample-common-lib`
 
-**Cross-Domain Bridge Repositories**: `terravic-api-gateway`, `terravic-auth-service`, `terravic-patient-records`, `terravic-genomics-pipeline`, `terravic-clinical-trials`, `terravic-billing-engine`, `terravic-ai-engine`, `terravic-data-pipeline`, `terravic-user-service`, `terravic-notification-service`, `terravic-js-sdk`, `terravic-infrastructure`, `terravic-common-lib`
+**Cross-Domain Bridge Repositories**: `sample-api-gateway`, `sample-auth-service`, `sample-patient-records`, `sample-genomics-pipeline`, `sample-clinical-trials`, `sample-billing-engine`, `sample-ai-engine`, `sample-data-pipeline`, `sample-user-service`, `sample-notification-service`, `sample-js-sdk`, `sample-infrastructure`, `sample-common-lib`
 
 ## Domain Clusters
 
@@ -33,9 +33,9 @@ Repositories are categorized into the following functional domains based on code
 
 | Repository | Language | Stars | Description |
 |---|---|---|---|
-| [terravic-api-gateway](https://github.com/terravic/terravic-api-gateway) | Other | 482 | High-performance edge reverse proxy and authentication gateway routing traffic to core microservices. |
-| [terravic-user-service](https://github.com/terravic/terravic-user-service) | Other | 275 | User profiles, tenant management, and organization membership service. |
-| [terravic-notification-service](https://github.com/terravic/terravic-notification-service) | Other | 190 | Multi-channel notification dispatcher for transactional email, SMS, and webhook alerts. |
+| [sample-api-gateway](https://github.com/sample-platform/sample-api-gateway) | Other | 482 | High-performance edge reverse proxy and authentication gateway routing traffic to core microservices. |
+| [sample-user-service](https://github.com/sample-platform/sample-user-service) | Other | 275 | User profiles, tenant management, and organization membership service. |
+| [sample-notification-service](https://github.com/sample-platform/sample-notification-service) | Other | 190 | Multi-channel notification dispatcher for transactional email, SMS, and webhook alerts. |
 
 ### Medical & Healthcare
 
@@ -48,9 +48,9 @@ Repositories are categorized into the following functional domains based on code
 
 | Repository | Language | Stars | Description |
 |---|---|---|---|
-| [terravic-patient-records](https://github.com/terravic/terravic-patient-records) | Other | 340 | Electronic health record (EHR/EMR) service with HL7 FHIR interoperability, clinical notes, and HIPAA compliant patient store. |
-| [terravic-telehealth-portal](https://github.com/terravic/terravic-telehealth-portal) | Other | 295 | Clinical patient and physician portal for telemedicine appointments, medical charts, and telehealth video consultations. |
-| [terravic-clinical-trials](https://github.com/terravic/terravic-clinical-trials) | Other | 230 | Life sciences research platform for managing clinical trials, participant cohorts, biomarker datasets, and bio-specimens. |
+| [sample-patient-records](https://github.com/sample-platform/sample-patient-records) | Other | 340 | Electronic health record (EHR/EMR) service with HL7 FHIR interoperability, clinical notes, and HIPAA compliant patient store. |
+| [sample-telehealth-portal](https://github.com/sample-platform/sample-telehealth-portal) | Other | 295 | Clinical patient and physician portal for telemedicine appointments, medical charts, and telehealth video consultations. |
+| [sample-clinical-trials](https://github.com/sample-platform/sample-clinical-trials) | Other | 230 | Life sciences research platform for managing clinical trials, participant cohorts, biomarker datasets, and bio-specimens. |
 
 ### Data Intelligence & AI/ML
 
@@ -63,8 +63,8 @@ Repositories are categorized into the following functional domains based on code
 
 | Repository | Language | Stars | Description |
 |---|---|---|---|
-| [terravic-ai-engine](https://github.com/terravic/terravic-ai-engine) | Other | 845 | LLM inference orchestrator, vector embeddings pipeline, and automated anomaly detection model. |
-| [terravic-data-pipeline](https://github.com/terravic/terravic-data-pipeline) | Other | 419 | Distributed real-time streaming pipeline and ETL workers aggregating telemetry events into data warehouse. |
+| [sample-ai-engine](https://github.com/sample-platform/sample-ai-engine) | Other | 845 | LLM inference orchestrator, vector embeddings pipeline, and automated anomaly detection model. |
+| [sample-data-pipeline](https://github.com/sample-platform/sample-data-pipeline) | Other | 419 | Distributed real-time streaming pipeline and ETL workers aggregating telemetry events into data warehouse. |
 
 ### Developer Tooling & SDKs
 
@@ -77,8 +77,8 @@ Repositories are categorized into the following functional domains based on code
 
 | Repository | Language | Stars | Description |
 |---|---|---|---|
-| [terravic-python-sdk](https://github.com/terravic/terravic-python-sdk) | Other | 365 | Python SDK and CLI client for automation scripts, data science workloads, and backend integration. |
-| [terravic-js-sdk](https://github.com/terravic/terravic-js-sdk) | Other | 420 | Official TypeScript and JavaScript client SDK for integrating with Terravic platform APIs. |
+| [sample-python-sdk](https://github.com/sample-platform/sample-python-sdk) | Other | 365 | Python SDK and CLI client for automation scripts, data science workloads, and backend integration. |
+| [sample-js-sdk](https://github.com/sample-platform/sample-js-sdk) | Other | 420 | Official TypeScript and JavaScript client SDK for integrating with platform APIs. |
 
 ### Security, Identity & Access
 
@@ -91,7 +91,7 @@ Repositories are categorized into the following functional domains based on code
 
 | Repository | Language | Stars | Description |
 |---|---|---|---|
-| [terravic-auth-service](https://github.com/terravic/terravic-auth-service) | Other | 612 | OAuth2 / OIDC identity provider, JWT token manager, and role-based access control (RBAC) security enforcement service. |
+| [sample-auth-service](https://github.com/sample-platform/sample-auth-service) | Other | 612 | OAuth2 / OIDC identity provider, JWT token manager, and role-based access control (RBAC) security enforcement service. |
 
 ### Life Sciences & Bioinformatics
 
@@ -104,7 +104,7 @@ Repositories are categorized into the following functional domains based on code
 
 | Repository | Language | Stars | Description |
 |---|---|---|---|
-| [terravic-genomics-pipeline](https://github.com/terravic/terravic-genomics-pipeline) | Other | 510 | High-throughput bioinformatics pipeline for DNA/RNA sequencing variant analysis and molecular genetics assays. |
+| [sample-genomics-pipeline](https://github.com/sample-platform/sample-genomics-pipeline) | Other | 510 | High-throughput bioinformatics pipeline for DNA/RNA sequencing variant analysis and molecular genetics assays. |
 
 ### Finance, Billing & Commerce
 
@@ -117,7 +117,7 @@ Repositories are categorized into the following functional domains based on code
 
 | Repository | Language | Stars | Description |
 |---|---|---|---|
-| [terravic-billing-engine](https://github.com/terravic/terravic-billing-engine) | Other | 328 | Subscription lifecycle, usage meter aggregation, invoice generation, and Stripe payment webhook processing service. |
+| [sample-billing-engine](https://github.com/sample-platform/sample-billing-engine) | Other | 328 | Subscription lifecycle, usage meter aggregation, invoice generation, and Stripe payment webhook processing service. |
 
 ### Infrastructure & Cloud Operations
 
@@ -130,7 +130,7 @@ Repositories are categorized into the following functional domains based on code
 
 | Repository | Language | Stars | Description |
 |---|---|---|---|
-| [terravic-infrastructure](https://github.com/terravic/terravic-infrastructure) | Other | 560 | Terraform modules, Kubernetes Helm charts, and CI/CD pipelines deploying the entire platform to multi-region cloud. |
+| [sample-infrastructure](https://github.com/sample-platform/sample-infrastructure) | Other | 560 | Terraform modules, Kubernetes Helm charts, and CI/CD pipelines deploying the entire platform to multi-region cloud. |
 
 ### Utilities & Shared Libraries
 
@@ -143,7 +143,7 @@ Repositories are categorized into the following functional domains based on code
 
 | Repository | Language | Stars | Description |
 |---|---|---|---|
-| [terravic-common-lib](https://github.com/terravic/terravic-common-lib) | Other | 310 | Shared Go and Python utilities, protocol buffer contracts, structured logging, and database helpers. |
+| [sample-common-lib](https://github.com/sample-platform/sample-common-lib) | Other | 310 | Shared Go and Python utilities, protocol buffer contracts, structured logging, and database helpers. |
 
 ### Documentation & Specifications
 
@@ -156,7 +156,7 @@ Repositories are categorized into the following functional domains based on code
 
 | Repository | Language | Stars | Description |
 |---|---|---|---|
-| [terravic-architecture-docs](https://github.com/terravic/terravic-architecture-docs) | Other | 180 | System architecture blueprints, technical RFCs, security whitepapers, and developer documentation. |
+| [sample-architecture-docs](https://github.com/sample-platform/sample-architecture-docs) | Other | 180 | System architecture blueprints, technical RFCs, security whitepapers, and developer documentation. |
 
 ## Knowledge Graph Relationships
 
@@ -166,49 +166,49 @@ The knowledge graph models direct dependencies, API integrations, client SDK usa
 
 | Source Repository | Target Repository | Scope | Description |
 |---|---|---|---|
-| `terravic-api-gateway` | `terravic-common-lib` | Cross-Cluster | terravic-api-gateway imports and depends on terravic-common-lib. |
-| `terravic-api-gateway` | `terravic-auth-service` | Cross-Cluster | terravic-api-gateway imports and depends on terravic-auth-service. |
-| `terravic-auth-service` | `terravic-common-lib` | Cross-Cluster | terravic-auth-service imports and depends on terravic-common-lib. |
-| `terravic-patient-records` | `terravic-auth-service` | Cross-Cluster | terravic-patient-records imports and depends on terravic-auth-service. |
-| `terravic-patient-records` | `terravic-common-lib` | Cross-Cluster | terravic-patient-records imports and depends on terravic-common-lib. |
-| `terravic-telehealth-portal` | `terravic-js-sdk` | Cross-Cluster | terravic-telehealth-portal imports and depends on terravic-js-sdk. |
-| `terravic-telehealth-portal` | `terravic-patient-records` | Intra-Cluster | terravic-telehealth-portal imports and depends on terravic-patient-records. |
-| `terravic-genomics-pipeline` | `terravic-common-lib` | Cross-Cluster | terravic-genomics-pipeline imports and depends on terravic-common-lib. |
-| `terravic-genomics-pipeline` | `terravic-data-pipeline` | Cross-Cluster | terravic-genomics-pipeline imports and depends on terravic-data-pipeline. |
-| `terravic-clinical-trials` | `terravic-auth-service` | Cross-Cluster | terravic-clinical-trials imports and depends on terravic-auth-service. |
-| `terravic-clinical-trials` | `terravic-common-lib` | Cross-Cluster | terravic-clinical-trials imports and depends on terravic-common-lib. |
-| `terravic-billing-engine` | `terravic-auth-service` | Cross-Cluster | terravic-billing-engine imports and depends on terravic-auth-service. |
-| `terravic-billing-engine` | `terravic-common-lib` | Cross-Cluster | terravic-billing-engine imports and depends on terravic-common-lib. |
-| `terravic-ai-engine` | `terravic-data-pipeline` | Intra-Cluster | terravic-ai-engine imports and depends on terravic-data-pipeline. |
-| `terravic-ai-engine` | `terravic-common-lib` | Cross-Cluster | terravic-ai-engine imports and depends on terravic-common-lib. |
-| `terravic-data-pipeline` | `terravic-common-lib` | Cross-Cluster | terravic-data-pipeline imports and depends on terravic-common-lib. |
-| `terravic-user-service` | `terravic-auth-service` | Cross-Cluster | terravic-user-service imports and depends on terravic-auth-service. |
-| `terravic-user-service` | `terravic-common-lib` | Cross-Cluster | terravic-user-service imports and depends on terravic-common-lib. |
-| `terravic-notification-service` | `terravic-auth-service` | Cross-Cluster | terravic-notification-service imports and depends on terravic-auth-service. |
-| `terravic-notification-service` | `terravic-common-lib` | Cross-Cluster | terravic-notification-service imports and depends on terravic-common-lib. |
-| `terravic-python-sdk` | `terravic-api-gateway` | Cross-Cluster | terravic-python-sdk imports and depends on terravic-api-gateway. |
-| `terravic-js-sdk` | `terravic-api-gateway` | Cross-Cluster | terravic-js-sdk imports and depends on terravic-api-gateway. |
-| `terravic-infrastructure` | `terravic-api-gateway` | Cross-Cluster | terravic-infrastructure imports and depends on terravic-api-gateway. |
-| `terravic-infrastructure` | `terravic-data-pipeline` | Cross-Cluster | terravic-infrastructure imports and depends on terravic-data-pipeline. |
+| `sample-api-gateway` | `sample-common-lib` | Cross-Cluster | sample-api-gateway imports and depends on sample-common-lib. |
+| `sample-api-gateway` | `sample-auth-service` | Cross-Cluster | sample-api-gateway imports and depends on sample-auth-service. |
+| `sample-auth-service` | `sample-common-lib` | Cross-Cluster | sample-auth-service imports and depends on sample-common-lib. |
+| `sample-patient-records` | `sample-auth-service` | Cross-Cluster | sample-patient-records imports and depends on sample-auth-service. |
+| `sample-patient-records` | `sample-common-lib` | Cross-Cluster | sample-patient-records imports and depends on sample-common-lib. |
+| `sample-telehealth-portal` | `sample-js-sdk` | Cross-Cluster | sample-telehealth-portal imports and depends on sample-js-sdk. |
+| `sample-telehealth-portal` | `sample-patient-records` | Intra-Cluster | sample-telehealth-portal imports and depends on sample-patient-records. |
+| `sample-genomics-pipeline` | `sample-common-lib` | Cross-Cluster | sample-genomics-pipeline imports and depends on sample-common-lib. |
+| `sample-genomics-pipeline` | `sample-data-pipeline` | Cross-Cluster | sample-genomics-pipeline imports and depends on sample-data-pipeline. |
+| `sample-clinical-trials` | `sample-auth-service` | Cross-Cluster | sample-clinical-trials imports and depends on sample-auth-service. |
+| `sample-clinical-trials` | `sample-common-lib` | Cross-Cluster | sample-clinical-trials imports and depends on sample-common-lib. |
+| `sample-billing-engine` | `sample-auth-service` | Cross-Cluster | sample-billing-engine imports and depends on sample-auth-service. |
+| `sample-billing-engine` | `sample-common-lib` | Cross-Cluster | sample-billing-engine imports and depends on sample-common-lib. |
+| `sample-ai-engine` | `sample-data-pipeline` | Intra-Cluster | sample-ai-engine imports and depends on sample-data-pipeline. |
+| `sample-ai-engine` | `sample-common-lib` | Cross-Cluster | sample-ai-engine imports and depends on sample-common-lib. |
+| `sample-data-pipeline` | `sample-common-lib` | Cross-Cluster | sample-data-pipeline imports and depends on sample-common-lib. |
+| `sample-user-service` | `sample-auth-service` | Cross-Cluster | sample-user-service imports and depends on sample-auth-service. |
+| `sample-user-service` | `sample-common-lib` | Cross-Cluster | sample-user-service imports and depends on sample-common-lib. |
+| `sample-notification-service` | `sample-auth-service` | Cross-Cluster | sample-notification-service imports and depends on sample-auth-service. |
+| `sample-notification-service` | `sample-common-lib` | Cross-Cluster | sample-notification-service imports and depends on sample-common-lib. |
+| `sample-python-sdk` | `sample-api-gateway` | Cross-Cluster | sample-python-sdk imports and depends on sample-api-gateway. |
+| `sample-js-sdk` | `sample-api-gateway` | Cross-Cluster | sample-js-sdk imports and depends on sample-api-gateway. |
+| `sample-infrastructure` | `sample-api-gateway` | Cross-Cluster | sample-infrastructure imports and depends on sample-api-gateway. |
+| `sample-infrastructure` | `sample-data-pipeline` | Cross-Cluster | sample-infrastructure imports and depends on sample-data-pipeline. |
 
 ### Shares Tech (14 relationships)
 
 | Source Repository | Target Repository | Scope | Description |
 |---|---|---|---|
-| `terravic-api-gateway` | `terravic-patient-records` | Cross-Cluster | terravic-api-gateway and terravic-patient-records both utilize docker. |
-| `terravic-api-gateway` | `terravic-user-service` | Intra-Cluster | terravic-api-gateway and terravic-user-service both utilize grpc. |
-| `terravic-api-gateway` | `terravic-notification-service` | Intra-Cluster | terravic-api-gateway and terravic-notification-service both utilize docker, redis. |
-| `terravic-patient-records` | `terravic-clinical-trials` | Intra-Cluster | terravic-patient-records and terravic-clinical-trials both utilize postgresql. |
-| `terravic-patient-records` | `terravic-billing-engine` | Cross-Cluster | terravic-patient-records and terravic-billing-engine both utilize postgresql. |
-| `terravic-patient-records` | `terravic-user-service` | Cross-Cluster | terravic-patient-records and terravic-user-service both utilize postgresql. |
-| `terravic-patient-records` | `terravic-notification-service` | Cross-Cluster | terravic-patient-records and terravic-notification-service both utilize docker. |
-| `terravic-patient-records` | `terravic-infrastructure` | Cross-Cluster | terravic-patient-records and terravic-infrastructure both utilize docker. |
-| `terravic-clinical-trials` | `terravic-billing-engine` | Cross-Cluster | terravic-clinical-trials and terravic-billing-engine both utilize fastapi, postgresql. |
-| `terravic-clinical-trials` | `terravic-ai-engine` | Cross-Cluster | terravic-clinical-trials and terravic-ai-engine both utilize fastapi. |
-| `terravic-clinical-trials` | `terravic-user-service` | Cross-Cluster | terravic-clinical-trials and terravic-user-service both utilize postgresql. |
-| `terravic-billing-engine` | `terravic-ai-engine` | Cross-Cluster | terravic-billing-engine and terravic-ai-engine both utilize fastapi. |
-| `terravic-billing-engine` | `terravic-user-service` | Cross-Cluster | terravic-billing-engine and terravic-user-service both utilize postgresql. |
-| `terravic-notification-service` | `terravic-infrastructure` | Cross-Cluster | terravic-notification-service and terravic-infrastructure both utilize docker. |
+| `sample-api-gateway` | `sample-patient-records` | Cross-Cluster | sample-api-gateway and sample-patient-records both utilize docker. |
+| `sample-api-gateway` | `sample-user-service` | Intra-Cluster | sample-api-gateway and sample-user-service both utilize grpc. |
+| `sample-api-gateway` | `sample-notification-service` | Intra-Cluster | sample-api-gateway and sample-notification-service both utilize docker, redis. |
+| `sample-patient-records` | `sample-clinical-trials` | Intra-Cluster | sample-patient-records and sample-clinical-trials both utilize postgresql. |
+| `sample-patient-records` | `sample-billing-engine` | Cross-Cluster | sample-patient-records and sample-billing-engine both utilize postgresql. |
+| `sample-patient-records` | `sample-user-service` | Cross-Cluster | sample-patient-records and sample-user-service both utilize postgresql. |
+| `sample-patient-records` | `sample-notification-service` | Cross-Cluster | sample-patient-records and sample-notification-service both utilize docker. |
+| `sample-patient-records` | `sample-infrastructure` | Cross-Cluster | sample-patient-records and sample-infrastructure both utilize docker. |
+| `sample-clinical-trials` | `sample-billing-engine` | Cross-Cluster | sample-clinical-trials and sample-billing-engine both utilize fastapi, postgresql. |
+| `sample-clinical-trials` | `sample-ai-engine` | Cross-Cluster | sample-clinical-trials and sample-ai-engine both utilize fastapi. |
+| `sample-clinical-trials` | `sample-user-service` | Cross-Cluster | sample-clinical-trials and sample-user-service both utilize postgresql. |
+| `sample-billing-engine` | `sample-ai-engine` | Cross-Cluster | sample-billing-engine and sample-ai-engine both utilize fastapi. |
+| `sample-billing-engine` | `sample-user-service` | Cross-Cluster | sample-billing-engine and sample-user-service both utilize postgresql. |
+| `sample-notification-service` | `sample-infrastructure` | Cross-Cluster | sample-notification-service and sample-infrastructure both utilize docker. |
 
 ## Cross-Domain Dependency Matrix
 

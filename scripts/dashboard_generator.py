@@ -53,15 +53,27 @@ class DashboardGenerator:
 
     def _build_html(self, data: Dict[str, Any]) -> str:
         json_data_str = json.dumps(data)
-        owner_name = data.get("metadata", {}).get("owner", "Repository Organization")
-        target_url = data.get("metadata", {}).get("input_url", "GitHub Target")
+        owner_name = data.get("metadata", {}).get("owner", "")
+        target_url = data.get("metadata", {}).get("input_url", "")
+
+        if not target_url or target_url == "GitHub Target":
+            target_display = "Target: None (Enter a GitHub URL above to scan)"
+            input_value = ""
+        else:
+            target_display = f"Target: {target_url}"
+            input_value = target_url
+
+        if not owner_name or owner_name == "Repository Organization":
+            title_name = "Repository Architecture Canvas"
+        else:
+            title_name = f"Repository Architecture Canvas - {owner_name}"
 
         template = r"""<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Repository Knowledge Base & Architecture Canvas - __OWNER_NAME__</title>
+  <title>__TITLE_NAME__</title>
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <style>
     :root {
@@ -732,20 +744,20 @@ class DashboardGenerator:
   <header class="topbar">
     <div class="topbar-brand">
       <div class="topbar-title">Repository Architecture Canvas</div>
-      <div class="topbar-subtitle" id="active-target-display">Target: __TARGET_URL__</div>
+      <div class="topbar-subtitle" id="active-target-display">__TARGET_DISPLAY__</div>
     </div>
 
     <!-- Live Address Scan Input -->
     <div class="scan-bar">
-      <input type="text" id="scan-target-input" class="scan-input" value="__TARGET_URL__" placeholder="Enter GitHub Org or Repo URL (e.g. github.com/pallets)" onkeydown="if(event.key==='Enter') scanAddressInput();" />
+      <input type="text" id="scan-target-input" class="scan-input" value="__INPUT_VALUE__" placeholder="Enter any public GitHub Org or Repo URL (e.g. github.com/pallets or https://github.com/fastapi/fastapi)" onkeydown="if(event.key==='Enter') scanAddressInput();" />
       <button class="btn btn-primary btn-sm" onclick="scanAddressInput()">Scan Address</button>
     </div>
 
     <div class="topbar-actions">
       <select id="preset-selector" class="btn btn-sm" onchange="onPresetChange(this.value)">
-        <option value="current">Current Dataset</option>
-        <option value="synthetic">Synthetic Platform (15 Repos)</option>
-        <option value="pallets">Pallets Org (Flask, Click, Jinja)</option>
+        <option value="current">Current Scanned Dataset</option>
+        <option value="synthetic">Synthetic Multi-Domain Demo (16 Repos)</option>
+        <option value="pallets">Pallets Org (Flask, Click, Jinja, Werkzeug)</option>
         <option value="fastapi">FastAPI Ecosystem</option>
       </select>
       <button class="btn btn-sm" onclick="toggleTheme()">Theme</button>
@@ -817,11 +829,12 @@ class DashboardGenerator:
 
         <div class="chips-container">
           <span style="font-size: 0.78rem; color: var(--text-dim);">Suggestions:</span>
-          <button class="chip-btn" onclick="setQueryChip('Python client SDK for API automation')">Python Client SDK</button>
+          <button class="chip-btn" onclick="setQueryChip('Patient clinical EHR records and FHIR')">Patient EHR Records</button>
+          <button class="chip-btn" onclick="setQueryChip('DNA and RNA bioinformatics genomics pipeline')">Genomics Sequencing</button>
           <button class="chip-btn" onclick="setQueryChip('OAuth2 and user login authentication service')">User Authentication</button>
-          <button class="chip-btn" onclick="setQueryChip('React UI web portal and dashboard')">Frontend Portal</button>
-          <button class="chip-btn" onclick="setQueryChip('Real-time Kafka data ingestion pipeline')">Kafka Streaming ETL</button>
-          <button class="chip-btn" onclick="setQueryChip('Terraform and Kubernetes infrastructure')">Terraform DevOps</button>
+          <button class="chip-btn" onclick="setQueryChip('Subscription billing and Stripe payments')">Subscription Billing</button>
+          <button class="chip-btn" onclick="setQueryChip('Python client SDK for platform API automation')">Python Client SDK</button>
+          <button class="chip-btn" onclick="setQueryChip('Terraform and Kubernetes cloud infrastructure')">Terraform DevOps</button>
           <button class="chip-btn" onclick="setQueryChip('Blockchain cryptocurrency mining smart contract')">Crypto Mining (Non-matching demo)</button>
         </div>
 
@@ -1909,4 +1922,8 @@ class DashboardGenerator:
 </body>
 </html>
 """
-        return template.replace("__OWNER_NAME__", owner_name).replace("__TARGET_URL__", target_url).replace("__EMBEDDED_JSON__", json_data_str)
+        return (template
+                .replace("__TITLE_NAME__", title_name)
+                .replace("__TARGET_DISPLAY__", target_display)
+                .replace("__INPUT_VALUE__", input_value)
+                .replace("__EMBEDDED_JSON__", json_data_str))

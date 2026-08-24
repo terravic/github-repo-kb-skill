@@ -58,7 +58,7 @@ python3 scripts/cli.py --url https://github.com/TARGET_ORG_OR_USER
 python3 scripts/cli.py --config scanner_config.json
 
 # Run offline synthetic demonstration
-python3 scripts/cli.py --fixture examples/synthetic_terravic_org.json --output-dir output/
+python3 scripts/cli.py --fixture examples/synthetic_sample_org.json --output-dir output/
 ```
 
 Provide a clickable file link to `output/dashboard.html` for Canvas rendering, along with an executive summary in the chat response.
@@ -88,7 +88,7 @@ The scanner configuration file allows users to edit target URLs, rate limit toke
 
 ```json
 {
-  "target_url": "https://github.com/terravic",
+  "target_url": "https://github.com/pallets",
   "auth_token": "",
   "scan_options": {
     "include_forks": false,

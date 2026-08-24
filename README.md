@@ -93,7 +93,7 @@ github-repo-kb-skill/
 │   ├── kb_generator.py               # Markdown and JSON Knowledge Base artifact generator
 │   └── dashboard_generator.py        # Standalone interactive Canvas UI dashboard generator
 ├── examples/
-│   ├── synthetic_terravic_org.json   # 16-repository multi-domain synthetic dataset
+│   ├── synthetic_sample_org.json     # 16-repository multi-domain synthetic dataset
 │   └── sample_output/                # Pre-generated sample output files
 │       ├── dashboard.html            # Pre-rendered interactive Canvas dashboard
 │       ├── KNOWLEDGE_BASE.md         # Pre-rendered technical Markdown report
@@ -140,7 +140,7 @@ Rather than grouping repositories solely by technical implementation (such as gr
 
 You do not need to write code or use complex developer commands to use this tool.
 
-When you point this skill at a GitHub account (such as `https://github.com/terravic` or any company GitHub page), the skill automatically inspects all the code projects in that account, organizes them into thematic categories (like Medical & Healthcare, Life Sciences, Billing, or Security), figures out how those projects connect to each other, builds an interactive visual dashboard in Canvas, and allows you to chat about any program or software capability you need.
+When you point this skill at any public GitHub account (such as `https://github.com/pallets`, `https://github.com/fastapi`, or your own company GitHub page), the skill automatically inspects all the code projects in that account, organizes them into thematic categories (like Medical & Healthcare, Life Sciences, Billing, or Security), figures out how those projects connect to each other, builds an interactive visual dashboard in Canvas, and allows you to chat about any program or software capability you need.
 
 ---
 
@@ -163,7 +163,7 @@ Open your AI assistant (Gemini Enterprise App, Antigravity, or any app equipped 
 #### Step 2: Ask the AI to Run the Analysis
 Type a natural message giving the GitHub address you want to analyze.
 For example:
-> "Please scan https://github.com/terravic using the github-repo-kb skill and open the visual dashboard in Canvas."
+> "Please scan https://github.com/pallets using the github-repo-kb skill and open the visual dashboard in Canvas."
 
 #### Step 3: Review the Results
 The AI assistant will:
@@ -183,18 +183,18 @@ After an organization is analyzed, you can ask the AI about any tool or capabili
 #### Example 1: Finding a Medical System
 - **Your Question in Chat**: *"Which repository handles patient electronic health records and FHIR integration?"*
 - **Skill Response**:
-  > **Best Matched Repository**: `terravic-patient-records` (High Confidence)
+  > **Best Matched Repository**: `sample-patient-records` (High Confidence)
   >
   > **Domain**: Medical & Healthcare | **Language**: Go
   >
-  > **GitHub URL**: `https://github.com/terravic/terravic-patient-records`
+  > **GitHub URL**: `https://github.com/sample-platform/sample-patient-records`
   >
   > **Why this fits**: The repository provides clinical electronic health record (EHR) storage conforming to HL7 FHIR R4 standards with HIPAA compliance.
 
 #### Example 2: Finding a Genomics Pipeline
 - **Your Question in Chat**: *"Where is DNA sequencing and bioinformatics variant analysis processed?"*
 - **Skill Response**:
-  > **Best Matched Repository**: `terravic-genomics-pipeline` (High Confidence)
+  > **Best Matched Repository**: `sample-genomics-pipeline` (High Confidence)
   >
   > **Domain**: Life Sciences & Bioinformatics | **Language**: Python
   >
@@ -213,12 +213,12 @@ After an organization is analyzed, you can ask the AI about any tool or capabili
 
 #### Scenario 1: Exploring an Organization's Thematic Architecture
 ```
-Please run the github-repo-kb skill on https://github.com/terravic. Group all projects into thematic domains, map out the architecture knowledge graph, and display the dashboard in Canvas.
+Please run the github-repo-kb skill on https://github.com/pallets. Group all projects into thematic domains, map out the architecture knowledge graph, and display the dashboard in Canvas.
 ```
 
 #### Scenario 2: Running a Quick Safe Demonstration (Offline)
 ```
-Run the github-repo-kb skill using the built-in synthetic sample dataset in examples/synthetic_terravic_org.json and show the interactive dashboard.
+Run the github-repo-kb skill using the built-in synthetic sample dataset in examples/synthetic_sample_org.json and show the interactive dashboard.
 ```
 
 #### Scenario 3: Customizing Scan Settings in a File
@@ -307,7 +307,7 @@ The file `scanner_config.json` is the primary configuration file:
 
 ```json
 {
-  "target_url": "https://github.com/terravic",
+  "target_url": "https://github.com/pallets",
   "auth_token": "",
   "scan_options": {
     "include_forks": false,
@@ -377,7 +377,7 @@ The file `scanner_config.json` is the primary configuration file:
 python3 scripts/cli.py --config scanner_config.json
 
 # Or explicitly pass the synthetic fixture path
-python3 scripts/cli.py --fixture examples/synthetic_terravic_org.json --output-dir output/
+python3 scripts/cli.py --fixture examples/synthetic_sample_org.json --output-dir output/
 ```
 
 ### 2. Scanning a Live GitHub Organization or User
@@ -387,7 +387,7 @@ python3 scripts/cli.py --fixture examples/synthetic_terravic_org.json --output-d
 python3 scripts/cli.py --url https://github.com/pallets
 
 # Scan with an authenticated token
-python3 scripts/cli.py --url https://github.com/terravic --token ghp_yourPersonalAccessTokenHere
+python3 scripts/cli.py --url https://github.com/pallets --token ghp_yourPersonalAccessTokenHere
 ```
 
 ### 3. Querying the Knowledge Base via CLI
@@ -408,7 +408,7 @@ python3 scripts/cli.py --query "Blockchain cryptocurrency mining smart contract"
 ### 4. Scanning a Single Repository
 
 ```bash
-python3 scripts/cli.py --url https://github.com/terravic/terravic-patient-records
+python3 scripts/cli.py --url https://github.com/pallets/flask
 ```
 
 ### 5. CLI Reference
@@ -420,7 +420,7 @@ usage: cli.py [-h] [--url URL] [--config CONFIG] [--fixture FIXTURE]
 
 Options:
   -h, --help            Show help message and exit
-  --url URL, -u URL     GitHub URL or owner handle (e.g. 'https://github.com/terravic')
+  --url URL, -u URL     GitHub URL or owner handle (e.g. 'https://github.com/pallets')
   --config CONFIG, -c CONFIG
                         Path to configuration JSON file (default: scanner_config.json)
   --fixture FIXTURE, -f FIXTURE
@@ -445,7 +445,7 @@ Run the complete test suite using Python's built-in `unittest`:
 python3 -m unittest discover -s tests -v
 ```
 
-All 21 unit and integration tests verify URL parsing, metadata normalization, thematic domain clustering, custom rules, graph construction, edge calculation, repository search engine, knowledge base generation, and HTML dashboard rendering.
+All 26 unit and integration tests verify URL parsing, metadata normalization, thematic domain clustering, custom rules, graph construction, edge calculation, repository search engine, knowledge base generation, and HTML dashboard rendering.
 
 ---
 
@@ -476,9 +476,9 @@ All 21 unit and integration tests verify URL parsing, metadata normalization, th
 ```json
 {
   "id": 103,
-  "name": "terravic-patient-records",
-  "full_name": "terravic/terravic-patient-records",
-  "html_url": "https://github.com/terravic/terravic-patient-records",
+  "name": "sample-patient-records",
+  "full_name": "sample-platform/sample-patient-records",
+  "html_url": "https://github.com/sample-platform/sample-patient-records",
   "description": "Electronic health record (EHR/EMR) service with HL7 FHIR interoperability, clinical notes, and HIPAA compliant patient store.",
   "primary_language": "Go",
   "topics": ["medical", "healthcare", "clinical", "patient", "ehr", "fhir", "hipaa", "records"],
@@ -506,7 +506,7 @@ All 21 unit and integration tests verify URL parsing, metadata normalization, th
   "target": 103,
   "type": "depends_on",
   "label": "Consumes Clinical API",
-  "description": "terravic-telehealth-portal imports and depends on terravic-patient-records.",
+  "description": "sample-telehealth-portal imports and depends on sample-patient-records.",
   "weight": 2.5,
   "is_cross_cluster": false,
   "source_cluster": "medical-healthcare",
