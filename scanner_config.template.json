@@ -1,0 +1,26 @@
+{
+  "target_url": "https://github.com/YOUR_ORGANIZATION_OR_USERNAME",
+  "auth_token": "ghp_optional_personal_access_token_here",
+  "scan_options": {
+    "include_forks": false,
+    "include_archived": true,
+    "max_repos": 100,
+    "offline_fixture": ""
+  },
+  "clustering_rules": [
+    {
+      "pattern": ".*-sdk|.*-client",
+      "cluster_id": "developer-tooling"
+    },
+    {
+      "pattern": ".*-gateway|.*-auth|.*-service",
+      "cluster_id": "core-services"
+    }
+  ],
+  "output": {
+    "output_dir": "output",
+    "generate_dashboard": true,
+    "generate_markdown": true,
+    "generate_json": true
+  }
+}

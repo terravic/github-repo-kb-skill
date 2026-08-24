@@ -1,0 +1,1938 @@
+{
+  "metadata": {
+    "input_url": "https://github.com/terravic",
+    "target_url": "https://github.com/terravic",
+    "target_type": "organization",
+    "owner": "terravic",
+    "description": "Synthetic multi-repository cloud platform for analytics, distributed services, and developer tooling.",
+    "is_offline_fixture": true,
+    "generated_at": "2026-08-24 19:30:06 UTC"
+  },
+  "summary": {
+    "total_repositories": 15,
+    "total_clusters": 7,
+    "total_graph_nodes": 15,
+    "total_graph_edges": 43,
+    "cross_cluster_edges": 27,
+    "intra_cluster_edges": 16,
+    "hub_repositories": [
+      "terravic-api-gateway",
+      "terravic-auth-service",
+      "terravic-user-service",
+      "terravic-billing-engine",
+      "terravic-web-portal",
+      "terravic-design-system",
+      "terravic-mobile-app",
+      "terravic-data-pipeline",
+      "terravic-ai-engine",
+      "terravic-js-sdk",
+      "terravic-python-sdk",
+      "terravic-core-lib",
+      "terravic-infrastructure"
+    ],
+    "bridge_repositories": [
+      "terravic-api-gateway",
+      "terravic-auth-service",
+      "terravic-billing-engine",
+      "terravic-data-pipeline",
+      "terravic-ai-engine",
+      "terravic-js-sdk",
+      "terravic-python-sdk",
+      "terravic-core-lib",
+      "terravic-infrastructure"
+    ]
+  },
+  "clusters": [
+    {
+      "id": "core-services",
+      "name": "Core Services & Backend APIs",
+      "description": "Foundational backend services, microservices, gRPC/REST APIs, authentication, and core business engines.",
+      "color": "#3B82F6",
+      "repositories": [
+        101,
+        102,
+        103,
+        104,
+        109
+      ],
+      "total_stars": 1842,
+      "total_forks": 252,
+      "languages": {
+        "Go": 3,
+        "Python": 2
+      },
+      "tech_stack": [
+        "Docker",
+        "FastAPI",
+        "Fastapi",
+        "Go",
+        "Grpc",
+        "PostgreSQL",
+        "PyTorch",
+        "Python",
+        "Qdrant",
+        "RabbitMQ",
+        "Redis",
+        "gRPC"
+      ],
+      "repo_count": 5,
+      "top_languages": [
+        "Go",
+        "Python"
+      ],
+      "language_breakdown": [
+        {
+          "language": "Go",
+          "count": 3
+        },
+        {
+          "language": "Python",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "id": "frontend-ui",
+      "name": "Frontend & User Interfaces",
+      "description": "Client applications, web portals, dashboards, mobile apps, and interactive UI component design systems.",
+      "color": "#10B981",
+      "repositories": [
+        105,
+        106,
+        107
+      ],
+      "total_stars": 960,
+      "total_forks": 141,
+      "languages": {
+        "TypeScript": 3
+      },
+      "tech_stack": [
+        "Expo",
+        "Next.Js",
+        "Next.js",
+        "React",
+        "React Native",
+        "Storybook",
+        "Tailwind",
+        "Tailwind CSS",
+        "TypeScript"
+      ],
+      "repo_count": 3,
+      "top_languages": [
+        "TypeScript"
+      ],
+      "language_breakdown": [
+        {
+          "language": "TypeScript",
+          "count": 3
+        }
+      ]
+    },
+    {
+      "id": "developer-tooling",
+      "name": "Developer Tooling & SDKs",
+      "description": "Client SDKs, CLI utilities, code generators, testing harnesses, linters, plugins, and agent skills.",
+      "color": "#F59E0B",
+      "repositories": [
+        110,
+        111,
+        112
+      ],
+      "total_stars": 720,
+      "total_forks": 89,
+      "languages": {
+        "TypeScript": 1,
+        "Python": 1,
+        "Go": 1
+      },
+      "tech_stack": [
+        "Cobra",
+        "Go",
+        "Hatch",
+        "Jest",
+        "Pydantic",
+        "Pytest",
+        "Python",
+        "Rollup",
+        "TypeScript",
+        "Viper"
+      ],
+      "repo_count": 3,
+      "top_languages": [
+        "TypeScript",
+        "Python",
+        "Go"
+      ],
+      "language_breakdown": [
+        {
+          "language": "TypeScript",
+          "count": 1
+        },
+        {
+          "language": "Python",
+          "count": 1
+        },
+        {
+          "language": "Go",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "id": "data-analytics",
+      "name": "Data Engineering & AI/ML",
+      "description": "Data pipelines, ETL workflows, stream processing, machine learning models, and analytics infrastructure.",
+      "color": "#8B5CF6",
+      "repositories": [
+        108
+      ],
+      "total_stars": 390,
+      "total_forks": 51,
+      "languages": {
+        "Python": 1
+      },
+      "tech_stack": [
+        "Apache Kafka",
+        "Apache Spark",
+        "ClickHouse",
+        "Kafka",
+        "Python",
+        "Spark"
+      ],
+      "repo_count": 1,
+      "top_languages": [
+        "Python"
+      ],
+      "language_breakdown": [
+        {
+          "language": "Python",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "id": "infrastructure-devops",
+      "name": "Infrastructure & DevOps",
+      "description": "Cloud infrastructure as code, Kubernetes deployment manifests, CI/CD pipelines, Docker, and monitoring.",
+      "color": "#EF4444",
+      "repositories": [
+        114
+      ],
+      "total_stars": 410,
+      "total_forks": 62,
+      "languages": {
+        "HCL": 1
+      },
+      "tech_stack": [
+        "AWS",
+        "ArgoCD",
+        "HCL",
+        "Helm",
+        "Kubernetes",
+        "Terraform"
+      ],
+      "repo_count": 1,
+      "top_languages": [
+        "HCL"
+      ],
+      "language_breakdown": [
+        {
+          "language": "HCL",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "id": "libraries-shared",
+      "name": "Shared Libraries & Utilities",
+      "description": "Common utilities, protocol definitions, shared data contracts, helper packages, and cross-cutting libraries.",
+      "color": "#06B6D4",
+      "repositories": [
+        113
+      ],
+      "total_stars": 340,
+      "total_forks": 46,
+      "languages": {
+        "Go": 1
+      },
+      "tech_stack": [
+        "Go",
+        "Grpc",
+        "OpenTelemetry",
+        "Protobuf",
+        "gRPC"
+      ],
+      "repo_count": 1,
+      "top_languages": [
+        "Go"
+      ],
+      "language_breakdown": [
+        {
+          "language": "Go",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "id": "documentation-specs",
+      "name": "Documentation & Specifications",
+      "description": "Architectural blueprints, technical documentation, API specifications, guides, and project roadmaps.",
+      "color": "#64748B",
+      "repositories": [
+        115
+      ],
+      "total_stars": 130,
+      "total_forks": 15,
+      "languages": {
+        "Markdown": 1
+      },
+      "tech_stack": [
+        "Docusaurus",
+        "Markdown",
+        "OpenAPI"
+      ],
+      "repo_count": 1,
+      "top_languages": [
+        "Markdown"
+      ],
+      "language_breakdown": [
+        {
+          "language": "Markdown",
+          "count": 1
+        }
+      ]
+    }
+  ],
+  "repositories": [
+    {
+      "id": 101,
+      "name": "terravic-api-gateway",
+      "full_name": "terravic/terravic-api-gateway",
+      "html_url": "https://github.com/terravic/terravic-api-gateway",
+      "description": "High-performance edge reverse proxy and authentication gateway routing traffic to core microservices.",
+      "primary_language": "Go",
+      "topics": [
+        "reverse-proxy",
+        "grpc",
+        "microservices",
+        "auth",
+        "api-gateway",
+        "rate-limiting"
+      ],
+      "stars": 482,
+      "forks": 65,
+      "open_issues": 12,
+      "updated_at": "2026-08-10T14:30:00Z",
+      "created_at": "2023-01-15T09:00:00Z",
+      "default_branch": "main",
+      "is_fork": false,
+      "is_archived": false,
+      "license": "Apache-2.0",
+      "dependencies": [
+        "terravic-core-lib",
+        "terravic-auth-service",
+        "terravic-user-service"
+      ],
+      "tech_stack": [
+        "Docker",
+        "Go",
+        "Grpc",
+        "Redis",
+        "gRPC"
+      ],
+      "readme_summary": "Core API Gateway handling SSL termination, rate limiting, and JWT authentication across all external ingress points.",
+      "cluster_id": "core-services",
+      "cluster_name": "Core Services & Backend APIs",
+      "cluster_color": "#3B82F6"
+    },
+    {
+      "id": 102,
+      "name": "terravic-auth-service",
+      "full_name": "terravic/terravic-auth-service",
+      "html_url": "https://github.com/terravic/terravic-auth-service",
+      "description": "OAuth2 / OIDC identity provider and token management service with RBAC enforcement.",
+      "primary_language": "Go",
+      "topics": [
+        "security",
+        "oidc",
+        "rbac",
+        "oauth2",
+        "jwt",
+        "identity"
+      ],
+      "stars": 315,
+      "forks": 42,
+      "open_issues": 8,
+      "updated_at": "2026-08-18T10:15:00Z",
+      "created_at": "2023-02-01T11:20:00Z",
+      "default_branch": "main",
+      "is_fork": false,
+      "is_archived": false,
+      "license": "Apache-2.0",
+      "dependencies": [
+        "terravic-core-lib"
+      ],
+      "tech_stack": [
+        "Docker",
+        "Go",
+        "PostgreSQL",
+        "Redis"
+      ],
+      "readme_summary": "Identity and access management engine offering multi-factor authentication, session rotation, and JWT signing.",
+      "cluster_id": "core-services",
+      "cluster_name": "Core Services & Backend APIs",
+      "cluster_color": "#3B82F6"
+    },
+    {
+      "id": 103,
+      "name": "terravic-user-service",
+      "full_name": "terravic/terravic-user-service",
+      "html_url": "https://github.com/terravic/terravic-user-service",
+      "description": "User profiles, tenant management, and organization membership service.",
+      "primary_language": "Go",
+      "topics": [
+        "grpc",
+        "backend",
+        "microservice",
+        "tenancy",
+        "user-management"
+      ],
+      "stars": 240,
+      "forks": 28,
+      "open_issues": 5,
+      "updated_at": "2026-08-20T16:45:00Z",
+      "created_at": "2023-03-10T15:00:00Z",
+      "default_branch": "main",
+      "is_fork": false,
+      "is_archived": false,
+      "license": "Apache-2.0",
+      "dependencies": [
+        "terravic-core-lib",
+        "terravic-auth-service"
+      ],
+      "tech_stack": [
+        "Docker",
+        "Go",
+        "Grpc",
+        "PostgreSQL",
+        "gRPC"
+      ],
+      "readme_summary": "Manages tenant hierarchies, user metadata, preferences, and billing account associations.",
+      "cluster_id": "core-services",
+      "cluster_name": "Core Services & Backend APIs",
+      "cluster_color": "#3B82F6"
+    },
+    {
+      "id": 104,
+      "name": "terravic-billing-engine",
+      "full_name": "terravic/terravic-billing-engine",
+      "html_url": "https://github.com/terravic/terravic-billing-engine",
+      "description": "Subscription lifecycle, usage meter aggregation, and Stripe payment webhook processing service.",
+      "primary_language": "Python",
+      "topics": [
+        "stripe",
+        "fastapi",
+        "subscriptions",
+        "billing",
+        "payments"
+      ],
+      "stars": 195,
+      "forks": 19,
+      "open_issues": 4,
+      "updated_at": "2026-08-15T08:00:00Z",
+      "created_at": "2023-05-12T13:40:00Z",
+      "default_branch": "main",
+      "is_fork": false,
+      "is_archived": false,
+      "license": "Proprietary",
+      "dependencies": [
+        "terravic-user-service",
+        "terravic-python-sdk"
+      ],
+      "tech_stack": [
+        "FastAPI",
+        "Fastapi",
+        "PostgreSQL",
+        "Python",
+        "RabbitMQ"
+      ],
+      "readme_summary": "Asynchronous billing service that ingests usage events and manages automated invoice generation.",
+      "cluster_id": "core-services",
+      "cluster_name": "Core Services & Backend APIs",
+      "cluster_color": "#3B82F6"
+    },
+    {
+      "id": 105,
+      "name": "terravic-web-portal",
+      "full_name": "terravic/terravic-web-portal",
+      "html_url": "https://github.com/terravic/terravic-web-portal",
+      "description": "Customer facing web portal and administration console built with Next.js and Tailwind CSS.",
+      "primary_language": "TypeScript",
+      "topics": [
+        "nextjs",
+        "react",
+        "ui",
+        "dashboard",
+        "frontend",
+        "tailwind"
+      ],
+      "stars": 520,
+      "forks": 84,
+      "open_issues": 19,
+      "updated_at": "2026-08-22T21:10:00Z",
+      "created_at": "2023-04-01T10:00:00Z",
+      "default_branch": "main",
+      "is_fork": false,
+      "is_archived": false,
+      "license": "MIT",
+      "dependencies": [
+        "terravic-js-sdk",
+        "terravic-design-system"
+      ],
+      "tech_stack": [
+        "Next.Js",
+        "Next.js",
+        "React",
+        "Tailwind",
+        "Tailwind CSS",
+        "TypeScript"
+      ],
+      "readme_summary": "Modern administrative and customer dashboard featuring analytics graphs, API key management, and team settings.",
+      "cluster_id": "frontend-ui",
+      "cluster_name": "Frontend & User Interfaces",
+      "cluster_color": "#10B981"
+    },
+    {
+      "id": 106,
+      "name": "terravic-design-system",
+      "full_name": "terravic/terravic-design-system",
+      "html_url": "https://github.com/terravic/terravic-design-system",
+      "description": "Reusable React component library, design tokens, and Storybook documentation.",
+      "primary_language": "TypeScript",
+      "topics": [
+        "design-system",
+        "react",
+        "ui",
+        "components",
+        "storybook"
+      ],
+      "stars": 280,
+      "forks": 35,
+      "open_issues": 6,
+      "updated_at": "2026-08-19T12:00:00Z",
+      "created_at": "2023-03-25T14:30:00Z",
+      "default_branch": "main",
+      "is_fork": false,
+      "is_archived": false,
+      "license": "MIT",
+      "dependencies": [],
+      "tech_stack": [
+        "React",
+        "Storybook",
+        "TypeScript"
+      ],
+      "readme_summary": "Standardized accessible component primitives, accessible modal systems, and color tokens.",
+      "cluster_id": "frontend-ui",
+      "cluster_name": "Frontend & User Interfaces",
+      "cluster_color": "#10B981"
+    },
+    {
+      "id": 107,
+      "name": "terravic-mobile-app",
+      "full_name": "terravic/terravic-mobile-app",
+      "html_url": "https://github.com/terravic/terravic-mobile-app",
+      "description": "Cross-platform mobile application for incident notifications and operational metrics.",
+      "primary_language": "TypeScript",
+      "topics": [
+        "ios",
+        "notifications",
+        "mobile",
+        "android",
+        "react-native"
+      ],
+      "stars": 160,
+      "forks": 22,
+      "open_issues": 9,
+      "updated_at": "2026-08-14T09:30:00Z",
+      "created_at": "2024-01-10T16:00:00Z",
+      "default_branch": "main",
+      "is_fork": false,
+      "is_archived": false,
+      "license": "MIT",
+      "dependencies": [
+        "terravic-js-sdk"
+      ],
+      "tech_stack": [
+        "Expo",
+        "React",
+        "React Native",
+        "TypeScript"
+      ],
+      "readme_summary": "React Native companion app providing push notifications for system alerts and tenant health metrics.",
+      "cluster_id": "frontend-ui",
+      "cluster_name": "Frontend & User Interfaces",
+      "cluster_color": "#10B981"
+    },
+    {
+      "id": 108,
+      "name": "terravic-data-pipeline",
+      "full_name": "terravic/terravic-data-pipeline",
+      "html_url": "https://github.com/terravic/terravic-data-pipeline",
+      "description": "Distributed real-time streaming pipeline and ETL workers aggregating telemetry events into data warehouse.",
+      "primary_language": "Python",
+      "topics": [
+        "analytics",
+        "stream-processing",
+        "kafka",
+        "spark",
+        "etl",
+        "data-pipeline"
+      ],
+      "stars": 390,
+      "forks": 51,
+      "open_issues": 11,
+      "updated_at": "2026-08-21T18:20:00Z",
+      "created_at": "2023-06-15T11:00:00Z",
+      "default_branch": "main",
+      "is_fork": false,
+      "is_archived": false,
+      "license": "Apache-2.0",
+      "dependencies": [
+        "terravic-core-lib"
+      ],
+      "tech_stack": [
+        "Apache Kafka",
+        "Apache Spark",
+        "ClickHouse",
+        "Kafka",
+        "Python",
+        "Spark"
+      ],
+      "readme_summary": "Scalable ingestion engine processing 100k events/sec using Kafka topics and materialized analytical views.",
+      "cluster_id": "data-analytics",
+      "cluster_name": "Data Engineering & AI/ML",
+      "cluster_color": "#8B5CF6"
+    },
+    {
+      "id": 109,
+      "name": "terravic-ai-engine",
+      "full_name": "terravic/terravic-ai-engine",
+      "html_url": "https://github.com/terravic/terravic-ai-engine",
+      "description": "LLM inference orchestrator, vector embeddings pipeline, and automated anomaly detection model.",
+      "primary_language": "Python",
+      "topics": [
+        "ml",
+        "embeddings",
+        "llm",
+        "vector-search",
+        "rag",
+        "anomaly-detection",
+        "ai"
+      ],
+      "stars": 610,
+      "forks": 98,
+      "open_issues": 15,
+      "updated_at": "2026-08-23T14:10:00Z",
+      "created_at": "2024-02-20T08:45:00Z",
+      "default_branch": "main",
+      "is_fork": false,
+      "is_archived": false,
+      "license": "Apache-2.0",
+      "dependencies": [
+        "terravic-data-pipeline",
+        "terravic-python-sdk"
+      ],
+      "tech_stack": [
+        "Docker",
+        "FastAPI",
+        "PyTorch",
+        "Python",
+        "Qdrant"
+      ],
+      "readme_summary": "Retrieval-augmented intelligence service extracting system insights and predictive telemetry anomalies.",
+      "cluster_id": "core-services",
+      "cluster_name": "Core Services & Backend APIs",
+      "cluster_color": "#3B82F6"
+    },
+    {
+      "id": 110,
+      "name": "terravic-js-sdk",
+      "full_name": "terravic/terravic-js-sdk",
+      "html_url": "https://github.com/terravic/terravic-js-sdk",
+      "description": "Official TypeScript and JavaScript client SDK for integrating with Terravic platform APIs.",
+      "primary_language": "TypeScript",
+      "topics": [
+        "sdk",
+        "typescript",
+        "client-library",
+        "api-client",
+        "npm"
+      ],
+      "stars": 295,
+      "forks": 38,
+      "open_issues": 4,
+      "updated_at": "2026-08-21T13:00:00Z",
+      "created_at": "2023-04-10T12:00:00Z",
+      "default_branch": "main",
+      "is_fork": false,
+      "is_archived": false,
+      "license": "MIT",
+      "dependencies": [
+        "terravic-api-gateway"
+      ],
+      "tech_stack": [
+        "Jest",
+        "Rollup",
+        "TypeScript"
+      ],
+      "readme_summary": "Type-safe client bindings with automatic retry, token refresh, and streaming subscription support.",
+      "cluster_id": "developer-tooling",
+      "cluster_name": "Developer Tooling & SDKs",
+      "cluster_color": "#F59E0B"
+    },
+    {
+      "id": 111,
+      "name": "terravic-python-sdk",
+      "full_name": "terravic/terravic-python-sdk",
+      "html_url": "https://github.com/terravic/terravic-python-sdk",
+      "description": "Python SDK and CLI client for automation scripts, data science workloads, and backend integration.",
+      "primary_language": "Python",
+      "topics": [
+        "sdk",
+        "python",
+        "cli",
+        "automation",
+        "client-library"
+      ],
+      "stars": 245,
+      "forks": 30,
+      "open_issues": 3,
+      "updated_at": "2026-08-16T15:30:00Z",
+      "created_at": "2023-05-01T10:30:00Z",
+      "default_branch": "main",
+      "is_fork": false,
+      "is_archived": false,
+      "license": "MIT",
+      "dependencies": [
+        "terravic-api-gateway"
+      ],
+      "tech_stack": [
+        "Hatch",
+        "Pydantic",
+        "Pytest",
+        "Python"
+      ],
+      "readme_summary": "Asyncio-ready Python client with Pydantic model serialization and structured error handling.",
+      "cluster_id": "developer-tooling",
+      "cluster_name": "Developer Tooling & SDKs",
+      "cluster_color": "#F59E0B"
+    },
+    {
+      "id": 112,
+      "name": "terravic-cli",
+      "full_name": "terravic/terravic-cli",
+      "html_url": "https://github.com/terravic/terravic-cli",
+      "description": "Developer command-line interface for provisioning environments, deploying jobs, and managing tokens.",
+      "primary_language": "Go",
+      "topics": [
+        "devops",
+        "developer-tools",
+        "cli",
+        "cobra"
+      ],
+      "stars": 180,
+      "forks": 21,
+      "open_issues": 7,
+      "updated_at": "2026-08-12T17:15:00Z",
+      "created_at": "2023-07-20T14:00:00Z",
+      "default_branch": "main",
+      "is_fork": false,
+      "is_archived": false,
+      "license": "Apache-2.0",
+      "dependencies": [
+        "terravic-api-gateway"
+      ],
+      "tech_stack": [
+        "Cobra",
+        "Go",
+        "Viper"
+      ],
+      "readme_summary": "Cross-platform CLI tool for CI/CD runners and local developer sandbox provisioning.",
+      "cluster_id": "developer-tooling",
+      "cluster_name": "Developer Tooling & SDKs",
+      "cluster_color": "#F59E0B"
+    },
+    {
+      "id": 113,
+      "name": "terravic-core-lib",
+      "full_name": "terravic/terravic-core-lib",
+      "html_url": "https://github.com/terravic/terravic-core-lib",
+      "description": "Shared proto definitions, middleware contracts, structured logging, and telemetry utilities.",
+      "primary_language": "Go",
+      "topics": [
+        "shared-lib",
+        "proto",
+        "grpc",
+        "logging",
+        "opentelemetry",
+        "telemetry"
+      ],
+      "stars": 340,
+      "forks": 46,
+      "open_issues": 2,
+      "updated_at": "2026-08-20T11:00:00Z",
+      "created_at": "2023-01-05T09:00:00Z",
+      "default_branch": "main",
+      "is_fork": false,
+      "is_archived": false,
+      "license": "Apache-2.0",
+      "dependencies": [],
+      "tech_stack": [
+        "Go",
+        "Grpc",
+        "OpenTelemetry",
+        "Protobuf",
+        "gRPC"
+      ],
+      "readme_summary": "Shared foundation library providing protobuf definitions, standard error types, and tracing interceptors.",
+      "cluster_id": "libraries-shared",
+      "cluster_name": "Shared Libraries & Utilities",
+      "cluster_color": "#06B6D4"
+    },
+    {
+      "id": 114,
+      "name": "terravic-infrastructure",
+      "full_name": "terravic/terravic-infrastructure",
+      "html_url": "https://github.com/terravic/terravic-infrastructure",
+      "description": "Terraform modules, Kubernetes Helm charts, and GitOps ArgoCD manifests for cloud environments.",
+      "primary_language": "HCL",
+      "topics": [
+        "kubernetes",
+        "helm",
+        "argocd",
+        "terraform",
+        "gitops",
+        "infrastructure",
+        "devops"
+      ],
+      "stars": 410,
+      "forks": 62,
+      "open_issues": 14,
+      "updated_at": "2026-08-22T08:30:00Z",
+      "created_at": "2023-01-10T10:00:00Z",
+      "default_branch": "main",
+      "is_fork": false,
+      "is_archived": false,
+      "license": "Apache-2.0",
+      "dependencies": [
+        "terravic-api-gateway",
+        "terravic-auth-service",
+        "terravic-data-pipeline"
+      ],
+      "tech_stack": [
+        "AWS",
+        "ArgoCD",
+        "HCL",
+        "Helm",
+        "Kubernetes",
+        "Terraform"
+      ],
+      "readme_summary": "Infrastructure-as-code repository managing production Kubernetes clusters, VPC networking, and RDS databases.",
+      "cluster_id": "infrastructure-devops",
+      "cluster_name": "Infrastructure & DevOps",
+      "cluster_color": "#EF4444"
+    },
+    {
+      "id": 115,
+      "name": "terravic-docs",
+      "full_name": "terravic/terravic-docs",
+      "html_url": "https://github.com/terravic/terravic-docs",
+      "description": "Developer guides, OpenAPI specifications, architecture RFCs, and deployment blueprints.",
+      "primary_language": "Markdown",
+      "topics": [
+        "rfc",
+        "guides",
+        "openapi",
+        "specifications",
+        "docs",
+        "architecture"
+      ],
+      "stars": 130,
+      "forks": 15,
+      "open_issues": 1,
+      "updated_at": "2026-08-17T13:40:00Z",
+      "created_at": "2023-02-15T15:00:00Z",
+      "default_branch": "main",
+      "is_fork": false,
+      "is_archived": false,
+      "license": "CC-BY-4.0",
+      "dependencies": [
+        "terravic-api-gateway"
+      ],
+      "tech_stack": [
+        "Docusaurus",
+        "Markdown",
+        "OpenAPI"
+      ],
+      "readme_summary": "Public and internal technical documentation portal containing API references, architecture decision records, and onboarding guides.",
+      "cluster_id": "documentation-specs",
+      "cluster_name": "Documentation & Specifications",
+      "cluster_color": "#64748B"
+    }
+  ],
+  "knowledge_graph": {
+    "nodes": [
+      {
+        "id": 101,
+        "name": "terravic-api-gateway",
+        "full_name": "terravic/terravic-api-gateway",
+        "html_url": "https://github.com/terravic/terravic-api-gateway",
+        "description": "High-performance edge reverse proxy and authentication gateway routing traffic to core microservices.",
+        "primary_language": "Go",
+        "topics": [
+          "reverse-proxy",
+          "grpc",
+          "microservices",
+          "auth",
+          "api-gateway",
+          "rate-limiting"
+        ],
+        "tech_stack": [
+          "Docker",
+          "Go",
+          "Grpc",
+          "Redis",
+          "gRPC"
+        ],
+        "stars": 482,
+        "forks": 65,
+        "open_issues": 12,
+        "cluster_id": "core-services",
+        "cluster_name": "Core Services & Backend APIs",
+        "cluster_color": "#3B82F6",
+        "in_degree": 8,
+        "out_degree": 8,
+        "total_degree": 16,
+        "centrality_score": 1.143,
+        "is_hub": true,
+        "is_bridge": true
+      },
+      {
+        "id": 102,
+        "name": "terravic-auth-service",
+        "full_name": "terravic/terravic-auth-service",
+        "html_url": "https://github.com/terravic/terravic-auth-service",
+        "description": "OAuth2 / OIDC identity provider and token management service with RBAC enforcement.",
+        "primary_language": "Go",
+        "topics": [
+          "security",
+          "oidc",
+          "rbac",
+          "oauth2",
+          "jwt",
+          "identity"
+        ],
+        "tech_stack": [
+          "Docker",
+          "Go",
+          "PostgreSQL",
+          "Redis"
+        ],
+        "stars": 315,
+        "forks": 42,
+        "open_issues": 8,
+        "cluster_id": "core-services",
+        "cluster_name": "Core Services & Backend APIs",
+        "cluster_color": "#3B82F6",
+        "in_degree": 5,
+        "out_degree": 3,
+        "total_degree": 8,
+        "centrality_score": 0.571,
+        "is_hub": true,
+        "is_bridge": true
+      },
+      {
+        "id": 103,
+        "name": "terravic-user-service",
+        "full_name": "terravic/terravic-user-service",
+        "html_url": "https://github.com/terravic/terravic-user-service",
+        "description": "User profiles, tenant management, and organization membership service.",
+        "primary_language": "Go",
+        "topics": [
+          "grpc",
+          "backend",
+          "microservice",
+          "tenancy",
+          "user-management"
+        ],
+        "tech_stack": [
+          "Docker",
+          "Go",
+          "Grpc",
+          "PostgreSQL",
+          "gRPC"
+        ],
+        "stars": 240,
+        "forks": 28,
+        "open_issues": 5,
+        "cluster_id": "core-services",
+        "cluster_name": "Core Services & Backend APIs",
+        "cluster_color": "#3B82F6",
+        "in_degree": 3,
+        "out_degree": 3,
+        "total_degree": 6,
+        "centrality_score": 0.429,
+        "is_hub": true,
+        "is_bridge": false
+      },
+      {
+        "id": 104,
+        "name": "terravic-billing-engine",
+        "full_name": "terravic/terravic-billing-engine",
+        "html_url": "https://github.com/terravic/terravic-billing-engine",
+        "description": "Subscription lifecycle, usage meter aggregation, and Stripe payment webhook processing service.",
+        "primary_language": "Python",
+        "topics": [
+          "stripe",
+          "fastapi",
+          "subscriptions",
+          "billing",
+          "payments"
+        ],
+        "tech_stack": [
+          "FastAPI",
+          "Fastapi",
+          "PostgreSQL",
+          "Python",
+          "RabbitMQ"
+        ],
+        "stars": 195,
+        "forks": 19,
+        "open_issues": 4,
+        "cluster_id": "core-services",
+        "cluster_name": "Core Services & Backend APIs",
+        "cluster_color": "#3B82F6",
+        "in_degree": 2,
+        "out_degree": 4,
+        "total_degree": 6,
+        "centrality_score": 0.429,
+        "is_hub": true,
+        "is_bridge": true
+      },
+      {
+        "id": 105,
+        "name": "terravic-web-portal",
+        "full_name": "terravic/terravic-web-portal",
+        "html_url": "https://github.com/terravic/terravic-web-portal",
+        "description": "Customer facing web portal and administration console built with Next.js and Tailwind CSS.",
+        "primary_language": "TypeScript",
+        "topics": [
+          "nextjs",
+          "react",
+          "ui",
+          "dashboard",
+          "frontend",
+          "tailwind"
+        ],
+        "tech_stack": [
+          "Next.Js",
+          "Next.js",
+          "React",
+          "Tailwind",
+          "Tailwind CSS",
+          "TypeScript"
+        ],
+        "stars": 520,
+        "forks": 84,
+        "open_issues": 19,
+        "cluster_id": "frontend-ui",
+        "cluster_name": "Frontend & User Interfaces",
+        "cluster_color": "#10B981",
+        "in_degree": 0,
+        "out_degree": 4,
+        "total_degree": 4,
+        "centrality_score": 0.286,
+        "is_hub": true,
+        "is_bridge": false
+      },
+      {
+        "id": 106,
+        "name": "terravic-design-system",
+        "full_name": "terravic/terravic-design-system",
+        "html_url": "https://github.com/terravic/terravic-design-system",
+        "description": "Reusable React component library, design tokens, and Storybook documentation.",
+        "primary_language": "TypeScript",
+        "topics": [
+          "design-system",
+          "react",
+          "ui",
+          "components",
+          "storybook"
+        ],
+        "tech_stack": [
+          "React",
+          "Storybook",
+          "TypeScript"
+        ],
+        "stars": 280,
+        "forks": 35,
+        "open_issues": 6,
+        "cluster_id": "frontend-ui",
+        "cluster_name": "Frontend & User Interfaces",
+        "cluster_color": "#10B981",
+        "in_degree": 1,
+        "out_degree": 3,
+        "total_degree": 4,
+        "centrality_score": 0.286,
+        "is_hub": true,
+        "is_bridge": false
+      },
+      {
+        "id": 107,
+        "name": "terravic-mobile-app",
+        "full_name": "terravic/terravic-mobile-app",
+        "html_url": "https://github.com/terravic/terravic-mobile-app",
+        "description": "Cross-platform mobile application for incident notifications and operational metrics.",
+        "primary_language": "TypeScript",
+        "topics": [
+          "ios",
+          "notifications",
+          "mobile",
+          "android",
+          "react-native"
+        ],
+        "tech_stack": [
+          "Expo",
+          "React",
+          "React Native",
+          "TypeScript"
+        ],
+        "stars": 160,
+        "forks": 22,
+        "open_issues": 9,
+        "cluster_id": "frontend-ui",
+        "cluster_name": "Frontend & User Interfaces",
+        "cluster_color": "#10B981",
+        "in_degree": 2,
+        "out_degree": 2,
+        "total_degree": 4,
+        "centrality_score": 0.286,
+        "is_hub": true,
+        "is_bridge": false
+      },
+      {
+        "id": 108,
+        "name": "terravic-data-pipeline",
+        "full_name": "terravic/terravic-data-pipeline",
+        "html_url": "https://github.com/terravic/terravic-data-pipeline",
+        "description": "Distributed real-time streaming pipeline and ETL workers aggregating telemetry events into data warehouse.",
+        "primary_language": "Python",
+        "topics": [
+          "analytics",
+          "stream-processing",
+          "kafka",
+          "spark",
+          "etl",
+          "data-pipeline"
+        ],
+        "tech_stack": [
+          "Apache Kafka",
+          "Apache Spark",
+          "ClickHouse",
+          "Kafka",
+          "Python",
+          "Spark"
+        ],
+        "stars": 390,
+        "forks": 51,
+        "open_issues": 11,
+        "cluster_id": "data-analytics",
+        "cluster_name": "Data Engineering & AI/ML",
+        "cluster_color": "#8B5CF6",
+        "in_degree": 3,
+        "out_degree": 1,
+        "total_degree": 4,
+        "centrality_score": 0.286,
+        "is_hub": true,
+        "is_bridge": true
+      },
+      {
+        "id": 109,
+        "name": "terravic-ai-engine",
+        "full_name": "terravic/terravic-ai-engine",
+        "html_url": "https://github.com/terravic/terravic-ai-engine",
+        "description": "LLM inference orchestrator, vector embeddings pipeline, and automated anomaly detection model.",
+        "primary_language": "Python",
+        "topics": [
+          "ml",
+          "embeddings",
+          "llm",
+          "vector-search",
+          "rag",
+          "anomaly-detection",
+          "ai"
+        ],
+        "tech_stack": [
+          "Docker",
+          "FastAPI",
+          "PyTorch",
+          "Python",
+          "Qdrant"
+        ],
+        "stars": 610,
+        "forks": 98,
+        "open_issues": 15,
+        "cluster_id": "core-services",
+        "cluster_name": "Core Services & Backend APIs",
+        "cluster_color": "#3B82F6",
+        "in_degree": 5,
+        "out_degree": 3,
+        "total_degree": 8,
+        "centrality_score": 0.571,
+        "is_hub": true,
+        "is_bridge": true
+      },
+      {
+        "id": 110,
+        "name": "terravic-js-sdk",
+        "full_name": "terravic/terravic-js-sdk",
+        "html_url": "https://github.com/terravic/terravic-js-sdk",
+        "description": "Official TypeScript and JavaScript client SDK for integrating with Terravic platform APIs.",
+        "primary_language": "TypeScript",
+        "topics": [
+          "sdk",
+          "typescript",
+          "client-library",
+          "api-client",
+          "npm"
+        ],
+        "tech_stack": [
+          "Jest",
+          "Rollup",
+          "TypeScript"
+        ],
+        "stars": 295,
+        "forks": 38,
+        "open_issues": 4,
+        "cluster_id": "developer-tooling",
+        "cluster_name": "Developer Tooling & SDKs",
+        "cluster_color": "#F59E0B",
+        "in_degree": 3,
+        "out_degree": 2,
+        "total_degree": 5,
+        "centrality_score": 0.357,
+        "is_hub": true,
+        "is_bridge": true
+      },
+      {
+        "id": 111,
+        "name": "terravic-python-sdk",
+        "full_name": "terravic/terravic-python-sdk",
+        "html_url": "https://github.com/terravic/terravic-python-sdk",
+        "description": "Python SDK and CLI client for automation scripts, data science workloads, and backend integration.",
+        "primary_language": "Python",
+        "topics": [
+          "sdk",
+          "python",
+          "cli",
+          "automation",
+          "client-library"
+        ],
+        "tech_stack": [
+          "Hatch",
+          "Pydantic",
+          "Pytest",
+          "Python"
+        ],
+        "stars": 245,
+        "forks": 30,
+        "open_issues": 3,
+        "cluster_id": "developer-tooling",
+        "cluster_name": "Developer Tooling & SDKs",
+        "cluster_color": "#F59E0B",
+        "in_degree": 5,
+        "out_degree": 2,
+        "total_degree": 7,
+        "centrality_score": 0.5,
+        "is_hub": true,
+        "is_bridge": true
+      },
+      {
+        "id": 112,
+        "name": "terravic-cli",
+        "full_name": "terravic/terravic-cli",
+        "html_url": "https://github.com/terravic/terravic-cli",
+        "description": "Developer command-line interface for provisioning environments, deploying jobs, and managing tokens.",
+        "primary_language": "Go",
+        "topics": [
+          "devops",
+          "developer-tools",
+          "cli",
+          "cobra"
+        ],
+        "tech_stack": [
+          "Cobra",
+          "Go",
+          "Viper"
+        ],
+        "stars": 180,
+        "forks": 21,
+        "open_issues": 7,
+        "cluster_id": "developer-tooling",
+        "cluster_name": "Developer Tooling & SDKs",
+        "cluster_color": "#F59E0B",
+        "in_degree": 0,
+        "out_degree": 1,
+        "total_degree": 1,
+        "centrality_score": 0.071,
+        "is_hub": false,
+        "is_bridge": false
+      },
+      {
+        "id": 113,
+        "name": "terravic-core-lib",
+        "full_name": "terravic/terravic-core-lib",
+        "html_url": "https://github.com/terravic/terravic-core-lib",
+        "description": "Shared proto definitions, middleware contracts, structured logging, and telemetry utilities.",
+        "primary_language": "Go",
+        "topics": [
+          "shared-lib",
+          "proto",
+          "grpc",
+          "logging",
+          "opentelemetry",
+          "telemetry"
+        ],
+        "tech_stack": [
+          "Go",
+          "Grpc",
+          "OpenTelemetry",
+          "Protobuf",
+          "gRPC"
+        ],
+        "stars": 340,
+        "forks": 46,
+        "open_issues": 2,
+        "cluster_id": "libraries-shared",
+        "cluster_name": "Shared Libraries & Utilities",
+        "cluster_color": "#06B6D4",
+        "in_degree": 6,
+        "out_degree": 0,
+        "total_degree": 6,
+        "centrality_score": 0.429,
+        "is_hub": true,
+        "is_bridge": true
+      },
+      {
+        "id": 114,
+        "name": "terravic-infrastructure",
+        "full_name": "terravic/terravic-infrastructure",
+        "html_url": "https://github.com/terravic/terravic-infrastructure",
+        "description": "Terraform modules, Kubernetes Helm charts, and GitOps ArgoCD manifests for cloud environments.",
+        "primary_language": "HCL",
+        "topics": [
+          "kubernetes",
+          "helm",
+          "argocd",
+          "terraform",
+          "gitops",
+          "infrastructure",
+          "devops"
+        ],
+        "tech_stack": [
+          "AWS",
+          "ArgoCD",
+          "HCL",
+          "Helm",
+          "Kubernetes",
+          "Terraform"
+        ],
+        "stars": 410,
+        "forks": 62,
+        "open_issues": 14,
+        "cluster_id": "infrastructure-devops",
+        "cluster_name": "Infrastructure & DevOps",
+        "cluster_color": "#EF4444",
+        "in_degree": 0,
+        "out_degree": 6,
+        "total_degree": 6,
+        "centrality_score": 0.429,
+        "is_hub": true,
+        "is_bridge": true
+      },
+      {
+        "id": 115,
+        "name": "terravic-docs",
+        "full_name": "terravic/terravic-docs",
+        "html_url": "https://github.com/terravic/terravic-docs",
+        "description": "Developer guides, OpenAPI specifications, architecture RFCs, and deployment blueprints.",
+        "primary_language": "Markdown",
+        "topics": [
+          "rfc",
+          "guides",
+          "openapi",
+          "specifications",
+          "docs",
+          "architecture"
+        ],
+        "tech_stack": [
+          "Docusaurus",
+          "Markdown",
+          "OpenAPI"
+        ],
+        "stars": 130,
+        "forks": 15,
+        "open_issues": 1,
+        "cluster_id": "documentation-specs",
+        "cluster_name": "Documentation & Specifications",
+        "cluster_color": "#64748B",
+        "in_degree": 0,
+        "out_degree": 1,
+        "total_degree": 1,
+        "centrality_score": 0.071,
+        "is_hub": false,
+        "is_bridge": false
+      }
+    ],
+    "edges": [
+      {
+        "source": 101,
+        "target": 113,
+        "type": "depends_on",
+        "label": "Depends on",
+        "description": "terravic-api-gateway imports and depends on terravic-core-lib.",
+        "weight": 2.5,
+        "is_cross_cluster": true,
+        "source_cluster": "core-services",
+        "target_cluster": "libraries-shared"
+      },
+      {
+        "source": 101,
+        "target": 102,
+        "type": "depends_on",
+        "label": "Depends on",
+        "description": "terravic-api-gateway imports and depends on terravic-auth-service.",
+        "weight": 2.5,
+        "is_cross_cluster": false,
+        "source_cluster": "core-services",
+        "target_cluster": "core-services"
+      },
+      {
+        "source": 101,
+        "target": 103,
+        "type": "depends_on",
+        "label": "Depends on",
+        "description": "terravic-api-gateway imports and depends on terravic-user-service.",
+        "weight": 2.5,
+        "is_cross_cluster": false,
+        "source_cluster": "core-services",
+        "target_cluster": "core-services"
+      },
+      {
+        "source": 101,
+        "target": 102,
+        "type": "routes_to",
+        "label": "Routes API to",
+        "description": "terravic-api-gateway routes API requests to terravic-auth-service.",
+        "weight": 2.0,
+        "is_cross_cluster": false,
+        "source_cluster": "core-services",
+        "target_cluster": "core-services"
+      },
+      {
+        "source": 101,
+        "target": 103,
+        "type": "routes_to",
+        "label": "Routes API to",
+        "description": "terravic-api-gateway routes API requests to terravic-user-service.",
+        "weight": 2.0,
+        "is_cross_cluster": false,
+        "source_cluster": "core-services",
+        "target_cluster": "core-services"
+      },
+      {
+        "source": 101,
+        "target": 104,
+        "type": "routes_to",
+        "label": "Routes API to",
+        "description": "terravic-api-gateway routes API requests to terravic-billing-engine.",
+        "weight": 2.0,
+        "is_cross_cluster": false,
+        "source_cluster": "core-services",
+        "target_cluster": "core-services"
+      },
+      {
+        "source": 101,
+        "target": 109,
+        "type": "routes_to",
+        "label": "Routes API to",
+        "description": "terravic-api-gateway routes API requests to terravic-ai-engine.",
+        "weight": 2.0,
+        "is_cross_cluster": false,
+        "source_cluster": "core-services",
+        "target_cluster": "core-services"
+      },
+      {
+        "source": 102,
+        "target": 113,
+        "type": "depends_on",
+        "label": "Depends on",
+        "description": "terravic-auth-service imports and depends on terravic-core-lib.",
+        "weight": 2.5,
+        "is_cross_cluster": true,
+        "source_cluster": "core-services",
+        "target_cluster": "libraries-shared"
+      },
+      {
+        "source": 103,
+        "target": 113,
+        "type": "depends_on",
+        "label": "Depends on",
+        "description": "terravic-user-service imports and depends on terravic-core-lib.",
+        "weight": 2.5,
+        "is_cross_cluster": true,
+        "source_cluster": "core-services",
+        "target_cluster": "libraries-shared"
+      },
+      {
+        "source": 103,
+        "target": 102,
+        "type": "depends_on",
+        "label": "Depends on",
+        "description": "terravic-user-service imports and depends on terravic-auth-service.",
+        "weight": 2.5,
+        "is_cross_cluster": false,
+        "source_cluster": "core-services",
+        "target_cluster": "core-services"
+      },
+      {
+        "source": 104,
+        "target": 103,
+        "type": "depends_on",
+        "label": "Depends on",
+        "description": "terravic-billing-engine imports and depends on terravic-user-service.",
+        "weight": 2.5,
+        "is_cross_cluster": false,
+        "source_cluster": "core-services",
+        "target_cluster": "core-services"
+      },
+      {
+        "source": 104,
+        "target": 111,
+        "type": "depends_on",
+        "label": "Depends on",
+        "description": "terravic-billing-engine imports and depends on terravic-python-sdk.",
+        "weight": 2.5,
+        "is_cross_cluster": true,
+        "source_cluster": "core-services",
+        "target_cluster": "developer-tooling"
+      },
+      {
+        "source": 105,
+        "target": 110,
+        "type": "depends_on",
+        "label": "Depends on",
+        "description": "terravic-web-portal imports and depends on terravic-js-sdk.",
+        "weight": 2.5,
+        "is_cross_cluster": true,
+        "source_cluster": "frontend-ui",
+        "target_cluster": "developer-tooling"
+      },
+      {
+        "source": 105,
+        "target": 106,
+        "type": "depends_on",
+        "label": "Depends on",
+        "description": "terravic-web-portal imports and depends on terravic-design-system.",
+        "weight": 2.5,
+        "is_cross_cluster": false,
+        "source_cluster": "frontend-ui",
+        "target_cluster": "frontend-ui"
+      },
+      {
+        "source": 105,
+        "target": 111,
+        "type": "depends_on",
+        "label": "Consumes SDK",
+        "description": "terravic-web-portal uses terravic-python-sdk for API integration.",
+        "weight": 2.0,
+        "is_cross_cluster": true,
+        "source_cluster": "frontend-ui",
+        "target_cluster": "developer-tooling"
+      },
+      {
+        "source": 106,
+        "target": 110,
+        "type": "depends_on",
+        "label": "Consumes SDK",
+        "description": "terravic-design-system uses terravic-js-sdk for API integration.",
+        "weight": 2.0,
+        "is_cross_cluster": true,
+        "source_cluster": "frontend-ui",
+        "target_cluster": "developer-tooling"
+      },
+      {
+        "source": 106,
+        "target": 111,
+        "type": "depends_on",
+        "label": "Consumes SDK",
+        "description": "terravic-design-system uses terravic-python-sdk for API integration.",
+        "weight": 2.0,
+        "is_cross_cluster": true,
+        "source_cluster": "frontend-ui",
+        "target_cluster": "developer-tooling"
+      },
+      {
+        "source": 107,
+        "target": 110,
+        "type": "depends_on",
+        "label": "Depends on",
+        "description": "terravic-mobile-app imports and depends on terravic-js-sdk.",
+        "weight": 2.5,
+        "is_cross_cluster": true,
+        "source_cluster": "frontend-ui",
+        "target_cluster": "developer-tooling"
+      },
+      {
+        "source": 107,
+        "target": 111,
+        "type": "depends_on",
+        "label": "Consumes SDK",
+        "description": "terravic-mobile-app uses terravic-python-sdk for API integration.",
+        "weight": 2.0,
+        "is_cross_cluster": true,
+        "source_cluster": "frontend-ui",
+        "target_cluster": "developer-tooling"
+      },
+      {
+        "source": 108,
+        "target": 113,
+        "type": "depends_on",
+        "label": "Depends on",
+        "description": "terravic-data-pipeline imports and depends on terravic-core-lib.",
+        "weight": 2.5,
+        "is_cross_cluster": true,
+        "source_cluster": "data-analytics",
+        "target_cluster": "libraries-shared"
+      },
+      {
+        "source": 109,
+        "target": 108,
+        "type": "depends_on",
+        "label": "Depends on",
+        "description": "terravic-ai-engine imports and depends on terravic-data-pipeline.",
+        "weight": 2.5,
+        "is_cross_cluster": true,
+        "source_cluster": "core-services",
+        "target_cluster": "data-analytics"
+      },
+      {
+        "source": 109,
+        "target": 111,
+        "type": "depends_on",
+        "label": "Depends on",
+        "description": "terravic-ai-engine imports and depends on terravic-python-sdk.",
+        "weight": 2.5,
+        "is_cross_cluster": true,
+        "source_cluster": "core-services",
+        "target_cluster": "developer-tooling"
+      },
+      {
+        "source": 110,
+        "target": 101,
+        "type": "depends_on",
+        "label": "Depends on",
+        "description": "terravic-js-sdk imports and depends on terravic-api-gateway.",
+        "weight": 2.5,
+        "is_cross_cluster": true,
+        "source_cluster": "developer-tooling",
+        "target_cluster": "core-services"
+      },
+      {
+        "source": 110,
+        "target": 101,
+        "type": "interfaces_with",
+        "label": "Client SDK for",
+        "description": "terravic-js-sdk provides client bindings for terravic-api-gateway.",
+        "weight": 1.8,
+        "is_cross_cluster": true,
+        "source_cluster": "developer-tooling",
+        "target_cluster": "core-services"
+      },
+      {
+        "source": 111,
+        "target": 101,
+        "type": "depends_on",
+        "label": "Depends on",
+        "description": "terravic-python-sdk imports and depends on terravic-api-gateway.",
+        "weight": 2.5,
+        "is_cross_cluster": true,
+        "source_cluster": "developer-tooling",
+        "target_cluster": "core-services"
+      },
+      {
+        "source": 111,
+        "target": 101,
+        "type": "interfaces_with",
+        "label": "Client SDK for",
+        "description": "terravic-python-sdk provides client bindings for terravic-api-gateway.",
+        "weight": 1.8,
+        "is_cross_cluster": true,
+        "source_cluster": "developer-tooling",
+        "target_cluster": "core-services"
+      },
+      {
+        "source": 112,
+        "target": 101,
+        "type": "depends_on",
+        "label": "Depends on",
+        "description": "terravic-cli imports and depends on terravic-api-gateway.",
+        "weight": 2.5,
+        "is_cross_cluster": true,
+        "source_cluster": "developer-tooling",
+        "target_cluster": "core-services"
+      },
+      {
+        "source": 104,
+        "target": 113,
+        "type": "depends_on",
+        "label": "Uses Shared Lib",
+        "description": "terravic-billing-engine leverages common utilities from terravic-core-lib.",
+        "weight": 1.5,
+        "is_cross_cluster": true,
+        "source_cluster": "core-services",
+        "target_cluster": "libraries-shared"
+      },
+      {
+        "source": 109,
+        "target": 113,
+        "type": "depends_on",
+        "label": "Uses Shared Lib",
+        "description": "terravic-ai-engine leverages common utilities from terravic-core-lib.",
+        "weight": 1.5,
+        "is_cross_cluster": true,
+        "source_cluster": "core-services",
+        "target_cluster": "libraries-shared"
+      },
+      {
+        "source": 114,
+        "target": 101,
+        "type": "depends_on",
+        "label": "Depends on",
+        "description": "terravic-infrastructure imports and depends on terravic-api-gateway.",
+        "weight": 2.5,
+        "is_cross_cluster": true,
+        "source_cluster": "infrastructure-devops",
+        "target_cluster": "core-services"
+      },
+      {
+        "source": 114,
+        "target": 102,
+        "type": "depends_on",
+        "label": "Depends on",
+        "description": "terravic-infrastructure imports and depends on terravic-auth-service.",
+        "weight": 2.5,
+        "is_cross_cluster": true,
+        "source_cluster": "infrastructure-devops",
+        "target_cluster": "core-services"
+      },
+      {
+        "source": 114,
+        "target": 108,
+        "type": "depends_on",
+        "label": "Depends on",
+        "description": "terravic-infrastructure imports and depends on terravic-data-pipeline.",
+        "weight": 2.5,
+        "is_cross_cluster": true,
+        "source_cluster": "infrastructure-devops",
+        "target_cluster": "data-analytics"
+      },
+      {
+        "source": 114,
+        "target": 101,
+        "type": "provisions",
+        "label": "Provisions & Deploys",
+        "description": "terravic-infrastructure manages infrastructure and deployment for terravic-api-gateway.",
+        "weight": 1.2,
+        "is_cross_cluster": true,
+        "source_cluster": "infrastructure-devops",
+        "target_cluster": "core-services"
+      },
+      {
+        "source": 114,
+        "target": 102,
+        "type": "provisions",
+        "label": "Provisions & Deploys",
+        "description": "terravic-infrastructure manages infrastructure and deployment for terravic-auth-service.",
+        "weight": 1.2,
+        "is_cross_cluster": true,
+        "source_cluster": "infrastructure-devops",
+        "target_cluster": "core-services"
+      },
+      {
+        "source": 114,
+        "target": 108,
+        "type": "provisions",
+        "label": "Provisions & Deploys",
+        "description": "terravic-infrastructure manages infrastructure and deployment for terravic-data-pipeline.",
+        "weight": 1.2,
+        "is_cross_cluster": true,
+        "source_cluster": "infrastructure-devops",
+        "target_cluster": "data-analytics"
+      },
+      {
+        "source": 115,
+        "target": 101,
+        "type": "depends_on",
+        "label": "Depends on",
+        "description": "terravic-docs imports and depends on terravic-api-gateway.",
+        "weight": 2.5,
+        "is_cross_cluster": true,
+        "source_cluster": "documentation-specs",
+        "target_cluster": "core-services"
+      },
+      {
+        "source": 101,
+        "target": 109,
+        "type": "shares_tech",
+        "label": "Shared Tech (docker)",
+        "description": "terravic-api-gateway and terravic-ai-engine both utilize docker.",
+        "weight": 1.0,
+        "is_cross_cluster": false,
+        "source_cluster": "core-services",
+        "target_cluster": "core-services"
+      },
+      {
+        "source": 102,
+        "target": 104,
+        "type": "shares_tech",
+        "label": "Shared Tech (postgresql)",
+        "description": "terravic-auth-service and terravic-billing-engine both utilize postgresql.",
+        "weight": 1.0,
+        "is_cross_cluster": false,
+        "source_cluster": "core-services",
+        "target_cluster": "core-services"
+      },
+      {
+        "source": 102,
+        "target": 109,
+        "type": "shares_tech",
+        "label": "Shared Tech (docker)",
+        "description": "terravic-auth-service and terravic-ai-engine both utilize docker.",
+        "weight": 1.0,
+        "is_cross_cluster": false,
+        "source_cluster": "core-services",
+        "target_cluster": "core-services"
+      },
+      {
+        "source": 103,
+        "target": 109,
+        "type": "shares_tech",
+        "label": "Shared Tech (docker)",
+        "description": "terravic-user-service and terravic-ai-engine both utilize docker.",
+        "weight": 1.0,
+        "is_cross_cluster": false,
+        "source_cluster": "core-services",
+        "target_cluster": "core-services"
+      },
+      {
+        "source": 104,
+        "target": 109,
+        "type": "shares_tech",
+        "label": "Shared Tech (fastapi)",
+        "description": "terravic-billing-engine and terravic-ai-engine both utilize fastapi.",
+        "weight": 1.0,
+        "is_cross_cluster": false,
+        "source_cluster": "core-services",
+        "target_cluster": "core-services"
+      },
+      {
+        "source": 105,
+        "target": 107,
+        "type": "shares_tech",
+        "label": "Shared Tech (react)",
+        "description": "terravic-web-portal and terravic-mobile-app both utilize react.",
+        "weight": 1.0,
+        "is_cross_cluster": false,
+        "source_cluster": "frontend-ui",
+        "target_cluster": "frontend-ui"
+      },
+      {
+        "source": 106,
+        "target": 107,
+        "type": "shares_tech",
+        "label": "Shared Tech (react)",
+        "description": "terravic-design-system and terravic-mobile-app both utilize react.",
+        "weight": 1.0,
+        "is_cross_cluster": false,
+        "source_cluster": "frontend-ui",
+        "target_cluster": "frontend-ui"
+      }
+    ],
+    "cluster_connectivity_matrix": {
+      "core-services": {
+        "core-services": 13,
+        "frontend-ui": 0,
+        "developer-tooling": 2,
+        "data-analytics": 1,
+        "infrastructure-devops": 0,
+        "libraries-shared": 5,
+        "documentation-specs": 0
+      },
+      "frontend-ui": {
+        "core-services": 0,
+        "frontend-ui": 3,
+        "developer-tooling": 6,
+        "data-analytics": 0,
+        "infrastructure-devops": 0,
+        "libraries-shared": 0,
+        "documentation-specs": 0
+      },
+      "developer-tooling": {
+        "core-services": 5,
+        "frontend-ui": 0,
+        "developer-tooling": 0,
+        "data-analytics": 0,
+        "infrastructure-devops": 0,
+        "libraries-shared": 0,
+        "documentation-specs": 0
+      },
+      "data-analytics": {
+        "core-services": 0,
+        "frontend-ui": 0,
+        "developer-tooling": 0,
+        "data-analytics": 0,
+        "infrastructure-devops": 0,
+        "libraries-shared": 1,
+        "documentation-specs": 0
+      },
+      "infrastructure-devops": {
+        "core-services": 4,
+        "frontend-ui": 0,
+        "developer-tooling": 0,
+        "data-analytics": 2,
+        "infrastructure-devops": 0,
+        "libraries-shared": 0,
+        "documentation-specs": 0
+      },
+      "libraries-shared": {
+        "core-services": 0,
+        "frontend-ui": 0,
+        "developer-tooling": 0,
+        "data-analytics": 0,
+        "infrastructure-devops": 0,
+        "libraries-shared": 0,
+        "documentation-specs": 0
+      },
+      "documentation-specs": {
+        "core-services": 1,
+        "frontend-ui": 0,
+        "developer-tooling": 0,
+        "data-analytics": 0,
+        "infrastructure-devops": 0,
+        "libraries-shared": 0,
+        "documentation-specs": 0
+      }
+    }
+  }
+}

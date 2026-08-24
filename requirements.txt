@@ -1,0 +1,4 @@
+# github-repo-kb runs with standard Python library (Python 3.8+).
+# No external dependencies are required for core execution.
+# Optional test or formatting dependencies:
+# pytest>=7.0.0
