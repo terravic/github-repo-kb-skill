@@ -9,31 +9,43 @@
   },
   "clustering_rules": [
     {
+      "pattern": ".*-patient|.*-ehr|.*-telehealth|.*-medical|.*-clinical",
+      "cluster_id": "medical-healthcare"
+    },
+    {
+      "pattern": ".*-genomics|.*-bio.*|.*-trials|.*-dna",
+      "cluster_id": "life-sciences-bio"
+    },
+    {
+      "pattern": ".*-billing|.*-payment|.*-invoice|.*-stripe",
+      "cluster_id": "finance-billing"
+    },
+    {
+      "pattern": ".*-auth|.*-identity|.*-security|.*-sso",
+      "cluster_id": "security-identity"
+    },
+    {
+      "pattern": ".*-ai-.*|.*-pipeline|.*-analytics|.*-data",
+      "cluster_id": "data-ai-analytics"
+    },
+    {
       "pattern": ".*-sdk|.*-client|.*-cli",
       "cluster_id": "developer-tooling"
     },
     {
-      "pattern": ".*-gateway|.*-auth|.*-service|.*-engine",
-      "cluster_id": "core-services"
-    },
-    {
-      "pattern": ".*-portal|.*-app|.*-ui|.*-design",
-      "cluster_id": "frontend-ui"
-    },
-    {
-      "pattern": ".*-pipeline|.*-ai-.*|.*-analytics",
-      "cluster_id": "data-analytics"
-    },
-    {
-      "pattern": ".*-infra|.*-infrastructure",
+      "pattern": ".*-infra|.*-infrastructure|.*-cloud",
       "cluster_id": "infrastructure-devops"
     },
     {
-      "pattern": ".*-core-lib|.*-common|.*-utils",
-      "cluster_id": "libraries-shared"
+      "pattern": ".*-gateway|.*-user-service|.*-notification",
+      "cluster_id": "core-platform"
     },
     {
-      "pattern": ".*-docs|.*-specs",
+      "pattern": ".*-common|.*-utils|.*-core-lib",
+      "cluster_id": "utilities-libraries"
+    },
+    {
+      "pattern": ".*-docs|.*-specs|.*-architecture",
       "cluster_id": "documentation-specs"
     }
   ],

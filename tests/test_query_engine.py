@@ -12,6 +12,20 @@ class TestRepositoryQueryEngine(unittest.TestCase):
         )
         self.engine = RepositoryQueryEngine(kb_path=fixture_path)
 
+    def test_medical_query(self):
+        res = self.engine.query("Clinical patient electronic health records and FHIR")
+        self.assertTrue(res["matched"])
+        self.assertIsNotNone(res["best_match"])
+        self.assertEqual(res["best_match"]["name"], "terravic-patient-records")
+        self.assertEqual(res["best_match"]["cluster_name"], "Medical & Healthcare")
+
+    def test_genomics_query(self):
+        res = self.engine.query("Bioinformatics DNA and RNA sequencing variant analysis")
+        self.assertTrue(res["matched"])
+        self.assertIsNotNone(res["best_match"])
+        self.assertEqual(res["best_match"]["name"], "terravic-genomics-pipeline")
+        self.assertEqual(res["best_match"]["cluster_name"], "Life Sciences & Bioinformatics")
+
     def test_exact_technology_query(self):
         res = self.engine.query("Python client SDK for platform API")
         self.assertTrue(res["matched"])
@@ -25,10 +39,10 @@ class TestRepositoryQueryEngine(unittest.TestCase):
         self.assertIsNotNone(res["best_match"])
         self.assertEqual(res["best_match"]["name"], "terravic-auth-service")
 
-    def test_frontend_query(self):
-        res = self.engine.query("Next.js web portal dashboard")
+    def test_telehealth_portal_query(self):
+        res = self.engine.query("Next.js telehealth web portal and physician appointments")
         self.assertTrue(res["matched"])
-        self.assertEqual(res["best_match"]["name"], "terravic-web-portal")
+        self.assertEqual(res["best_match"]["name"], "terravic-telehealth-portal")
 
     def test_non_matching_query(self):
         res = self.engine.query("Blockchain cryptocurrency mining smart contract engine")

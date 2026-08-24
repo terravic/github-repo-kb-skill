@@ -1,211 +1,231 @@
 # Knowledge Base: terravic
 
-Generated on 2026-08-24 19:30:06 UTC for target `https://github.com/terravic`.
+Generated on 2026-08-24 20:23:27 UTC for target `https://github.com/terravic`.
 
 ## Executive Summary
 
 | Metric | Value |
 |---|---|
 | Target Address | https://github.com/terravic |
-| Total Repositories | 15 |
-| Functional Clusters | 7 |
-| Architecture Graph Nodes | 15 |
-| Graph Edges (Relationships) | 43 |
-| Cross-Cluster Connections | 27 |
-| Intra-Cluster Connections | 16 |
+| Total Repositories | 16 |
+| Functional Clusters | 10 |
+| Architecture Graph Nodes | 16 |
+| Graph Edges (Relationships) | 38 |
+| Cross-Cluster Connections | 33 |
+| Intra-Cluster Connections | 5 |
 
-**Key Architectural Hubs**: `terravic-api-gateway`, `terravic-auth-service`, `terravic-user-service`, `terravic-billing-engine`, `terravic-web-portal`, `terravic-design-system`, `terravic-mobile-app`, `terravic-data-pipeline`, `terravic-ai-engine`, `terravic-js-sdk`, `terravic-python-sdk`, `terravic-core-lib`, `terravic-infrastructure`
+**Key Architectural Hubs**: `terravic-api-gateway`, `terravic-auth-service`, `terravic-patient-records`, `terravic-clinical-trials`, `terravic-billing-engine`, `terravic-ai-engine`, `terravic-data-pipeline`, `terravic-user-service`, `terravic-notification-service`, `terravic-infrastructure`, `terravic-common-lib`
 
-**Cross-Domain Bridge Repositories**: `terravic-api-gateway`, `terravic-auth-service`, `terravic-billing-engine`, `terravic-data-pipeline`, `terravic-ai-engine`, `terravic-js-sdk`, `terravic-python-sdk`, `terravic-core-lib`, `terravic-infrastructure`
+**Cross-Domain Bridge Repositories**: `terravic-api-gateway`, `terravic-auth-service`, `terravic-patient-records`, `terravic-genomics-pipeline`, `terravic-clinical-trials`, `terravic-billing-engine`, `terravic-ai-engine`, `terravic-data-pipeline`, `terravic-user-service`, `terravic-notification-service`, `terravic-js-sdk`, `terravic-infrastructure`, `terravic-common-lib`
 
 ## Domain Clusters
 
 Repositories are categorized into the following functional domains based on code analysis, topic taxonomy, and dependencies:
 
-### Core Services & Backend APIs
+### Core Platform & Business Services
 
-**Description**: Foundational backend services, microservices, gRPC/REST APIs, authentication, and core business engines.
-
-- Repositories: 5
-- Aggregate Stars: 1842
-- Primary Languages: Go, Python
-- Key Technologies: Docker, FastAPI, Fastapi, Go, Grpc, PostgreSQL, PyTorch, Python, Qdrant, RabbitMQ, Redis, gRPC
-
-| Repository | Language | Stars | Description |
-|---|---|---|---|
-| [terravic-api-gateway](https://github.com/terravic/terravic-api-gateway) | Go | 482 | High-performance edge reverse proxy and authentication gateway routing traffic to core microservices. |
-| [terravic-auth-service](https://github.com/terravic/terravic-auth-service) | Go | 315 | OAuth2 / OIDC identity provider and token management service with RBAC enforcement. |
-| [terravic-user-service](https://github.com/terravic/terravic-user-service) | Go | 240 | User profiles, tenant management, and organization membership service. |
-| [terravic-billing-engine](https://github.com/terravic/terravic-billing-engine) | Python | 195 | Subscription lifecycle, usage meter aggregation, and Stripe payment webhook processing service. |
-| [terravic-ai-engine](https://github.com/terravic/terravic-ai-engine) | Python | 610 | LLM inference orchestrator, vector embeddings pipeline, and automated anomaly detection model. |
-
-### Frontend & User Interfaces
-
-**Description**: Client applications, web portals, dashboards, mobile apps, and interactive UI component design systems.
+**Description**: Core routing gateways, user management, organization tenancy, notification dispatchers, and foundational backend domain engines.
 
 - Repositories: 3
-- Aggregate Stars: 960
-- Primary Languages: TypeScript
-- Key Technologies: Expo, Next.Js, Next.js, React, React Native, Storybook, Tailwind, Tailwind CSS, TypeScript
+- Aggregate Stars: 947
+- Primary Languages: Other
+- Key Technologies: None
 
 | Repository | Language | Stars | Description |
 |---|---|---|---|
-| [terravic-web-portal](https://github.com/terravic/terravic-web-portal) | TypeScript | 520 | Customer facing web portal and administration console built with Next.js and Tailwind CSS. |
-| [terravic-design-system](https://github.com/terravic/terravic-design-system) | TypeScript | 280 | Reusable React component library, design tokens, and Storybook documentation. |
-| [terravic-mobile-app](https://github.com/terravic/terravic-mobile-app) | TypeScript | 160 | Cross-platform mobile application for incident notifications and operational metrics. |
+| [terravic-api-gateway](https://github.com/terravic/terravic-api-gateway) | Other | 482 | High-performance edge reverse proxy and authentication gateway routing traffic to core microservices. |
+| [terravic-user-service](https://github.com/terravic/terravic-user-service) | Other | 275 | User profiles, tenant management, and organization membership service. |
+| [terravic-notification-service](https://github.com/terravic/terravic-notification-service) | Other | 190 | Multi-channel notification dispatcher for transactional email, SMS, and webhook alerts. |
+
+### Medical & Healthcare
+
+**Description**: Clinical workflows, electronic health records (EHR/EMR), patient portals, FHIR/HL7 interoperability, medical imaging (DICOM), and telehealth systems.
+
+- Repositories: 3
+- Aggregate Stars: 865
+- Primary Languages: Other
+- Key Technologies: None
+
+| Repository | Language | Stars | Description |
+|---|---|---|---|
+| [terravic-patient-records](https://github.com/terravic/terravic-patient-records) | Other | 340 | Electronic health record (EHR/EMR) service with HL7 FHIR interoperability, clinical notes, and HIPAA compliant patient store. |
+| [terravic-telehealth-portal](https://github.com/terravic/terravic-telehealth-portal) | Other | 295 | Clinical patient and physician portal for telemedicine appointments, medical charts, and telehealth video consultations. |
+| [terravic-clinical-trials](https://github.com/terravic/terravic-clinical-trials) | Other | 230 | Life sciences research platform for managing clinical trials, participant cohorts, biomarker datasets, and bio-specimens. |
+
+### Data Intelligence & AI/ML
+
+**Description**: Machine learning models, inference engines, vector search, streaming data pipelines, ETL workflows, and business intelligence analytics.
+
+- Repositories: 2
+- Aggregate Stars: 1264
+- Primary Languages: Other
+- Key Technologies: None
+
+| Repository | Language | Stars | Description |
+|---|---|---|---|
+| [terravic-ai-engine](https://github.com/terravic/terravic-ai-engine) | Other | 845 | LLM inference orchestrator, vector embeddings pipeline, and automated anomaly detection model. |
+| [terravic-data-pipeline](https://github.com/terravic/terravic-data-pipeline) | Other | 419 | Distributed real-time streaming pipeline and ETL workers aggregating telemetry events into data warehouse. |
 
 ### Developer Tooling & SDKs
 
-**Description**: Client SDKs, CLI utilities, code generators, testing harnesses, linters, plugins, and agent skills.
+**Description**: Client SDKs, CLI command-line tools, API wrappers, code generators, testing harnesses, and developer plugins.
 
-- Repositories: 3
-- Aggregate Stars: 720
-- Primary Languages: TypeScript, Python, Go
-- Key Technologies: Cobra, Go, Hatch, Jest, Pydantic, Pytest, Python, Rollup, TypeScript, Viper
+- Repositories: 2
+- Aggregate Stars: 785
+- Primary Languages: Other
+- Key Technologies: None
 
 | Repository | Language | Stars | Description |
 |---|---|---|---|
-| [terravic-js-sdk](https://github.com/terravic/terravic-js-sdk) | TypeScript | 295 | Official TypeScript and JavaScript client SDK for integrating with Terravic platform APIs. |
-| [terravic-python-sdk](https://github.com/terravic/terravic-python-sdk) | Python | 245 | Python SDK and CLI client for automation scripts, data science workloads, and backend integration. |
-| [terravic-cli](https://github.com/terravic/terravic-cli) | Go | 180 | Developer command-line interface for provisioning environments, deploying jobs, and managing tokens. |
+| [terravic-python-sdk](https://github.com/terravic/terravic-python-sdk) | Other | 365 | Python SDK and CLI client for automation scripts, data science workloads, and backend integration. |
+| [terravic-js-sdk](https://github.com/terravic/terravic-js-sdk) | Other | 420 | Official TypeScript and JavaScript client SDK for integrating with Terravic platform APIs. |
 
-### Data Engineering & AI/ML
+### Security, Identity & Access
 
-**Description**: Data pipelines, ETL workflows, stream processing, machine learning models, and analytics infrastructure.
+**Description**: Authentication, OAuth2/OIDC identity providers, access management (RBAC/ABAC), cryptographic services, token management, and security compliance.
 
 - Repositories: 1
-- Aggregate Stars: 390
-- Primary Languages: Python
-- Key Technologies: Apache Kafka, Apache Spark, ClickHouse, Kafka, Python, Spark
+- Aggregate Stars: 612
+- Primary Languages: Other
+- Key Technologies: None
 
 | Repository | Language | Stars | Description |
 |---|---|---|---|
-| [terravic-data-pipeline](https://github.com/terravic/terravic-data-pipeline) | Python | 390 | Distributed real-time streaming pipeline and ETL workers aggregating telemetry events into data warehouse. |
+| [terravic-auth-service](https://github.com/terravic/terravic-auth-service) | Other | 612 | OAuth2 / OIDC identity provider, JWT token manager, and role-based access control (RBAC) security enforcement service. |
 
-### Infrastructure & DevOps
+### Life Sciences & Bioinformatics
 
-**Description**: Cloud infrastructure as code, Kubernetes deployment manifests, CI/CD pipelines, Docker, and monitoring.
+**Description**: Genomics analysis, DNA/RNA sequencing pipelines, molecular biology, clinical trials, proteomics, and biotechnology research.
 
 - Repositories: 1
-- Aggregate Stars: 410
-- Primary Languages: HCL
-- Key Technologies: AWS, ArgoCD, HCL, Helm, Kubernetes, Terraform
+- Aggregate Stars: 510
+- Primary Languages: Other
+- Key Technologies: None
 
 | Repository | Language | Stars | Description |
 |---|---|---|---|
-| [terravic-infrastructure](https://github.com/terravic/terravic-infrastructure) | HCL | 410 | Terraform modules, Kubernetes Helm charts, and GitOps ArgoCD manifests for cloud environments. |
+| [terravic-genomics-pipeline](https://github.com/terravic/terravic-genomics-pipeline) | Other | 510 | High-throughput bioinformatics pipeline for DNA/RNA sequencing variant analysis and molecular genetics assays. |
 
-### Shared Libraries & Utilities
+### Finance, Billing & Commerce
 
-**Description**: Common utilities, protocol definitions, shared data contracts, helper packages, and cross-cutting libraries.
+**Description**: Payment processing, subscription billing, invoicing, banking integrations, accounting ledgers, and e-commerce checkout systems.
 
 - Repositories: 1
-- Aggregate Stars: 340
-- Primary Languages: Go
-- Key Technologies: Go, Grpc, OpenTelemetry, Protobuf, gRPC
+- Aggregate Stars: 328
+- Primary Languages: Other
+- Key Technologies: None
 
 | Repository | Language | Stars | Description |
 |---|---|---|---|
-| [terravic-core-lib](https://github.com/terravic/terravic-core-lib) | Go | 340 | Shared proto definitions, middleware contracts, structured logging, and telemetry utilities. |
+| [terravic-billing-engine](https://github.com/terravic/terravic-billing-engine) | Other | 328 | Subscription lifecycle, usage meter aggregation, invoice generation, and Stripe payment webhook processing service. |
+
+### Infrastructure & Cloud Operations
+
+**Description**: Cloud infrastructure as code, Terraform configs, Kubernetes manifests, CI/CD automation, Docker containers, and operational monitoring.
+
+- Repositories: 1
+- Aggregate Stars: 560
+- Primary Languages: Other
+- Key Technologies: None
+
+| Repository | Language | Stars | Description |
+|---|---|---|---|
+| [terravic-infrastructure](https://github.com/terravic/terravic-infrastructure) | Other | 560 | Terraform modules, Kubernetes Helm charts, and CI/CD pipelines deploying the entire platform to multi-region cloud. |
+
+### Utilities & Shared Libraries
+
+**Description**: Cross-cutting shared utilities, protocol buffers, common data schemas, serialization helpers, and shared base contracts.
+
+- Repositories: 1
+- Aggregate Stars: 310
+- Primary Languages: Other
+- Key Technologies: None
+
+| Repository | Language | Stars | Description |
+|---|---|---|---|
+| [terravic-common-lib](https://github.com/terravic/terravic-common-lib) | Other | 310 | Shared Go and Python utilities, protocol buffer contracts, structured logging, and database helpers. |
 
 ### Documentation & Specifications
 
-**Description**: Architectural blueprints, technical documentation, API specifications, guides, and project roadmaps.
+**Description**: Architectural blueprints, technical guides, OpenAPI specifications, RFC standards, and research documentation.
 
 - Repositories: 1
-- Aggregate Stars: 130
-- Primary Languages: Markdown
-- Key Technologies: Docusaurus, Markdown, OpenAPI
+- Aggregate Stars: 180
+- Primary Languages: Other
+- Key Technologies: None
 
 | Repository | Language | Stars | Description |
 |---|---|---|---|
-| [terravic-docs](https://github.com/terravic/terravic-docs) | Markdown | 130 | Developer guides, OpenAPI specifications, architecture RFCs, and deployment blueprints. |
+| [terravic-architecture-docs](https://github.com/terravic/terravic-architecture-docs) | Other | 180 | System architecture blueprints, technical RFCs, security whitepapers, and developer documentation. |
 
 ## Knowledge Graph Relationships
 
 The knowledge graph models direct dependencies, API integrations, client SDK usage, and shared technology stacks:
 
-### Depends On (27 relationships)
+### Depends On (24 relationships)
 
 | Source Repository | Target Repository | Scope | Description |
 |---|---|---|---|
-| `terravic-api-gateway` | `terravic-core-lib` | Cross-Cluster | terravic-api-gateway imports and depends on terravic-core-lib. |
-| `terravic-api-gateway` | `terravic-auth-service` | Intra-Cluster | terravic-api-gateway imports and depends on terravic-auth-service. |
-| `terravic-api-gateway` | `terravic-user-service` | Intra-Cluster | terravic-api-gateway imports and depends on terravic-user-service. |
-| `terravic-auth-service` | `terravic-core-lib` | Cross-Cluster | terravic-auth-service imports and depends on terravic-core-lib. |
-| `terravic-user-service` | `terravic-core-lib` | Cross-Cluster | terravic-user-service imports and depends on terravic-core-lib. |
-| `terravic-user-service` | `terravic-auth-service` | Intra-Cluster | terravic-user-service imports and depends on terravic-auth-service. |
-| `terravic-billing-engine` | `terravic-user-service` | Intra-Cluster | terravic-billing-engine imports and depends on terravic-user-service. |
-| `terravic-billing-engine` | `terravic-python-sdk` | Cross-Cluster | terravic-billing-engine imports and depends on terravic-python-sdk. |
-| `terravic-web-portal` | `terravic-js-sdk` | Cross-Cluster | terravic-web-portal imports and depends on terravic-js-sdk. |
-| `terravic-web-portal` | `terravic-design-system` | Intra-Cluster | terravic-web-portal imports and depends on terravic-design-system. |
-| `terravic-web-portal` | `terravic-python-sdk` | Cross-Cluster | terravic-web-portal uses terravic-python-sdk for API integration. |
-| `terravic-design-system` | `terravic-js-sdk` | Cross-Cluster | terravic-design-system uses terravic-js-sdk for API integration. |
-| `terravic-design-system` | `terravic-python-sdk` | Cross-Cluster | terravic-design-system uses terravic-python-sdk for API integration. |
-| `terravic-mobile-app` | `terravic-js-sdk` | Cross-Cluster | terravic-mobile-app imports and depends on terravic-js-sdk. |
-| `terravic-mobile-app` | `terravic-python-sdk` | Cross-Cluster | terravic-mobile-app uses terravic-python-sdk for API integration. |
-| `terravic-data-pipeline` | `terravic-core-lib` | Cross-Cluster | terravic-data-pipeline imports and depends on terravic-core-lib. |
-| `terravic-ai-engine` | `terravic-data-pipeline` | Cross-Cluster | terravic-ai-engine imports and depends on terravic-data-pipeline. |
-| `terravic-ai-engine` | `terravic-python-sdk` | Cross-Cluster | terravic-ai-engine imports and depends on terravic-python-sdk. |
-| `terravic-js-sdk` | `terravic-api-gateway` | Cross-Cluster | terravic-js-sdk imports and depends on terravic-api-gateway. |
+| `terravic-api-gateway` | `terravic-common-lib` | Cross-Cluster | terravic-api-gateway imports and depends on terravic-common-lib. |
+| `terravic-api-gateway` | `terravic-auth-service` | Cross-Cluster | terravic-api-gateway imports and depends on terravic-auth-service. |
+| `terravic-auth-service` | `terravic-common-lib` | Cross-Cluster | terravic-auth-service imports and depends on terravic-common-lib. |
+| `terravic-patient-records` | `terravic-auth-service` | Cross-Cluster | terravic-patient-records imports and depends on terravic-auth-service. |
+| `terravic-patient-records` | `terravic-common-lib` | Cross-Cluster | terravic-patient-records imports and depends on terravic-common-lib. |
+| `terravic-telehealth-portal` | `terravic-js-sdk` | Cross-Cluster | terravic-telehealth-portal imports and depends on terravic-js-sdk. |
+| `terravic-telehealth-portal` | `terravic-patient-records` | Intra-Cluster | terravic-telehealth-portal imports and depends on terravic-patient-records. |
+| `terravic-genomics-pipeline` | `terravic-common-lib` | Cross-Cluster | terravic-genomics-pipeline imports and depends on terravic-common-lib. |
+| `terravic-genomics-pipeline` | `terravic-data-pipeline` | Cross-Cluster | terravic-genomics-pipeline imports and depends on terravic-data-pipeline. |
+| `terravic-clinical-trials` | `terravic-auth-service` | Cross-Cluster | terravic-clinical-trials imports and depends on terravic-auth-service. |
+| `terravic-clinical-trials` | `terravic-common-lib` | Cross-Cluster | terravic-clinical-trials imports and depends on terravic-common-lib. |
+| `terravic-billing-engine` | `terravic-auth-service` | Cross-Cluster | terravic-billing-engine imports and depends on terravic-auth-service. |
+| `terravic-billing-engine` | `terravic-common-lib` | Cross-Cluster | terravic-billing-engine imports and depends on terravic-common-lib. |
+| `terravic-ai-engine` | `terravic-data-pipeline` | Intra-Cluster | terravic-ai-engine imports and depends on terravic-data-pipeline. |
+| `terravic-ai-engine` | `terravic-common-lib` | Cross-Cluster | terravic-ai-engine imports and depends on terravic-common-lib. |
+| `terravic-data-pipeline` | `terravic-common-lib` | Cross-Cluster | terravic-data-pipeline imports and depends on terravic-common-lib. |
+| `terravic-user-service` | `terravic-auth-service` | Cross-Cluster | terravic-user-service imports and depends on terravic-auth-service. |
+| `terravic-user-service` | `terravic-common-lib` | Cross-Cluster | terravic-user-service imports and depends on terravic-common-lib. |
+| `terravic-notification-service` | `terravic-auth-service` | Cross-Cluster | terravic-notification-service imports and depends on terravic-auth-service. |
+| `terravic-notification-service` | `terravic-common-lib` | Cross-Cluster | terravic-notification-service imports and depends on terravic-common-lib. |
 | `terravic-python-sdk` | `terravic-api-gateway` | Cross-Cluster | terravic-python-sdk imports and depends on terravic-api-gateway. |
-| `terravic-cli` | `terravic-api-gateway` | Cross-Cluster | terravic-cli imports and depends on terravic-api-gateway. |
-| `terravic-billing-engine` | `terravic-core-lib` | Cross-Cluster | terravic-billing-engine leverages common utilities from terravic-core-lib. |
-| `terravic-ai-engine` | `terravic-core-lib` | Cross-Cluster | terravic-ai-engine leverages common utilities from terravic-core-lib. |
+| `terravic-js-sdk` | `terravic-api-gateway` | Cross-Cluster | terravic-js-sdk imports and depends on terravic-api-gateway. |
 | `terravic-infrastructure` | `terravic-api-gateway` | Cross-Cluster | terravic-infrastructure imports and depends on terravic-api-gateway. |
-| `terravic-infrastructure` | `terravic-auth-service` | Cross-Cluster | terravic-infrastructure imports and depends on terravic-auth-service. |
 | `terravic-infrastructure` | `terravic-data-pipeline` | Cross-Cluster | terravic-infrastructure imports and depends on terravic-data-pipeline. |
-| `terravic-docs` | `terravic-api-gateway` | Cross-Cluster | terravic-docs imports and depends on terravic-api-gateway. |
 
-### Routes To (4 relationships)
-
-| Source Repository | Target Repository | Scope | Description |
-|---|---|---|---|
-| `terravic-api-gateway` | `terravic-auth-service` | Intra-Cluster | terravic-api-gateway routes API requests to terravic-auth-service. |
-| `terravic-api-gateway` | `terravic-user-service` | Intra-Cluster | terravic-api-gateway routes API requests to terravic-user-service. |
-| `terravic-api-gateway` | `terravic-billing-engine` | Intra-Cluster | terravic-api-gateway routes API requests to terravic-billing-engine. |
-| `terravic-api-gateway` | `terravic-ai-engine` | Intra-Cluster | terravic-api-gateway routes API requests to terravic-ai-engine. |
-
-### Interfaces With (2 relationships)
+### Shares Tech (14 relationships)
 
 | Source Repository | Target Repository | Scope | Description |
 |---|---|---|---|
-| `terravic-js-sdk` | `terravic-api-gateway` | Cross-Cluster | terravic-js-sdk provides client bindings for terravic-api-gateway. |
-| `terravic-python-sdk` | `terravic-api-gateway` | Cross-Cluster | terravic-python-sdk provides client bindings for terravic-api-gateway. |
-
-### Provisions (3 relationships)
-
-| Source Repository | Target Repository | Scope | Description |
-|---|---|---|---|
-| `terravic-infrastructure` | `terravic-api-gateway` | Cross-Cluster | terravic-infrastructure manages infrastructure and deployment for terravic-api-gateway. |
-| `terravic-infrastructure` | `terravic-auth-service` | Cross-Cluster | terravic-infrastructure manages infrastructure and deployment for terravic-auth-service. |
-| `terravic-infrastructure` | `terravic-data-pipeline` | Cross-Cluster | terravic-infrastructure manages infrastructure and deployment for terravic-data-pipeline. |
-
-### Shares Tech (7 relationships)
-
-| Source Repository | Target Repository | Scope | Description |
-|---|---|---|---|
-| `terravic-api-gateway` | `terravic-ai-engine` | Intra-Cluster | terravic-api-gateway and terravic-ai-engine both utilize docker. |
-| `terravic-auth-service` | `terravic-billing-engine` | Intra-Cluster | terravic-auth-service and terravic-billing-engine both utilize postgresql. |
-| `terravic-auth-service` | `terravic-ai-engine` | Intra-Cluster | terravic-auth-service and terravic-ai-engine both utilize docker. |
-| `terravic-user-service` | `terravic-ai-engine` | Intra-Cluster | terravic-user-service and terravic-ai-engine both utilize docker. |
-| `terravic-billing-engine` | `terravic-ai-engine` | Intra-Cluster | terravic-billing-engine and terravic-ai-engine both utilize fastapi. |
-| `terravic-web-portal` | `terravic-mobile-app` | Intra-Cluster | terravic-web-portal and terravic-mobile-app both utilize react. |
-| `terravic-design-system` | `terravic-mobile-app` | Intra-Cluster | terravic-design-system and terravic-mobile-app both utilize react. |
+| `terravic-api-gateway` | `terravic-patient-records` | Cross-Cluster | terravic-api-gateway and terravic-patient-records both utilize docker. |
+| `terravic-api-gateway` | `terravic-user-service` | Intra-Cluster | terravic-api-gateway and terravic-user-service both utilize grpc. |
+| `terravic-api-gateway` | `terravic-notification-service` | Intra-Cluster | terravic-api-gateway and terravic-notification-service both utilize docker, redis. |
+| `terravic-patient-records` | `terravic-clinical-trials` | Intra-Cluster | terravic-patient-records and terravic-clinical-trials both utilize postgresql. |
+| `terravic-patient-records` | `terravic-billing-engine` | Cross-Cluster | terravic-patient-records and terravic-billing-engine both utilize postgresql. |
+| `terravic-patient-records` | `terravic-user-service` | Cross-Cluster | terravic-patient-records and terravic-user-service both utilize postgresql. |
+| `terravic-patient-records` | `terravic-notification-service` | Cross-Cluster | terravic-patient-records and terravic-notification-service both utilize docker. |
+| `terravic-patient-records` | `terravic-infrastructure` | Cross-Cluster | terravic-patient-records and terravic-infrastructure both utilize docker. |
+| `terravic-clinical-trials` | `terravic-billing-engine` | Cross-Cluster | terravic-clinical-trials and terravic-billing-engine both utilize fastapi, postgresql. |
+| `terravic-clinical-trials` | `terravic-ai-engine` | Cross-Cluster | terravic-clinical-trials and terravic-ai-engine both utilize fastapi. |
+| `terravic-clinical-trials` | `terravic-user-service` | Cross-Cluster | terravic-clinical-trials and terravic-user-service both utilize postgresql. |
+| `terravic-billing-engine` | `terravic-ai-engine` | Cross-Cluster | terravic-billing-engine and terravic-ai-engine both utilize fastapi. |
+| `terravic-billing-engine` | `terravic-user-service` | Cross-Cluster | terravic-billing-engine and terravic-user-service both utilize postgresql. |
+| `terravic-notification-service` | `terravic-infrastructure` | Cross-Cluster | terravic-notification-service and terravic-infrastructure both utilize docker. |
 
 ## Cross-Domain Dependency Matrix
 
 Matrix of relationship counts originating from source cluster (rows) to target cluster (columns):
 
-| Source \ Target | Core Services & Backend APIs | Frontend & User Interfaces | Developer Tooling & SDKs | Data Engineering & AI/ML | Infrastructure & DevOps | Shared Libraries & Utilities | Documentation & Specifications |
-|---|---|---|---|---|---|---|---|
-| **Core Services & Backend APIs** | 13 | - | 2 | 1 | - | 5 | - |
-| **Frontend & User Interfaces** | - | 3 | 6 | - | - | - | - |
-| **Developer Tooling & SDKs** | 5 | - | - | - | - | - | - |
-| **Data Engineering & AI/ML** | - | - | - | - | - | 1 | - |
-| **Infrastructure & DevOps** | 4 | - | - | 2 | - | - | - |
-| **Shared Libraries & Utilities** | - | - | - | - | - | - | - |
-| **Documentation & Specifications** | 1 | - | - | - | - | - | - |
+| Source \ Target | Core Platform & Business Services | Medical & Healthcare | Data Intelligence & AI/ML | Developer Tooling & SDKs | Security, Identity & Access | Life Sciences & Bioinformatics | Finance, Billing & Commerce | Infrastructure & Cloud Operations | Utilities & Shared Libraries | Documentation & Specifications |
+|---|---|---|---|---|---|---|---|---|---|---|
+| **Core Platform & Business Services** | 2 | 1 | - | - | 3 | - | - | 1 | 3 | - |
+| **Medical & Healthcare** | 3 | 2 | 1 | 1 | 2 | - | 2 | 1 | 2 | - |
+| **Data Intelligence & AI/ML** | - | - | 1 | - | - | - | - | - | 2 | - |
+| **Developer Tooling & SDKs** | 2 | - | - | - | - | - | - | - | - | - |
+| **Security, Identity & Access** | - | - | - | - | - | - | - | - | 1 | - |
+| **Life Sciences & Bioinformatics** | - | - | 1 | - | - | - | - | - | 1 | - |
+| **Finance, Billing & Commerce** | 1 | - | 1 | - | 1 | - | - | - | 1 | - |
+| **Infrastructure & Cloud Operations** | 1 | - | 1 | - | - | - | - | - | - | - |
+| **Utilities & Shared Libraries** | - | - | - | - | - | - | - | - | - | - |
+| **Documentation & Specifications** | - | - | - | - | - | - | - | - | - | - |
 
 ## Architecture Notes and Recommendations
 

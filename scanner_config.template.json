@@ -1,6 +1,6 @@
 {
   "target_url": "https://github.com/YOUR_ORGANIZATION_OR_USERNAME",
-  "auth_token": "ghp_optional_personal_access_token_here",
+  "auth_token": "YOUR_GITHUB_PERSONAL_ACCESS_TOKEN_OPTIONAL",
   "scan_options": {
     "include_forks": false,
     "include_archived": true,
@@ -9,12 +9,22 @@
   },
   "clustering_rules": [
     {
-      "pattern": ".*-sdk|.*-client",
-      "cluster_id": "developer-tooling"
+      "pattern": ".*-medical|.*-health|.*-patient",
+      "cluster_id": "medical-healthcare",
+      "name": "Medical & Healthcare",
+      "description": "Clinical applications, patient management, and healthcare data."
     },
     {
-      "pattern": ".*-gateway|.*-auth|.*-service",
-      "cluster_id": "core-services"
+      "pattern": ".*-genomics|.*-bio|.*-dna",
+      "cluster_id": "life-sciences-bio",
+      "name": "Life Sciences & Bioinformatics",
+      "description": "Biological data analysis and genomics sequencing."
+    },
+    {
+      "pattern": ".*-billing|.*-payment",
+      "cluster_id": "finance-billing",
+      "name": "Finance & Billing",
+      "description": "Payment processing and financial management."
     }
   ],
   "output": {

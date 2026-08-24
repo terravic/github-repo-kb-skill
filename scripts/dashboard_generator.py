@@ -438,6 +438,7 @@ class DashboardGenerator:
       color: var(--text-dim);
       font-size: 0.85rem;
       padding: 20px;
+      line-height: 1.4;
     }
 
     .badge {
@@ -588,6 +589,23 @@ class DashboardGenerator:
       display: block;
     }
 
+    .cluster-repo-item {
+      font-size: 0.8rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 8px;
+      background: var(--bg-surface-elevated);
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+
+    .cluster-repo-item:hover {
+      background: var(--border-hover);
+      color: var(--primary);
+    }
+
     /* Repository Data Table */
     .table-container {
       background-color: var(--bg-surface);
@@ -670,6 +688,12 @@ class DashboardGenerator:
       background-color: rgba(59, 130, 246, 0.2);
       color: #93c5fd;
       font-weight: 700;
+      cursor: pointer;
+    }
+
+    .matrix-cell-active:hover {
+      background-color: rgba(59, 130, 246, 0.4);
+      color: #ffffff;
     }
 
     .graph-tooltip {
@@ -713,7 +737,7 @@ class DashboardGenerator:
 
     <!-- Live Address Scan Input -->
     <div class="scan-bar">
-      <input type="text" id="scan-target-input" class="scan-input" value="__TARGET_URL__" placeholder="Enter GitHub Org or Repo URL (e.g. github.com/pallets)" />
+      <input type="text" id="scan-target-input" class="scan-input" value="__TARGET_URL__" placeholder="Enter GitHub Org or Repo URL (e.g. github.com/pallets)" onkeydown="if(event.key==='Enter') scanAddressInput();" />
       <button class="btn btn-primary btn-sm" onclick="scanAddressInput()">Scan Address</button>
     </div>
 
@@ -834,6 +858,7 @@ class DashboardGenerator:
               <th onclick="sortTable(3)">Stars</th>
               <th onclick="sortTable(4)">Connections</th>
               <th onclick="sortTable(5)">Role</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody id="repo-table-body">
@@ -848,7 +873,7 @@ class DashboardGenerator:
       <div style="background-color: var(--bg-surface); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color);">
         <h3 style="margin-bottom: 8px; font-size: 1.1rem;">Inter-Cluster Architecture Connectivity Matrix</h3>
         <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 16px;">
-          Rows represent source domain origins; columns represent the target domain interfaces.
+          Rows represent source domain origins; columns represent target domain interfaces. Click any active cell to filter connections on the graph.
         </p>
         <div id="matrix-container" style="overflow-x: auto;">
           <!-- Populated by JS -->
@@ -861,7 +886,7 @@ class DashboardGenerator:
       <div style="background-color: var(--bg-surface); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 12px;">
         <div style="display: flex; justify-content: space-between; align-items: center;">
           <h3 style="font-size: 1.1rem;">Raw Knowledge Base Payload</h3>
-          <button class="btn btn-sm btn-primary" onclick="navigator.clipboard.writeText(JSON.stringify(KB_DATA, null, 2)); showToast('JSON copied to clipboard!');">Copy JSON</button>
+          <button class="btn btn-sm btn-primary" onclick="copyRawJson()">Copy JSON</button>
         </div>
         <textarea id="raw-json-viewer" readonly style="width: 100%; height: 420px; font-family: var(--font-mono); font-size: 0.8rem; background: var(--bg-base); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 6px; padding: 12px;"></textarea>
       </div>
@@ -898,23 +923,42 @@ class DashboardGenerator:
       refreshAllViews();
     });
 
+    function resetSidebarDrawer() {
+      selectedNodeId = null;
+      const sidebar = document.getElementById('graph-sidebar');
+      if (sidebar) {
+        sidebar.innerHTML = `
+          <div class="drawer-empty">
+            Select any node or repository in the graph to inspect architectural dependencies, technology stack, and cluster connections.
+          </div>
+        `;
+      }
+      if (nodeElements) nodeElements.classed('active', false);
+      if (linkElements) linkElements.classed('highlighted', false);
+    }
+
     function refreshAllViews() {
+      resetSidebarDrawer();
       renderMetricSummary();
       initGraph();
       renderClusterCards();
       renderRepoTable();
       renderMatrix();
       populateDropdowns();
-      document.getElementById('raw-json-viewer').value = JSON.stringify(KB_DATA, null, 2);
+      const rawViewer = document.getElementById('raw-json-viewer');
+      if (rawViewer) {
+        rawViewer.value = JSON.stringify(KB_DATA, null, 2);
+      }
     }
 
     function switchTab(tabId) {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
 
-      const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick').includes(tabId));
+      const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick') && b.getAttribute('onclick').includes(tabId));
       if (activeBtn) activeBtn.classList.add('active');
-      document.getElementById(tabId).classList.add('active');
+      const pane = document.getElementById(tabId);
+      if (pane) pane.classList.add('active');
 
       if (tabId === 'tab-graph' && simulation) {
         simulation.alpha(0.3).restart();
@@ -930,6 +974,7 @@ class DashboardGenerator:
 
     function showToast(msg) {
       const t = document.getElementById('toast');
+      if (!t) return;
       t.textContent = msg;
       t.style.display = 'block';
       setTimeout(() => { t.style.display = 'none'; }, 2500);
@@ -952,38 +997,46 @@ class DashboardGenerator:
       ];
 
       const container = document.getElementById('metric-summary-container');
-      container.innerHTML = items.map(it => `
-        <div class="metric-card">
-          <div class="metric-label">${it.label}</div>
-          <div class="metric-value">${it.val}</div>
-          <div class="metric-subtext">${it.sub}</div>
-        </div>
-      `).join('');
+      if (container) {
+        container.innerHTML = items.map(it => `
+          <div class="metric-card">
+            <div class="metric-label">${it.label}</div>
+            <div class="metric-value">${it.val}</div>
+            <div class="metric-subtext">${it.sub}</div>
+          </div>
+        `).join('');
+      }
     }
 
     function populateDropdowns() {
       const clusterSelectGraph = document.getElementById('graph-cluster-filter');
       const clusterSelectTable = document.getElementById('table-cluster-filter');
 
-      clusterSelectGraph.innerHTML = '<option value="all">All Clusters</option>';
-      clusterSelectTable.innerHTML = '<option value="all">All Clusters</option>';
+      if (clusterSelectGraph) {
+        clusterSelectGraph.innerHTML = '<option value="all">All Clusters</option>';
+        (KB_DATA.clusters || []).forEach(c => {
+          const opt1 = document.createElement('option');
+          opt1.value = c.id;
+          opt1.textContent = c.name;
+          clusterSelectGraph.appendChild(opt1);
+        });
+      }
 
-      (KB_DATA.clusters || []).forEach(c => {
-        const opt1 = document.createElement('option');
-        opt1.value = c.id;
-        opt1.textContent = c.name;
-        clusterSelectGraph.appendChild(opt1);
-
-        const opt2 = document.createElement('option');
-        opt2.value = c.id;
-        opt2.textContent = c.name;
-        clusterSelectTable.appendChild(opt2);
-      });
+      if (clusterSelectTable) {
+        clusterSelectTable.innerHTML = '<option value="all">All Clusters</option>';
+        (KB_DATA.clusters || []).forEach(c => {
+          const opt2 = document.createElement('option');
+          opt2.value = c.id;
+          opt2.textContent = c.name;
+          clusterSelectTable.appendChild(opt2);
+        });
+      }
     }
 
     /* D3.js Force Directed Graph */
     function initGraph() {
       const container = document.getElementById('graph-container');
+      if (!container) return;
       const width = container.clientWidth || 800;
       const height = container.clientHeight || 700;
 
@@ -1088,6 +1141,7 @@ class DashboardGenerator:
 
     function handleNodeMouseOver(event, d) {
       const tooltip = document.getElementById('graph-tooltip');
+      if (!tooltip) return;
       tooltip.style.display = 'block';
       tooltip.style.left = (event.pageX + 15) + 'px';
       tooltip.style.top = (event.pageY - 10) + 'px';
@@ -1100,28 +1154,41 @@ class DashboardGenerator:
     }
 
     function handleNodeMouseOut() {
-      document.getElementById('graph-tooltip').style.display = 'none';
+      const tooltip = document.getElementById('graph-tooltip');
+      if (tooltip) tooltip.style.display = 'none';
     }
 
     function selectNode(nodeId) {
       selectedNodeId = nodeId;
-      const node = (KB_DATA.graph.nodes || []).find(n => n.id === nodeId);
+      const node = (KB_DATA.graph.nodes || []).find(n => String(n.id) === String(nodeId) || n.name === nodeId);
       if (!node) return;
 
-      nodeElements.classed('active', d => d.id === nodeId);
-      linkElements.classed('highlighted', d => (d.source.id === nodeId || d.target.id === nodeId || d.source === nodeId || d.target === nodeId));
+      const targetActualId = node.id;
+
+      if (nodeElements) {
+        nodeElements.classed('active', d => String(d.id) === String(targetActualId));
+      }
+      if (linkElements) {
+        linkElements.classed('highlighted', d => {
+          const sId = String(d.source.id || d.source);
+          const tId = String(d.target.id || d.target);
+          const cId = String(targetActualId);
+          return (sId === cId || tId === cId);
+        });
+      }
 
       const sidebar = document.getElementById('graph-sidebar');
-      const incoming = (KB_DATA.graph.links || []).filter(l => (l.target.id || l.target) === nodeId);
-      const outgoing = (KB_DATA.graph.links || []).filter(l => (l.source.id || l.source) === nodeId);
+      if (!sidebar) return;
+
+      const incoming = (KB_DATA.graph.links || []).filter(l => String(l.target.id || l.target) === String(targetActualId));
+      const outgoing = (KB_DATA.graph.links || []).filter(l => String(l.source.id || l.source) === String(targetActualId));
 
       const outgoingHtml = outgoing.length === 0 
         ? '<div style="font-size: 0.75rem; color: var(--text-dim);">No outgoing dependencies</div>'
         : outgoing.map(l => {
             const targetName = (l.target.name || l.target);
             const targetId = (l.target.id || l.target);
-            const idArg = typeof targetId === 'string' ? `'${targetId}'` : targetId;
-            return `<div onclick="selectNode(${idArg})" style="cursor: pointer; padding: 6px; background: var(--bg-surface-elevated); border-radius: 4px; font-size: 0.78rem;">
+            return `<div onclick="focusNodeOnGraph('${targetId}')" style="cursor: pointer; padding: 6px; background: var(--bg-surface-elevated); border-radius: 4px; font-size: 0.78rem;">
               <span style="color: var(--primary);">&rarr; ${targetName}</span>
               <div style="color: var(--text-dim); font-size: 0.7rem;">${l.label || l.type}</div>
             </div>`;
@@ -1132,8 +1199,7 @@ class DashboardGenerator:
         : incoming.map(l => {
             const srcName = (l.source.name || l.source);
             const srcId = (l.source.id || l.source);
-            const idArg = typeof srcId === 'string' ? `'${srcId}'` : srcId;
-            return `<div onclick="selectNode(${idArg})" style="cursor: pointer; padding: 6px; background: var(--bg-surface-elevated); border-radius: 4px; font-size: 0.78rem;">
+            return `<div onclick="focusNodeOnGraph('${srcId}')" style="cursor: pointer; padding: 6px; background: var(--bg-surface-elevated); border-radius: 4px; font-size: 0.78rem;">
               <span style="color: var(--accent);">&larr; ${srcName}</span>
               <div style="color: var(--text-dim); font-size: 0.7rem;">${l.label || l.type}</div>
             </div>`;
@@ -1192,8 +1258,8 @@ class DashboardGenerator:
     function focusNodeOnGraph(nodeId) {
       switchTab('tab-graph');
       selectNode(nodeId);
-      const node = (KB_DATA.graph.nodes || []).find(n => n.id === nodeId);
-      if (node && node.x && node.y) {
+      const node = (KB_DATA.graph.nodes || []).find(n => String(n.id) === String(nodeId) || n.name === nodeId);
+      if (node && node.x !== undefined && node.y !== undefined && svg) {
         const container = document.getElementById('graph-container');
         const width = container.clientWidth || 800;
         const height = container.clientHeight || 700;
@@ -1204,10 +1270,34 @@ class DashboardGenerator:
       }
     }
 
+    /* Filter Graph by Cross-Cluster Matrix Cell */
+    function filterMatrixCell(srcClusterId, tgtClusterId) {
+      switchTab('tab-graph');
+      document.getElementById('graph-cluster-filter').value = 'all';
+      document.getElementById('graph-edge-filter').value = 'all';
+      activeClusterFilter = 'all';
+      activeEdgeFilter = 'all';
+
+      nodeElements.classed('dimmed', d => {
+        return d.cluster_id !== srcClusterId && d.cluster_id !== tgtClusterId;
+      });
+
+      linkElements.classed('dimmed', l => {
+        const sCluster = l.source.cluster_id || l.source_cluster;
+        const tCluster = l.target.cluster_id || l.target_cluster;
+        const match = (sCluster === srcClusterId && tCluster === tgtClusterId) || (sCluster === tgtClusterId && tCluster === srcClusterId);
+        return !match;
+      });
+      showToast(`Filtered graph for ${srcClusterId} &rarr; ${tgtClusterId}`);
+    }
+
     /* Repository Matcher & Chat Engine in JS */
     function setQueryChip(text) {
-      document.getElementById('matcher-query-input').value = text;
-      executeMatcherQuery();
+      const input = document.getElementById('matcher-query-input');
+      if (input) {
+        input.value = text;
+        executeMatcherQuery();
+      }
     }
 
     function executeMatcherQuery() {
@@ -1250,17 +1340,17 @@ class DashboardGenerator:
 
           const nameParts = new Set([...name.split('-'), ...name.split('_'), name]);
           if (nameParts.has(term)) {
-            score += isGen ? 2.0 : 5.0;
+            score += isGen ? 2.0 : 6.0;
             reasons.push(`Repository name includes '${term}'`);
             matched = true;
           } else if (name.includes(term)) {
-            score += isGen ? 1.0 : 3.0;
+            score += isGen ? 1.0 : 3.5;
             reasons.push(`Repository name contains '${term}'`);
             matched = true;
           }
 
           if (topics.includes(term)) {
-            score += isGen ? 1.5 : 4.5;
+            score += isGen ? 1.5 : 5.0;
             reasons.push(`Topic tag matches '${term}'`);
             matched = true;
           }
@@ -1272,13 +1362,13 @@ class DashboardGenerator:
           }
 
           if (term === lang) {
-            score += 3.5;
+            score += 4.0;
             reasons.push(`Primary language is '${term}'`);
             matched = true;
           }
 
           if (desc.includes(term)) {
-            score += isGen ? 1.0 : 3.0;
+            score += isGen ? 1.0 : 3.5;
             reasons.push(`Description mentions '${term}'`);
             matched = true;
           }
@@ -1339,7 +1429,7 @@ class DashboardGenerator:
                 <a href="${best.repo.html_url}" target="_blank" style="color: var(--primary); text-decoration: none;">${best.repo.name} &rarr;</a>
               </h3>
             </div>
-            <button class="btn btn-primary btn-sm" onclick="focusNodeOnGraph(${typeof best.repo.id === 'string' ? `'${best.repo.id}'` : best.repo.id})">Locate on Knowledge Graph</button>
+            <button class="btn btn-primary btn-sm" onclick="focusNodeOnGraph('${best.repo.id}')">Locate on Knowledge Graph</button>
           </div>
 
           <div style="font-size: 0.9rem; color: var(--text-main);">
@@ -1366,7 +1456,7 @@ class DashboardGenerator:
                 ${alternatives.map(alt => `
                   <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; background: var(--bg-surface); border-radius: 4px; font-size: 0.82rem;">
                     <div>
-                      <strong style="color: var(--text-main); cursor: pointer;" onclick="focusNodeOnGraph(${typeof alt.repo.id === 'string' ? `'${alt.repo.id}'` : alt.repo.id})">${alt.repo.name}</strong>
+                      <strong style="color: var(--text-main); cursor: pointer;" onclick="focusNodeOnGraph('${alt.repo.id}')">${alt.repo.name}</strong>
                       <span style="color: var(--text-muted); font-size: 0.75rem;"> - ${alt.repo.description}</span>
                     </div>
                     <span class="badge" style="font-size: 0.7rem;">${alt.repo.primary_language}</span>
@@ -1441,22 +1531,30 @@ class DashboardGenerator:
     }
 
     function resetGraphView() {
-      svg.transition().duration(500).call(
-        d3.zoom().transform,
-        d3.zoomIdentity
-      );
-      document.getElementById('graph-cluster-filter').value = 'all';
-      document.getElementById('graph-edge-filter').value = 'all';
-      document.getElementById('graph-search').value = '';
+      resetSidebarDrawer();
+      if (svg) {
+        svg.transition().duration(500).call(
+          d3.zoom().transform,
+          d3.zoomIdentity
+        );
+      }
+      const clusterSelect = document.getElementById('graph-cluster-filter');
+      if (clusterSelect) clusterSelect.value = 'all';
+      const edgeSelect = document.getElementById('graph-edge-filter');
+      if (edgeSelect) edgeSelect.value = 'all';
+      const searchInput = document.getElementById('graph-search');
+      if (searchInput) searchInput.value = '';
       activeClusterFilter = 'all';
       activeEdgeFilter = 'all';
-      nodeElements.classed('dimmed', false).classed('active', false);
-      linkElements.classed('dimmed', false).classed('highlighted', false);
+      if (nodeElements) nodeElements.classed('dimmed', false).classed('active', false);
+      if (linkElements) linkElements.classed('dimmed', false).classed('highlighted', false);
+      showToast('Graph view reset.');
     }
 
     /* Cluster Cards */
     function renderClusterCards() {
       const container = document.getElementById('cluster-cards-container');
+      if (!container) return;
       const clusters = KB_DATA.clusters || [];
       const repos = KB_DATA.repositories || [];
       const repoMap = new Map(repos.map(r => [r.id, r]));
@@ -1477,14 +1575,14 @@ class DashboardGenerator:
           </div>
 
           <div class="cluster-repos-list">
-            <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-dim); margin-bottom: 6px;">Repositories:</div>
+            <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-dim); margin-bottom: 6px;">Repositories (Click to inspect):</div>
             <div style="display: flex; flex-direction: column; gap: 4px;">
               ${(c.repositories || []).map(rid => {
                 const r = repoMap.get(rid);
                 if (!r) return '';
-                return `<div style="font-size: 0.8rem; display: flex; justify-content: space-between; padding: 4px 6px; background: var(--bg-surface-elevated); border-radius: 4px;">
+                return `<div class="cluster-repo-item" onclick="event.stopPropagation(); focusNodeOnGraph('${r.id}')">
                   <span style="font-family: var(--font-mono);">${r.name}</span>
-                  <span style="color: var(--text-muted);">${r.primary_language}</span>
+                  <span style="color: var(--text-muted); font-size: 0.75rem;">${r.primary_language} &rarr;</span>
                 </div>`;
               }).join('')}
             </div>
@@ -1504,6 +1602,7 @@ class DashboardGenerator:
     function renderRepoTable() {
       const repos = KB_DATA.repositories || [];
       const tbody = document.getElementById('repo-table-body');
+      if (!tbody) return;
 
       tbody.innerHTML = repos.map(r => `
         <tr data-name="${r.name.toLowerCase()}" data-cluster="${r.cluster_id}" data-lang="${(r.primary_language || '').toLowerCase()}">
@@ -1516,12 +1615,13 @@ class DashboardGenerator:
           <td>${r.stars || 0}</td>
           <td>${r.centrality_score ? (r.in_degree + r.out_degree) : 0}</td>
           <td>${r.is_hub ? '<span class="badge" style="color: #fbbf24;">Hub</span>' : (r.is_bridge ? '<span class="badge" style="color: #38bdf8;">Bridge</span>' : '<span style="color: var(--text-dim);">-</span>')}</td>
+          <td><button class="btn btn-sm" onclick="focusNodeOnGraph('${r.id}')">Inspect</button></td>
         </tr>
       `).join('');
     }
 
     function filterRepoTable() {
-      const query = document.getElementById('repo-table-search').value.toLowerCase();
+      const query = (document.getElementById('repo-table-search').value || '').toLowerCase();
       const cluster = document.getElementById('table-cluster-filter').value;
       const rows = document.querySelectorAll('#repo-table-body tr');
 
@@ -1539,6 +1639,7 @@ class DashboardGenerator:
 
     function sortTable(colIndex) {
       const table = document.getElementById('repo-data-table');
+      if (!table) return;
       const tbody = table.querySelector('tbody');
       const rows = Array.from(tbody.querySelectorAll('tr'));
 
@@ -1568,6 +1669,7 @@ class DashboardGenerator:
     /* Matrix */
     function renderMatrix() {
       const container = document.getElementById('matrix-container');
+      if (!container) return;
       const matrix = KB_DATA.graph.connectivity_matrix || {};
       const clusters = KB_DATA.clusters || [];
 
@@ -1582,7 +1684,8 @@ class DashboardGenerator:
         clusters.forEach(tgt => {
           const count = (matrix[src.id] && matrix[src.id][tgt.id]) || 0;
           const activeClass = count > 0 ? 'matrix-cell-active' : '';
-          html += `<td class="${activeClass}">${count > 0 ? count : '-'}</td>`;
+          const clickHandler = count > 0 ? `onclick="filterMatrixCell('${src.id}', '${tgt.id}')"` : '';
+          html += `<td class="${activeClass}" ${clickHandler}>${count > 0 ? count : '-'}</td>`;
         });
         html += '</tr>';
       });
@@ -1603,8 +1706,20 @@ class DashboardGenerator:
       let target = input.replace(/^https?:\/\//, '').replace(/^github\.com\//, '').replace(/^orgs\//, '').replace(/\/$/, '');
       const parts = target.split('/').filter(Boolean);
       const owner = parts[0];
+      const repoName = parts.length >= 2 ? parts[1] : null;
 
       try {
+        if (repoName) {
+          // Single repository scan
+          const res = await fetch(`https://api.github.com/repos/${owner}/${repoName}`);
+          if (res.status === 200) {
+            const rawRepo = await res.json();
+            processClientRepos(owner, input, [rawRepo]);
+            showToast(`Successfully loaded repository ${owner}/${repoName}!`);
+            return;
+          }
+        }
+
         const res = await fetch(`https://api.github.com/orgs/${owner}/repos?per_page=100&sort=updated`);
         if (res.status === 200) {
           const rawRepos = await res.json();
@@ -1617,7 +1732,7 @@ class DashboardGenerator:
             processClientRepos(owner, input, rawRepos);
             showToast(`Loaded ${rawRepos.length} repos from user ${owner}!`);
           } else {
-            showToast(`GitHub API returned HTTP ${res.status}. Loading synthetic preview.`);
+            showToast(`GitHub account not found. Loading synthetic preview.`);
             onPresetChange('synthetic');
           }
         } else {
@@ -1630,12 +1745,17 @@ class DashboardGenerator:
 
     function processClientRepos(owner, inputUrl, rawRepos) {
       const taxonomy = [
-        { id: "core-services", name: "Core Services & Backend APIs", description: "Backend services, APIs, and microservices.", color: "#3B82F6", keywords: ["api", "backend", "service", "server", "microservice", "grpc", "auth"] },
-        { id: "frontend-ui", name: "Frontend & User Interfaces", description: "Web applications, dashboards, and client portals.", color: "#10B981", keywords: ["ui", "frontend", "web", "react", "vue", "nextjs", "dashboard", "portal"] },
-        { id: "data-analytics", name: "Data Engineering & AI/ML", description: "Pipelines, ETL, ML models, and analytics infrastructure.", color: "#8B5CF6", keywords: ["data", "pipeline", "etl", "kafka", "spark", "analytics", "ml", "ai"] },
-        { id: "developer-tooling", name: "Developer Tooling & SDKs", description: "Client SDKs, CLI tools, testing harnesses, and linters.", color: "#F59E0B", keywords: ["sdk", "cli", "client", "tooling", "generator", "plugin", "agent"] },
-        { id: "infrastructure-devops", name: "Infrastructure & DevOps", description: "Terraform, Kubernetes, Docker, and CI/CD pipelines.", color: "#EF4444", keywords: ["infra", "terraform", "k8s", "docker", "helm", "ci-cd", "cloud"] },
-        { id: "libraries-shared", name: "Shared Libraries & Utilities", description: "Common utilities, protocol buffers, and shared contracts.", color: "#06B6D4", keywords: ["utils", "common", "shared", "core", "proto", "types"] }
+        { id: "medical-healthcare", name: "Medical & Healthcare", description: "Clinical systems, electronic health records (EHR/EMR), patient care, FHIR, and telehealth.", color: "#0EA5E9", keywords: ["medical", "healthcare", "clinical", "patient", "health", "ehr", "emr", "fhir", "hl7", "dicom", "hospital", "telehealth", "hipaa", "diagnosis"] },
+        { id: "life-sciences-bio", name: "Life Sciences & Bioinformatics", description: "Genomics sequencing pipelines, DNA/RNA molecular biology, and clinical trials research.", color: "#14B8A6", keywords: ["genomics", "bioinformatics", "biology", "dna", "rna", "sequencing", "protein", "crispr", "pharma", "biotech", "molecular", "clinical-trials", "laboratory"] },
+        { id: "finance-billing", name: "Finance, Billing & Commerce", description: "Payment processing, subscription billing, invoices, accounting, and e-commerce checkout.", color: "#10B981", keywords: ["billing", "payment", "invoice", "subscription", "stripe", "checkout", "finance", "banking", "accounting", "ecommerce", "ledger"] },
+        { id: "security-identity", name: "Security, Identity & Access", description: "Authentication, OAuth2/OIDC identity providers, token issuance, RBAC, and encryption.", color: "#EC4899", keywords: ["auth", "authentication", "oauth", "oauth2", "oidc", "identity", "security", "rbac", "jwt", "token", "encryption", "sso", "login"] },
+        { id: "data-ai-analytics", name: "Data Intelligence & AI/ML", description: "Machine learning models, inference engines, vector search, streaming pipelines, and analytics.", color: "#8B5CF6", keywords: ["ai", "ml", "analytics", "pipeline", "etl", "kafka", "spark", "warehouse", "embeddings", "rag", "llm", "model", "inference"] },
+        { id: "developer-tooling", name: "Developer Tooling & SDKs", description: "Client SDKs, CLI tools, API bindings, linters, code generators, and testing harnesses.", color: "#F59E0B", keywords: ["sdk", "cli", "client-library", "tooling", "generator", "plugin", "agent", "linter", "wrapper", "bindings"] },
+        { id: "infrastructure-devops", name: "Infrastructure & Cloud Operations", description: "Cloud infrastructure as code, Terraform, Kubernetes, Helm, Docker, and CI/CD.", color: "#EF4444", keywords: ["infra", "infrastructure", "terraform", "k8s", "kubernetes", "docker", "helm", "ci-cd", "cloud", "aws", "gcp", "deploy"] },
+        { id: "core-platform", name: "Core Platform & Business Services", description: "Routing gateways, user profiles, tenancy, notification dispatchers, and domain services.", color: "#3B82F6", keywords: ["gateway", "proxy", "user-service", "tenancy", "notification", "dispatch", "engine", "router", "service"] },
+        { id: "frontend-applications", name: "User Applications & Web Portals", description: "Web portals, dashboards, customer interfaces, mobile apps, and interactive web apps.", color: "#06B6D4", keywords: ["portal", "app", "ui", "dashboard", "web", "frontend", "mobile", "ios", "android", "console", "react", "vue"] },
+        { id: "utilities-libraries", name: "Utilities & Shared Libraries", description: "Shared common utilities, protocol buffer contracts, data schemas, and helper libraries.", color: "#64748B", keywords: ["utils", "utilities", "common", "shared", "core-lib", "proto", "contracts", "schemas", "helpers", "types"] },
+        { id: "documentation-specs", name: "Documentation & Specifications", description: "Architectural blueprints, technical guides, OpenAPI specs, and RFC standards.", color: "#475569", keywords: ["docs", "documentation", "spec", "specification", "rfc", "guide", "architecture", "standard", "wiki"] }
       ];
 
       const repos = rawRepos.map((r, i) => {
@@ -1643,7 +1763,7 @@ class DashboardGenerator:
         const name = r.name || '';
         const desc = (r.description || '').toLowerCase();
         
-        let assignedCluster = taxonomy[taxonomy.length - 1];
+        let assignedCluster = taxonomy[taxonomy.length - 2];
         for (const tax of taxonomy) {
           if (tax.keywords.some(k => name.toLowerCase().includes(k) || topics.includes(k) || desc.includes(k))) {
             assignedCluster = tax;
@@ -1654,7 +1774,7 @@ class DashboardGenerator:
         return {
           id: r.id || (i + 1),
           name: r.name,
-          full_name: r.full_name,
+          full_name: r.full_name || `${owner}/${r.name}`,
           html_url: r.html_url,
           description: r.description || "No description provided.",
           primary_language: r.language || "Other",
@@ -1696,13 +1816,20 @@ class DashboardGenerator:
       const edges = [];
       for (let i = 0; i < nodes.length; i++) {
         for (let j = i + 1; j < nodes.length; j++) {
-          if (nodes[i].primary_language === nodes[j].primary_language && nodes[i].primary_language !== 'Other') {
+          const langA = nodes[i].primary_language;
+          const langB = nodes[j].primary_language;
+          const isSameCluster = nodes[i].cluster_id === nodes[j].cluster_id;
+          const isSameLang = (langA === langB && langA !== 'Other');
+
+          if (isSameLang || isSameCluster) {
+            const relType = isSameLang ? 'shares_tech' : 'cluster_peer';
+            const label = isSameLang ? `Shared ${langA}` : 'Domain Peer';
             edges.push({
               source: nodes[i].id,
               target: nodes[j].id,
-              type: 'shares_tech',
-              label: 'Shared ' + nodes[i].primary_language,
-              description: `${nodes[i].name} and ${nodes[j].name} share ${nodes[i].primary_language} language.`,
+              type: relType,
+              label: label,
+              description: `${nodes[i].name} and ${nodes[j].name} connect via ${label.toLowerCase()}.`,
               weight: 1.0,
               is_cross_cluster: nodes[i].cluster_id !== nodes[j].cluster_id,
               source_cluster: nodes[i].cluster_id,
@@ -1750,6 +1877,24 @@ class DashboardGenerator:
       refreshAllViews();
     }
 
+    function copyRawJson() {
+      const viewer = document.getElementById('raw-json-viewer');
+      if (viewer) {
+        viewer.select();
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(viewer.value);
+          } else {
+            document.execCommand('copy');
+          }
+          showToast('JSON copied to clipboard!');
+        } catch (e) {
+          document.execCommand('copy');
+          showToast('JSON copied to clipboard!');
+        }
+      }
+    }
+
     function exportDataJson() {
       const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(KB_DATA, null, 2));
       const downloadAnchor = document.createElement('a');
@@ -1758,6 +1903,7 @@ class DashboardGenerator:
       document.body.appendChild(downloadAnchor);
       downloadAnchor.click();
       downloadAnchor.remove();
+      showToast('Exporting JSON file...');
     }
   </script>
 </body>

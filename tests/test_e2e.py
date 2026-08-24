@@ -26,7 +26,7 @@ class TestEndToEndPipeline(unittest.TestCase):
         )
 
         self.assertEqual(result["status"], "success")
-        self.assertEqual(result["total_repositories"], 15)
+        self.assertEqual(result["total_repositories"], 16)
         self.assertGreaterEqual(result["total_clusters"], 5)
         self.assertGreaterEqual(result["total_edges"], 10)
 

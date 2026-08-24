@@ -40,7 +40,7 @@ class TestGitHubScanner(unittest.TestCase):
         result = self.scanner.load_fixture(self.fixture_path)
         self.assertIn("repositories", result)
         self.assertIn("metadata", result)
-        self.assertEqual(result["total_count"], 15)
+        self.assertEqual(result["total_count"], 16)
         self.assertEqual(result["metadata"]["owner"], "terravic")
 
     def test_normalize_repo(self):

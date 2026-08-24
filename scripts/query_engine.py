@@ -45,6 +45,9 @@ SYNONYMS: Dict[str, Set[str]] = {
 }
 
 
+from scripts.clusterer import RepositoryClusterer
+
+
 class RepositoryQueryEngine:
     """Matches user capability queries against repository metadata and returns ranked recommendations."""
 
@@ -60,6 +63,13 @@ class RepositoryQueryEngine:
         self.repositories: List[Dict[str, Any]] = self.kb.get("repositories", [])
         self.clusters: List[Dict[str, Any]] = self.kb.get("clusters", [])
 
+        # Auto-cluster if loaded from raw fixture lacking cluster assignments
+        if self.repositories and (not self.clusters or not self.repositories[0].get("cluster_name")):
+            clusterer = RepositoryClusterer()
+            cluster_res = clusterer.cluster_repositories(self.repositories)
+            self.repositories = cluster_res.get("repositories", [])
+            self.clusters = cluster_res.get("clusters", [])
+
     def load_kb_file(self, kb_path: str) -> None:
         """Load knowledge base from a JSON file path."""
         if not os.path.isfile(kb_path):
@@ -68,6 +78,11 @@ class RepositoryQueryEngine:
             self.kb = json.load(f)
         self.repositories = self.kb.get("repositories", [])
         self.clusters = self.kb.get("clusters", [])
+        if self.repositories and (not self.clusters or not self.repositories[0].get("cluster_name")):
+            clusterer = RepositoryClusterer()
+            cluster_res = clusterer.cluster_repositories(self.repositories)
+            self.repositories = cluster_res.get("repositories", [])
+            self.clusters = cluster_res.get("clusters", [])
 
     def query(self, user_query: str, top_k: int = 3, min_score_threshold: float = 3.5) -> Dict[str, Any]:
         """

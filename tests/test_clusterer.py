@@ -6,60 +6,90 @@ class TestRepositoryClusterer(unittest.TestCase):
     def setUp(self):
         self.clusterer = RepositoryClusterer()
 
-    def test_classify_core_service(self):
+    def test_classify_medical_healthcare(self):
         repo = {
             "id": 1,
-            "name": "auth-service",
-            "description": "OAuth2 authentication service with gRPC endpoints",
+            "name": "patient-health-records",
+            "description": "FHIR and DICOM medical records storage for clinical patient management",
             "primary_language": "Go",
-            "topics": ["auth", "grpc", "microservice"],
-            "tech_stack": ["Go", "gRPC", "PostgreSQL"],
+            "topics": ["medical", "healthcare", "fhir", "patient"],
         }
-        cluster_id = self.clusterer._classify_repository(repo)
-        self.assertEqual(cluster_id, "core-services")
+        cluster = self.clusterer.classify_repository(repo)
+        self.assertEqual(cluster["id"], "medical-healthcare")
 
-    def test_classify_frontend(self):
+    def test_classify_life_sciences(self):
         repo = {
             "id": 2,
-            "name": "web-dashboard",
-            "description": "User portal dashboard built with React",
-            "primary_language": "TypeScript",
-            "topics": ["react", "frontend", "ui"],
-            "tech_stack": ["React", "Tailwind CSS"],
+            "name": "genomics-variant-caller",
+            "description": "DNA and RNA sequencing bioinformatics pipeline for molecular genetics research",
+            "primary_language": "Python",
+            "topics": ["genomics", "bioinformatics", "dna", "biology"],
         }
-        cluster_id = self.clusterer._classify_repository(repo)
-        self.assertEqual(cluster_id, "frontend-ui")
+        cluster = self.clusterer.classify_repository(repo)
+        self.assertEqual(cluster["id"], "life-sciences-bio")
 
-    def test_classify_sdk(self):
+    def test_classify_finance_billing(self):
         repo = {
             "id": 3,
-            "name": "python-sdk",
-            "description": "Python client library and SDK",
+            "name": "subscription-billing-service",
+            "description": "Automated recurring invoice generation and Stripe checkout integration",
             "primary_language": "Python",
-            "topics": ["sdk", "client-library"],
-            "tech_stack": ["Python"],
+            "topics": ["billing", "payment", "stripe", "finance"],
         }
-        cluster_id = self.clusterer._classify_repository(repo)
-        self.assertEqual(cluster_id, "developer-tooling")
+        cluster = self.clusterer.classify_repository(repo)
+        self.assertEqual(cluster["id"], "finance-billing")
+
+    def test_classify_security_identity(self):
+        repo = {
+            "id": 4,
+            "name": "oauth-identity-provider",
+            "description": "OIDC single sign-on, JWT token issuance, and RBAC authentication",
+            "primary_language": "Go",
+            "topics": ["auth", "security", "oauth2", "jwt"],
+        }
+        cluster = self.clusterer.classify_repository(repo)
+        self.assertEqual(cluster["id"], "security-identity")
+
+    def test_classify_developer_tooling(self):
+        repo = {
+            "id": 5,
+            "name": "python-sdk",
+            "description": "Python client library and CLI SDK for developer automation",
+            "primary_language": "Python",
+            "topics": ["sdk", "client-library", "cli"],
+        }
+        cluster = self.clusterer.classify_repository(repo)
+        self.assertEqual(cluster["id"], "developer-tooling")
+
+    def test_classify_utilities(self):
+        repo = {
+            "id": 6,
+            "name": "shared-common-utils",
+            "description": "Shared protobuf data contracts, base helpers, and common utility functions",
+            "primary_language": "Go",
+            "topics": ["utils", "common", "proto", "shared"],
+        }
+        cluster = self.clusterer.classify_repository(repo)
+        self.assertEqual(cluster["id"], "utilities-libraries")
 
     def test_custom_rule_override(self):
         custom_clusterer = RepositoryClusterer(custom_rules=[
-            {"pattern": "special-.*", "cluster_id": "infrastructure-devops"}
+            {"pattern": "custom-.*", "cluster_id": "medical-healthcare"}
         ])
         repo = {
-            "id": 4,
-            "name": "special-service",
-            "description": "General service",
+            "id": 7,
+            "name": "custom-tool",
+            "description": "General tool",
             "primary_language": "Go",
             "topics": [],
         }
-        cluster_id = custom_clusterer._classify_repository(repo)
-        self.assertEqual(cluster_id, "infrastructure-devops")
+        cluster = custom_clusterer.classify_repository(repo)
+        self.assertEqual(cluster["id"], "medical-healthcare")
 
     def test_cluster_repositories_aggregation(self):
         repos = [
-            {"id": 1, "name": "api-service", "description": "Core API", "primary_language": "Go", "topics": ["api"], "stars": 100, "forks": 10},
-            {"id": 2, "name": "web-ui", "description": "Web UI", "primary_language": "TypeScript", "topics": ["react", "ui"], "stars": 50, "forks": 5},
+            {"id": 1, "name": "patient-records", "description": "Medical patient EHR records", "primary_language": "Go", "topics": ["medical", "ehr"], "stars": 100, "forks": 10},
+            {"id": 2, "name": "dna-pipeline", "description": "Genomics sequencing", "primary_language": "Python", "topics": ["genomics"], "stars": 50, "forks": 5},
         ]
         result = self.clusterer.cluster_repositories(repos)
         self.assertEqual(result["cluster_count"], 2)

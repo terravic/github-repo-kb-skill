@@ -1,6 +1,6 @@
 # GitHub Repository Knowledge Base and Canvas UI Dashboard (github-repo-kb)
 
-An agent skill and Python engine that analyzes GitHub organizations, user profiles, or repository collections to generate an architecture knowledge base, domain clustering taxonomy, relationship knowledge graph, an interactive HTML5 Canvas UI dashboard, and conversational repository search.
+An agent skill and Python engine that analyzes GitHub organizations, user profiles, or repository collections to generate a thematic domain knowledge base, architecture knowledge graph, an interactive HTML5 Canvas UI dashboard, and conversational repository search.
 
 ---
 
@@ -9,6 +9,7 @@ An agent skill and Python engine that analyzes GitHub organizations, user profil
 - [Overview](#overview)
 - [Architecture and Workflow](#architecture-and-workflow)
 - [Project Structure and File Tree](#project-structure-and-file-tree)
+- [Thematic Domain Clustering](#thematic-domain-clustering)
 - [Non-Technical User Guide: How to Use This Skill](#non-technical-user-guide-how-to-use-this-skill)
   - [What This Skill Does in Plain Terms](#what-this-skill-does-in-plain-terms)
   - [Core Concepts Explained](#core-concepts-explained)
@@ -29,7 +30,7 @@ An agent skill and Python engine that analyzes GitHub organizations, user profil
   - [5. CLI Reference](#5-cli-reference)
   - [6. Running Automated Tests](#6-running-automated-tests)
 - [Architecture and Data Model](#architecture-and-data-model)
-  - [Domain Taxonomy](#domain-taxonomy)
+  - [Thematic Domain Taxonomy](#thematic-domain-taxonomy)
   - [Knowledge Graph Schema](#knowledge-graph-schema)
   - [Centrality and Hub Classification](#centrality-and-hub-classification)
 - [Interactive Canvas UI Elements](#interactive-canvas-ui-elements)
@@ -40,13 +41,13 @@ An agent skill and Python engine that analyzes GitHub organizations, user profil
 
 ## Overview
 
-Modern software organizations often maintain dozens or hundreds of repositories spanning microservices, client applications, SDKs, data pipelines, infrastructure scripts, and documentation. Navigating and understanding the high-level architecture across these codebases is challenging.
+Modern software organizations often maintain dozens or hundreds of repositories spanning clinical health apps, genomics workflows, billing systems, authentication servers, SDKs, and infrastructure. Navigating and understanding the thematic landscape across these codebases is challenging.
 
 The `github-repo-kb` skill automates the entire ingestion, analysis, and visualization process:
-1. Ingests metadata from live GitHub accounts or offline synthetic datasets.
-2. Classifies repositories into logical domain clusters using keyword, topic, and language taxonomy rules.
-3. Constructs an architectural knowledge graph mapping intra-cluster and cross-cluster relationships (dependencies, API routing, client SDKs, shared infrastructure).
-4. Provides semantic repository search so users can ask questions in natural language and find the best-suited repository for any software capability.
+1. Ingests metadata from live GitHub accounts (organizations, users, single repos) or offline synthetic datasets.
+2. Classifies repositories into logical **thematic domain clusters** (e.g. Medical & Healthcare, Life Sciences & Bioinformatics, Finance & Billing, Security & Identity, AI/ML, Developer Tooling, Infrastructure, Utilities) based on project purpose and subject matter rather than technical frameworks.
+3. Constructs an architectural knowledge graph mapping intra-cluster and cross-cluster relationships (dependencies, integrations, client SDKs, shared infrastructure).
+4. Provides semantic repository search so users can ask questions in natural language and find the best-suited repository for any capability.
 5. Generates structured documentation (`KNOWLEDGE_BASE.md`, `knowledge_base.json`, `knowledge_graph.json`) and a standalone interactive Canvas UI dashboard (`dashboard.html`).
 
 ---
@@ -59,12 +60,12 @@ The diagram above illustrates the end-to-end processing pipeline:
 - **Input**: GitHub target address (organization or user URL), configuration settings in `scanner_config.json`, or offline synthetic datasets.
 - **Processing Engine**:
   1. *Repository Scanner*: Fetches repository metadata, dependencies, topics, languages, and star metrics.
-  2. *Domain Taxonomy Clustering*: Classifies codebases into logical domain clusters.
+  2. *Thematic Domain Clustering*: Evaluates project mission, topics, and descriptions to cluster codebases into thematic business and scientific domains.
   3. *Knowledge Graph Builder*: Links repositories, evaluates centrality scores, and detects architectural hubs.
   4. *Repository Query Engine*: Evaluates natural language requests to recommend specific repositories or report when no codebase meets the requirement.
 - **Output Deliverables**:
   - *Structured Knowledge Base Files*: Machine-readable JSON specifications and formatted Markdown catalogs.
-  - *Interactive Canvas Web Dashboard*: Single-file HTML5/D3.js application with force-directed graph physics, domain cards, interactive repository matcher, and inspection panels.
+  - *Interactive Canvas Web Dashboard*: Single-file HTML5/D3.js application with force-directed graph physics, thematic domain cards, interactive repository matcher, and inspection panels.
 
 ---
 
@@ -86,13 +87,13 @@ github-repo-kb-skill/
 │   ├── __init__.py                   # Python package initialization
 │   ├── cli.py                        # Command-line interface and execution pipeline orchestrator
 │   ├── scanner.py                    # GitHub API ingestion engine and fixture loader
-│   ├── clusterer.py                  # Domain taxonomy classifier and clustering rules engine
+│   ├── clusterer.py                  # Thematic domain classifier and clustering rules engine
 │   ├── graph_builder.py              # Knowledge graph builder and centrality scoring analyzer
 │   ├── query_engine.py               # Repository search, semantic matching, and recommendation engine
 │   ├── kb_generator.py               # Markdown and JSON Knowledge Base artifact generator
 │   └── dashboard_generator.py        # Standalone interactive Canvas UI dashboard generator
 ├── examples/
-│   ├── synthetic_terravic_org.json   # 15-repository synthetic dataset for offline testing
+│   ├── synthetic_terravic_org.json   # 16-repository multi-domain synthetic dataset
 │   └── sample_output/                # Pre-generated sample output files
 │       ├── dashboard.html            # Pre-rendered interactive Canvas dashboard
 │       ├── KNOWLEDGE_BASE.md         # Pre-rendered technical Markdown report
@@ -106,7 +107,7 @@ github-repo-kb-skill/
 └── tests/
     ├── __init__.py                   # Test package initialization
     ├── test_scanner.py               # Unit tests for URL parsing and metadata normalization
-    ├── test_clusterer.py             # Unit tests for domain clustering and regex rules
+    ├── test_clusterer.py             # Unit tests for thematic domain clustering and regex rules
     ├── test_graph_builder.py         # Unit tests for node, edge, and centrality logic
     ├── test_query_engine.py          # Unit tests for natural language repository search
     ├── test_kb_generator.py          # Unit tests for Markdown and JSON output formatting
@@ -116,13 +117,30 @@ github-repo-kb-skill/
 
 ---
 
+## Thematic Domain Clustering
+
+Rather than grouping repositories solely by technical implementation (such as grouping all Python code together or grouping all APIs together), the skill clusters repositories by their **thematic domain, business purpose, and functional subject matter**:
+
+- **Medical & Healthcare**: Clinical EHR/EMR records, patient portals, FHIR/HL7 interoperability, medical imaging (DICOM), HIPAA workflows, and telehealth systems.
+- **Life Sciences & Bioinformatics**: Genomics sequencing, DNA/RNA variant calling pipelines, molecular biology assays, clinical trials, and biomarker datasets.
+- **Finance, Billing & Commerce**: Invoicing, payment gateways, subscription billing, Stripe processing, and e-commerce checkout.
+- **Security, Identity & Access**: OAuth2 / OIDC authentication, identity management, JWT token signing, and role-based access control (RBAC).
+- **Data Intelligence & AI/ML**: Machine learning models, LLM inference, embeddings pipelines, ETL streaming, and vector databases.
+- **Developer Tooling & SDKs**: Official client libraries, command-line utilities (CLIs), code generators, and linters.
+- **Infrastructure & Cloud Operations**: Terraform infrastructure-as-code, Kubernetes manifests, Helm charts, and CI/CD pipelines.
+- **Core Platform & Business Services**: Central API gateways, user profiles, tenant management, and notification dispatchers.
+- **Utilities & Shared Libraries**: Reusable protocol buffers, shared data contracts, and base utility helpers.
+- **Documentation & Specifications**: System architecture specifications, OpenAPI blueprints, and technical RFCs.
+
+---
+
 ## Non-Technical User Guide: How to Use This Skill
 
 ### What This Skill Does in Plain Terms
 
 You do not need to write code or use complex developer commands to use this tool.
 
-When you point this skill at a GitHub account (such as `https://github.com/terravic` or any company GitHub page), the skill automatically inspects all the code projects in that account, organizes them into logical categories (like Web Apps, Backend Services, or Developer Tools), figures out how those projects connect to each other, builds an interactive visual dashboard in Canvas, and allows you to chat about any program or software capability you need.
+When you point this skill at a GitHub account (such as `https://github.com/terravic` or any company GitHub page), the skill automatically inspects all the code projects in that account, organizes them into thematic categories (like Medical & Healthcare, Life Sciences, Billing, or Security), figures out how those projects connect to each other, builds an interactive visual dashboard in Canvas, and allows you to chat about any program or software capability you need.
 
 ---
 
@@ -130,7 +148,7 @@ When you point this skill at a GitHub account (such as `https://github.com/terra
 
 - **Repository (Repo)**: A single project or software folder stored on GitHub.
 - **Organization / Account**: A collection of multiple repositories belonging to a company, open-source project, or individual.
-- **Domain Cluster**: A functional grouping of related projects. For example, grouping all user-facing websites into "Frontend UI" and all background processing systems into "Data Engineering".
+- **Thematic Domain Cluster**: A subject-matter grouping of related projects. For example, grouping clinical patient systems in "Medical & Healthcare", DNA sequencing in "Life Sciences", and billing in "Finance & Billing".
 - **Knowledge Graph**: An interactive visual map where every circle is a software project and the lines connecting them show how projects share code, talk to each other, or depend on one another.
 - **Repository Matcher & Search**: A search engine that tells you exactly which repository in the organization is best suited to your request, or tells you if no repository fits your need.
 - **Canvas UI**: The visual interactive panel that opens next to your chat conversation in AI assistant apps (such as Gemini Enterprise App or Antigravity).
@@ -149,12 +167,12 @@ For example:
 
 #### Step 3: Review the Results
 The AI assistant will:
-1. Scan and categorize the repositories.
+1. Scan and categorize the repositories into thematic domains.
 2. Provide a clean summary table in the chat showing total projects, domain categories, and central hub systems.
 3. Open the interactive visual dashboard in your Canvas panel.
 
 #### Step 4: Ask Questions or Explore the Dashboard
-You can ask questions directly in the chat (e.g. *"Which repository should I use to build a Python integration?"*) or click the **Repository Matcher** tab inside Canvas to search visually.
+You can ask questions directly in the chat (e.g. *"Which repository should I use for patient electronic health records?"*) or click the **Repository Matcher** tab inside Canvas to search visually.
 
 ---
 
@@ -162,40 +180,40 @@ You can ask questions directly in the chat (e.g. *"Which repository should I use
 
 After an organization is analyzed, you can ask the AI about any tool or capability. The skill will identify the best repository or inform you if no repository matches.
 
-#### Example 1: Finding an Integration SDK
-- **Your Question in Chat**: *"Which repository should I use if I want to write automation scripts in Python to talk to the platform API?"*
+#### Example 1: Finding a Medical System
+- **Your Question in Chat**: *"Which repository handles patient electronic health records and FHIR integration?"*
 - **Skill Response**:
-  > **Best Matched Repository**: `terravic-python-sdk` (High Confidence)
+  > **Best Matched Repository**: `terravic-patient-records` (High Confidence)
   >
-  > **Domain**: Developer Tooling & SDKs | **Language**: Python
+  > **Domain**: Medical & Healthcare | **Language**: Go
   >
-  > **GitHub URL**: `https://github.com/terravic/terravic-python-sdk`
+  > **GitHub URL**: `https://github.com/terravic/terravic-patient-records`
   >
-  > **Why this fits**: The repository provides an official Python SDK and CLI client with Pydantic serialization specifically designed for automation scripts and backend integration.
+  > **Why this fits**: The repository provides clinical electronic health record (EHR) storage conforming to HL7 FHIR R4 standards with HIPAA compliance.
 
-#### Example 2: Finding an Authentication Service
-- **Your Question in Chat**: *"Where is OAuth2 login and token authentication handled?"*
+#### Example 2: Finding a Genomics Pipeline
+- **Your Question in Chat**: *"Where is DNA sequencing and bioinformatics variant analysis processed?"*
 - **Skill Response**:
-  > **Best Matched Repository**: `terravic-auth-service` (High Confidence)
+  > **Best Matched Repository**: `terravic-genomics-pipeline` (High Confidence)
   >
-  > **Domain**: Core Services & Backend APIs | **Language**: Go
+  > **Domain**: Life Sciences & Bioinformatics | **Language**: Python
   >
-  > **Why this fits**: This repository implements the OAuth2 / OIDC identity provider, JWT token signing, and role-based access control (RBAC).
+  > **Why this fits**: This repository implements high-throughput bioinformatics pipelines for DNA/RNA sequencing and variant analysis.
 
 #### Example 3: Searching for a Feature Not Present in the Organization
 - **Your Question in Chat**: *"Is there a repository for video transcoding and media streaming?"*
 - **Skill Response**:
   > **No matching repository found**: No repository in this organization can answer your need for *"video transcoding and media streaming"*.
   >
-  > The organization currently contains repositories across these domains: *Core Services & Backend APIs*, *Frontend & User Interfaces*, *Developer Tooling & SDKs*, *Data Engineering & AI/ML*, *Infrastructure & DevOps*, *Shared Libraries & Utilities*, and *Documentation & Specifications*.
+  > The organization currently contains repositories across these domains: *Medical & Healthcare*, *Life Sciences & Bioinformatics*, *Finance, Billing & Commerce*, *Security, Identity & Access*, *Data Intelligence & AI/ML*, *Developer Tooling & SDKs*, *Infrastructure & Cloud Operations*, *Core Platform & Business Services*, *Utilities & Shared Libraries*, and *Documentation & Specifications*.
 
 ---
 
 ### Real-World Usage Scenarios and Example Prompts
 
-#### Scenario 1: Exploring a New Organization
+#### Scenario 1: Exploring an Organization's Thematic Architecture
 ```
-Please run the github-repo-kb skill on https://github.com/terravic. Group all projects into logical domains, map out the architecture knowledge graph, and display the dashboard in Canvas.
+Please run the github-repo-kb skill on https://github.com/terravic. Group all projects into thematic domains, map out the architecture knowledge graph, and display the dashboard in Canvas.
 ```
 
 #### Scenario 2: Running a Quick Safe Demonstration (Offline)
@@ -220,16 +238,16 @@ Once the dashboard loads in your Canvas panel:
 
 1. **Repository Matcher & Chat Tab**:
    - Click the **Repository Matcher & Chat** tab at the top.
-   - Type any question or capability (e.g. *"React UI dashboard"*, *"Kafka streaming"*, *"Video transcoding"*) into the search box and press Enter.
+   - Type any question or capability (e.g. *"FHIR patient records"*, *"DNA sequencing"*, *"OAuth2 authentication"*) into the search box and press Enter.
    - The result card will display the best-suited repository with a **Locate on Knowledge Graph** button that switches to the visual graph and centers on that repository!
 2. **Top Search Bar & Preset Switcher**:
-   - You can type or paste any new GitHub URL directly into the search bar at the top of the dashboard and click **Scan Address** to analyze a new organization immediately inside the dashboard.
+   - Type or paste any new GitHub URL directly into the search bar at the top of the dashboard and click **Scan Address** to analyze a new organization immediately inside the dashboard.
    - Use the **Presets** dropdown to quickly switch between the Synthetic demo platform, Pallets (Flask ecosystem), or FastAPI.
 3. **Knowledge Graph Canvas**:
    - **Zoom and Pan**: Scroll with your mouse wheel or trackpad to zoom in and out. Click and drag the canvas background to move around.
    - **Move Nodes**: Click and drag any circle to rearrange the visual layout.
    - **Pause Physics**: Click the "Pause Physics" button to lock the visual map in place.
-   - **Filter Categories**: Use the "All Clusters" dropdown to isolate one area (such as "Frontend & User Interfaces" or "Core Services").
+   - **Filter Categories**: Use the "All Clusters" dropdown to isolate one area (such as "Medical & Healthcare" or "Security, Identity & Access").
 4. **Inspection Side Drawer**:
    - When you click on any repository circle, a detailed panel slides in from the right.
    - It shows the repository description, star count, programming language, and exact list of dependencies.
@@ -254,7 +272,7 @@ Agent harnesses such as **Gemini Enterprise App**, **Spark**, and **Antigravity*
 
 This skill is architected specifically to maximize the Canvas experience:
 - **Iframe Sandboxing Compatibility**: Built with pure native HTML, CSS, and vanilla JavaScript without external build steps or server-side dependencies.
-- **Embedded Real-Time Scanner**: The Canvas UI contains an address bar where users can type any GitHub address or select presets directly inside the Canvas panel to trigger instant live scans and graph re-clustering.
+- **Embedded Real-Time Scanner**: The Canvas UI contains an address bar where users can type any GitHub address or select presets directly inside the Canvas panel to trigger instant live scans and thematic graph re-clustering.
 - **Interactive Repository Matcher**: Instant client-side scoring and recommendation engine built directly into the Canvas web application.
 - **Responsive Layout**: Designed to adapt fluidly across varying Canvas panel widths.
 - **Full Offline Portability**: Works offline with zero network dependency when loaded with synthetic datasets.
@@ -264,10 +282,10 @@ This skill is architected specifically to maximize the Canvas experience:
 ## Key Features
 
 - Standard Library Python Implementation: Runs directly with Python 3.8+ without mandatory external pip dependencies.
-- Dual Ingestion Modes: Works against the live GitHub REST API v3 or completely offline using synthetic JSON fixtures.
+- Thematic Domain Taxonomy: Categorizes codebases by business and scientific domains including Medical, Life Sciences, Finance, Security, AI/ML, Tooling, and Infrastructure.
+- Dual Ingestion Modes: Works against the live GitHub REST API v3 for any public account or completely offline using synthetic JSON fixtures.
 - Embedded Client-Side Scanner: The Canvas UI includes a live GitHub API scanner that can fetch public repositories and re-render the knowledge graph directly in the browser/iframe.
 - Conversational Repository Matcher: Evaluates natural language queries to recommend best-suited codebases or report when requirements cannot be met.
-- Intelligent Domain Clustering: Categorizes repositories into domains such as Core Services, Frontend UI, Data Engineering & AI/ML, Developer Tooling, DevOps & Infrastructure, Shared Libraries, and Documentation.
 - Clean Architecture Knowledge Graph: Builds directed relationships between repositories with concise labels, detailed relationship descriptions, degree centrality scoring, and automated hub/bridge detection.
 - Interactive Inspection Side Drawer: Slide-in panel displaying repository details, stars, forks, issues, language, topics, and clickable incoming/outgoing connections.
 - Agent Skill Standard: Full compatibility with Gemini Enterprise App, Spark, Antigravity, Claude Code, Cursor, and standard Skill Plug-in architectures via `SKILL.md`.
@@ -295,35 +313,47 @@ The file `scanner_config.json` is the primary configuration file:
     "include_forks": false,
     "include_archived": true,
     "max_repos": 100,
-    "offline_fixture": "examples/synthetic_terravic_org.json"
+    "offline_fixture": ""
   },
   "clustering_rules": [
+    {
+      "pattern": ".*-patient|.*-ehr|.*-telehealth|.*-medical|.*-clinical",
+      "cluster_id": "medical-healthcare"
+    },
+    {
+      "pattern": ".*-genomics|.*-bio.*|.*-trials|.*-dna",
+      "cluster_id": "life-sciences-bio"
+    },
+    {
+      "pattern": ".*-billing|.*-payment|.*-invoice|.*-stripe",
+      "cluster_id": "finance-billing"
+    },
+    {
+      "pattern": ".*-auth|.*-identity|.*-security|.*-sso",
+      "cluster_id": "security-identity"
+    },
+    {
+      "pattern": ".*-ai-.*|.*-pipeline|.*-analytics|.*-data",
+      "cluster_id": "data-ai-analytics"
+    },
     {
       "pattern": ".*-sdk|.*-client|.*-cli",
       "cluster_id": "developer-tooling"
     },
     {
-      "pattern": ".*-gateway|.*-auth|.*-service|.*-engine",
-      "cluster_id": "core-services"
-    },
-    {
-      "pattern": ".*-portal|.*-app|.*-ui|.*-design",
-      "cluster_id": "frontend-ui"
-    },
-    {
-      "pattern": ".*-pipeline|.*-ai-.*|.*-analytics",
-      "cluster_id": "data-analytics"
-    },
-    {
-      "pattern": ".*-infra|.*-infrastructure",
+      "pattern": ".*-infra|.*-infrastructure|.*-cloud",
       "cluster_id": "infrastructure-devops"
     },
     {
-      "pattern": ".*-core-lib|.*-common|.*-utils",
-      "cluster_id": "libraries-shared"
+      "pattern": ".*-gateway|.*-user-service|.*-notification",
+      "cluster_id": "core-platform"
     },
     {
-      "pattern": ".*-docs|.*-specs",
+      "pattern": ".*-common|.*-utils|.*-core-lib",
+      "cluster_id": "utilities-libraries"
+    },
+    {
+      "pattern": ".*-docs|.*-specs|.*-architecture",
       "cluster_id": "documentation-specs"
     }
   ],
@@ -343,7 +373,7 @@ The file `scanner_config.json` is the primary configuration file:
 ### 1. Quick Start with Offline Synthetic Data
 
 ```bash
-# Run using the default configuration (points to synthetic dataset)
+# Run using the default configuration
 python3 scripts/cli.py --config scanner_config.json
 
 # Or explicitly pass the synthetic fixture path
@@ -353,8 +383,8 @@ python3 scripts/cli.py --fixture examples/synthetic_terravic_org.json --output-d
 ### 2. Scanning a Live GitHub Organization or User
 
 ```bash
-# Scan using the command line flag
-python3 scripts/cli.py --url https://github.com/terravic
+# Scan any public GitHub organization or user
+python3 scripts/cli.py --url https://github.com/pallets
 
 # Scan with an authenticated token
 python3 scripts/cli.py --url https://github.com/terravic --token ghp_yourPersonalAccessTokenHere
@@ -365,11 +395,11 @@ python3 scripts/cli.py --url https://github.com/terravic --token ghp_yourPersona
 Search for the best-suited repository for any software request directly from the terminal:
 
 ```bash
-# Query an existing knowledge base
-python3 scripts/cli.py --query "Python client SDK for platform API"
+# Query for clinical patient records
+python3 scripts/cli.py --query "Patient electronic health records and FHIR"
 
-# Query for user authentication
-python3 scripts/cli.py --query "Where is OAuth2 and user login authentication handled?"
+# Query for DNA genomics pipelines
+python3 scripts/cli.py --query "Bioinformatics DNA variant analysis"
 
 # Query for a non-matching capability
 python3 scripts/cli.py --query "Blockchain cryptocurrency mining smart contract"
@@ -378,7 +408,7 @@ python3 scripts/cli.py --query "Blockchain cryptocurrency mining smart contract"
 ### 4. Scanning a Single Repository
 
 ```bash
-python3 scripts/cli.py --url https://github.com/terravic/terravic-api-gateway
+python3 scripts/cli.py --url https://github.com/terravic/terravic-patient-records
 ```
 
 ### 5. CLI Reference
@@ -415,23 +445,27 @@ Run the complete test suite using Python's built-in `unittest`:
 python3 -m unittest discover -s tests -v
 ```
 
-All 21 unit and integration tests verify URL parsing, metadata normalization, domain clustering, custom rules, graph construction, edge calculation, repository search engine, knowledge base generation, and HTML dashboard rendering.
+All 21 unit and integration tests verify URL parsing, metadata normalization, thematic domain clustering, custom rules, graph construction, edge calculation, repository search engine, knowledge base generation, and HTML dashboard rendering.
 
 ---
 
 ## Architecture and Data Model
 
-### Domain Taxonomy
+### Thematic Domain Taxonomy
 
-| Domain ID | Domain Name | Typical Technologies / Keywords |
+| Domain ID | Thematic Domain Name | Typical Subjects / Keywords |
 |---|---|---|
-| `core-services` | Core Services & Backend APIs | Go, Python, gRPC, REST, FastAPI, microservices, auth, gateways, servers |
-| `frontend-ui` | Frontend & User Interfaces | TypeScript, React, Next.js, Vue, Tailwind CSS, dashboards, web portals, mobile apps |
-| `data-analytics` | Data Engineering & AI/ML | Python, Spark, Kafka, ETL, ClickHouse, PyTorch, LLM, embeddings, vector search |
-| `developer-tooling` | Developer Tooling & SDKs | TypeScript, Python, Go, SDKs, CLI utilities, linters, test harnesses, code generators |
-| `infrastructure-devops` | Infrastructure & DevOps | HCL, Terraform, Kubernetes, Helm, Docker, CI/CD, GitOps, ArgoCD |
-| `libraries-shared` | Shared Libraries & Utilities | Proto definitions, common utilities, shared logging, telemetry, base schemas |
-| `documentation-specs` | Documentation & Specifications | Markdown, OpenAPI, RFCs, architectural decision records, technical guides |
+| `medical-healthcare` | Medical & Healthcare | EHR, EMR, FHIR, HL7, DICOM, clinical notes, patient care, telehealth, HIPAA |
+| `life-sciences-bio` | Life Sciences & Bioinformatics | Genomics, DNA, RNA, sequencing, bioinformatics, clinical trials, biomarker assays |
+| `finance-billing` | Finance, Billing & Commerce | Subscription billing, invoicing, Stripe, checkout, payment gateways, ledgers |
+| `security-identity` | Security, Identity & Access | OAuth2, OIDC, JWT, RBAC, IAM, authentication, encryption, secrets management |
+| `data-ai-analytics` | Data Intelligence & AI/ML | Machine learning, LLMs, embeddings, RAG, Kafka streaming, ETL, ClickHouse |
+| `developer-tooling` | Developer Tooling & SDKs | Python SDK, TypeScript SDK, CLI utilities, code generators, testing harnesses |
+| `infrastructure-devops` | Infrastructure & Cloud Operations | Terraform, Kubernetes, Helm, Docker, CI/CD pipelines, cloud monitoring |
+| `core-platform` | Core Platform & Business Services | API gateway, reverse proxy, user tenancy, notification dispatchers |
+| `frontend-applications` | User Applications & Web Portals | Patient portals, physician dashboards, customer consoles, mobile apps |
+| `utilities-libraries` | Utilities & Shared Libraries | Protocol buffers, shared data contracts, base utility helpers, schemas |
+| `documentation-specs` | Documentation & Specifications | Architectural blueprints, OpenAPI specs, technical guides, RFC standards |
 
 ---
 
@@ -441,24 +475,24 @@ All 21 unit and integration tests verify URL parsing, metadata normalization, do
 
 ```json
 {
-  "id": 101,
-  "name": "terravic-api-gateway",
-  "full_name": "terravic/terravic-api-gateway",
-  "html_url": "https://github.com/terravic/terravic-api-gateway",
-  "description": "High-performance edge reverse proxy and authentication gateway routing traffic to core microservices.",
+  "id": 103,
+  "name": "terravic-patient-records",
+  "full_name": "terravic/terravic-patient-records",
+  "html_url": "https://github.com/terravic/terravic-patient-records",
+  "description": "Electronic health record (EHR/EMR) service with HL7 FHIR interoperability, clinical notes, and HIPAA compliant patient store.",
   "primary_language": "Go",
-  "topics": ["api-gateway", "reverse-proxy", "auth", "grpc"],
-  "tech_stack": ["Go", "gRPC", "Redis", "Docker"],
-  "stars": 482,
-  "forks": 65,
-  "open_issues": 12,
-  "cluster_id": "core-services",
-  "cluster_name": "Core Services & Backend APIs",
-  "cluster_color": "#3B82F6",
-  "in_degree": 4,
-  "out_degree": 3,
-  "total_degree": 7,
-  "centrality_score": 0.50,
+  "topics": ["medical", "healthcare", "clinical", "patient", "ehr", "fhir", "hipaa", "records"],
+  "tech_stack": ["Go", "PostgreSQL", "FHIR", "Docker"],
+  "stars": 340,
+  "forks": 42,
+  "open_issues": 6,
+  "cluster_id": "medical-healthcare",
+  "cluster_name": "Medical & Healthcare",
+  "cluster_color": "#0EA5E9",
+  "in_degree": 3,
+  "out_degree": 2,
+  "total_degree": 5,
+  "centrality_score": 0.333,
   "is_hub": true,
   "is_bridge": true
 }
@@ -468,15 +502,15 @@ All 21 unit and integration tests verify URL parsing, metadata normalization, do
 
 ```json
 {
-  "source": 105,
-  "target": 110,
+  "source": 104,
+  "target": 103,
   "type": "depends_on",
-  "label": "Consumes SDK",
-  "description": "terravic-web-portal uses terravic-js-sdk for API integration.",
-  "weight": 2.0,
-  "is_cross_cluster": true,
-  "source_cluster": "frontend-ui",
-  "target_cluster": "developer-tooling"
+  "label": "Consumes Clinical API",
+  "description": "terravic-telehealth-portal imports and depends on terravic-patient-records.",
+  "weight": 2.5,
+  "is_cross_cluster": false,
+  "source_cluster": "medical-healthcare",
+  "target_cluster": "medical-healthcare"
 }
 ```
 
@@ -485,8 +519,8 @@ All 21 unit and integration tests verify URL parsing, metadata normalization, do
 ### Centrality and Hub Classification
 
 - **Degree Centrality**: Calculated as `total_connections / (total_repositories - 1)`.
-- **Architecture Hubs (`is_hub`)**: Repositories in the top 30% of total degree distribution (or degree >= 4), representing critical infrastructure or libraries upon which many other repositories depend.
-- **Cross-Domain Bridges (`is_bridge`)**: Repositories that connect two or more distinct functional clusters.
+- **Architecture Hubs (`is_hub`)**: Repositories representing critical thematic services or libraries upon which many other repositories depend.
+- **Cross-Domain Bridges (`is_bridge`)**: Repositories that connect two or more distinct functional or thematic clusters.
 
 ---
 
@@ -500,14 +534,14 @@ The generated Canvas UI (`output/dashboard.html`) provides the following interac
    - Theme toggle (Slate Dark / Clean Light).
    - `Export JSON` and `Print View` buttons.
 2. **Repository Matcher & Chat Tab**:
-   - Natural language search box for querying software capabilities.
+   - Natural language search box for querying software capabilities across thematic domains.
    - Clickable suggestion chips.
    - Ranked result card with match score, confidence, reasoning, and "Locate on Knowledge Graph" button.
 3. **Metric Summary Counters**:
-   - Live counters for Total Repositories, Domain Clusters, Graph Relationships, Aggregate Stars, and Architectural Hubs.
+   - Live counters for Total Repositories, Thematic Domain Clusters, Graph Relationships, Aggregate Stars, and Architectural Hubs.
 4. **Knowledge Graph Canvas (D3 Force Simulation)**:
    - Dynamic zoom, pan, and smooth node dragging.
-   - Nodes color-coded by domain cluster.
+   - Nodes color-coded by thematic domain cluster.
    - Directed relationship edges with dashed styling for cross-domain boundaries.
    - Live search filter with auto-dimming of non-matching nodes.
    - Domain filter dropdown and relationship filter dropdown.
@@ -516,9 +550,9 @@ The generated Canvas UI (`output/dashboard.html`) provides the following interac
    - Selecting any node opens a right drawer detailing the repository's description, technology stack, star count, language, incoming consumers, and outgoing dependencies.
    - Clicking any connection in the drawer automatically navigates to and focuses the connected node.
 6. **Cluster Explorer Tab**:
-   - Grid of interactive cards for each domain with expandable repository lists.
+   - Grid of interactive cards for each thematic domain with expandable repository lists.
 7. **Repository Catalog Data Table**:
-   - Searchable and sortable spreadsheet table of all repositories.
+   - Searchable and sortable spreadsheet table of all repositories with direct "Inspect" action buttons.
 8. **Cross-Domain Flow Matrix & Raw JSON Tab**:
    - Inter-cluster connectivity matrix and raw JSON inspector with clipboard copy utility.
 
