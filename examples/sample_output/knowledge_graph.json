@@ -9,10 +9,10 @@
       "primary_language": "Other",
       "topics": [
         "router",
-        "core-service",
-        "grpc",
+        "proxy",
         "gateway",
-        "proxy"
+        "grpc",
+        "core-service"
       ],
       "tech_stack": [
         "Docker",
@@ -42,14 +42,14 @@
       "description": "OAuth2 / OIDC identity provider, JWT token manager, and role-based access control (RBAC) security enforcement service.",
       "primary_language": "Other",
       "topics": [
-        "security",
-        "oauth2",
-        "identity",
         "jwt",
-        "auth",
-        "rbac",
+        "authentication",
+        "identity",
         "oidc",
-        "authentication"
+        "oauth2",
+        "security",
+        "auth",
+        "rbac"
       ],
       "tech_stack": [
         "Go",
@@ -79,13 +79,13 @@
       "primary_language": "Other",
       "topics": [
         "medical",
-        "records",
-        "clinical",
-        "ehr",
         "healthcare",
-        "fhir",
+        "hipaa",
         "patient",
-        "hipaa"
+        "fhir",
+        "clinical",
+        "records",
+        "ehr"
       ],
       "tech_stack": [
         "Docker",
@@ -115,12 +115,12 @@
       "primary_language": "Other",
       "topics": [
         "medical",
-        "clinical",
-        "portal",
-        "react",
         "healthcare",
         "telehealth",
-        "patient"
+        "portal",
+        "patient",
+        "clinical",
+        "react"
       ],
       "tech_stack": [
         "Next.js",
@@ -149,12 +149,12 @@
       "description": "High-throughput bioinformatics pipeline for DNA/RNA sequencing variant analysis and molecular genetics assays.",
       "primary_language": "Other",
       "topics": [
-        "biotech",
+        "biology",
         "genetics",
+        "genomics",
+        "biotech",
         "sequencing",
         "bioinformatics",
-        "genomics",
-        "biology",
         "dna"
       ],
       "tech_stack": [
@@ -184,12 +184,12 @@
       "description": "Life sciences research platform for managing clinical trials, participant cohorts, biomarker datasets, and bio-specimens.",
       "primary_language": "Other",
       "topics": [
-        "laboratory",
-        "pharma",
-        "research",
-        "biomarker",
         "clinical-trials",
         "specimen",
+        "laboratory",
+        "biomarker",
+        "research",
+        "pharma",
         "bioinformatics"
       ],
       "tech_stack": [
@@ -218,12 +218,12 @@
       "description": "Subscription lifecycle, usage meter aggregation, invoice generation, and Stripe payment webhook processing service.",
       "primary_language": "Other",
       "topics": [
+        "finance",
+        "stripe",
+        "billing",
+        "invoice",
         "accounting",
         "subscription",
-        "billing",
-        "finance",
-        "invoice",
-        "stripe",
         "payment"
       ],
       "tech_stack": [
@@ -253,12 +253,12 @@
       "description": "LLM inference orchestrator, vector embeddings pipeline, and automated anomaly detection model.",
       "primary_language": "Other",
       "topics": [
-        "inference",
-        "ml",
         "vector",
-        "llm",
         "rag",
+        "inference",
         "embeddings",
+        "ml",
+        "llm",
         "ai"
       ],
       "tech_stack": [
@@ -288,13 +288,13 @@
       "description": "Distributed real-time streaming pipeline and ETL workers aggregating telemetry events into data warehouse.",
       "primary_language": "Other",
       "topics": [
-        "analytics",
+        "pipeline",
+        "kafka",
         "spark",
         "warehouse",
-        "kafka",
+        "analytics",
         "data",
-        "etl",
-        "pipeline"
+        "etl"
       ],
       "tech_stack": [
         "ClickHouse",
@@ -323,12 +323,12 @@
       "description": "User profiles, tenant management, and organization membership service.",
       "primary_language": "Other",
       "topics": [
+        "tenancy",
+        "user-service",
+        "membership",
         "grpc",
         "organization",
-        "tenancy",
-        "tenant",
-        "user-service",
-        "membership"
+        "tenant"
       ],
       "tech_stack": [
         "Go",
@@ -357,12 +357,12 @@
       "description": "Multi-channel notification dispatcher for transactional email, SMS, and webhook alerts.",
       "primary_language": "Other",
       "topics": [
-        "service",
-        "dispatch",
         "notification",
+        "dispatch",
+        "service",
         "sms",
-        "email",
-        "alerts"
+        "alerts",
+        "email"
       ],
       "tech_stack": [
         "Docker",
@@ -391,10 +391,10 @@
       "primary_language": "Other",
       "topics": [
         "tooling",
-        "sdk",
-        "client-library",
         "python",
-        "cli"
+        "sdk",
+        "cli",
+        "client-library"
       ],
       "tech_stack": [
         "PyPI",
@@ -422,11 +422,11 @@
       "description": "Official TypeScript and JavaScript client SDK for integrating with platform APIs.",
       "primary_language": "Other",
       "topics": [
-        "tooling",
         "sdk",
-        "client-library",
+        "typescript",
         "npm",
-        "typescript"
+        "tooling",
+        "client-library"
       ],
       "tech_stack": [
         "Node.js",
@@ -455,13 +455,13 @@
       "primary_language": "Other",
       "topics": [
         "terraform",
-        "k8s",
         "infra",
-        "docker",
-        "helm",
         "kubernetes",
-        "ci-cd",
-        "infrastructure"
+        "infrastructure",
+        "k8s",
+        "helm",
+        "docker",
+        "ci-cd"
       ],
       "tech_stack": [
         "Docker",
@@ -491,13 +491,13 @@
       "description": "Shared Go and Python utilities, protocol buffer contracts, structured logging, and database helpers.",
       "primary_language": "Other",
       "topics": [
+        "core-lib",
         "shared",
+        "common",
         "utils",
         "types",
-        "proto",
-        "common",
         "schemas",
-        "core-lib"
+        "proto"
       ],
       "tech_stack": [
         "Go",
@@ -526,12 +526,12 @@
       "description": "System architecture blueprints, technical RFCs, security whitepapers, and developer documentation.",
       "primary_language": "Other",
       "topics": [
-        "spec",
         "documentation",
-        "architecture",
-        "guide",
         "docs",
-        "rfc"
+        "guide",
+        "rfc",
+        "spec",
+        "architecture"
       ],
       "tech_stack": [
         "Markdown",

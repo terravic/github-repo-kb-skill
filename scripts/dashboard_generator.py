@@ -914,6 +914,9 @@ class DashboardGenerator:
 
     let simulation;
     let svg, gLinks, gNodes, linkElements, nodeElements;
+    let d3Zoom;
+    let rawNodes = [];
+    let rawLinks = [];
     let selectedNodeId = null;
     let isPhysicsPaused = false;
     let activeClusterFilter = 'all';
@@ -1055,18 +1058,18 @@ class DashboardGenerator:
 
       d3.select('#graph-svg').selectAll('*').remove();
 
-      const rawNodes = (KB_DATA.graph.nodes || []).map(d => Object.assign({}, d));
-      const rawLinks = (KB_DATA.graph.links || []).map(d => Object.assign({}, d));
+      rawNodes = (KB_DATA.graph.nodes || []).map(d => Object.assign({}, d));
+      rawLinks = (KB_DATA.graph.links || []).map(d => Object.assign({}, d));
 
       svg = d3.select('#graph-svg')
         .attr('viewBox', [0, 0, width, height]);
 
       const g = svg.append('g');
 
-      const zoom = d3.zoom()
-        .scaleExtent([0.2, 5])
+      d3Zoom = d3.zoom()
+        .scaleExtent([0.05, 5])
         .on('zoom', (event) => g.attr('transform', event.transform));
-      svg.call(zoom);
+      svg.call(d3Zoom);
 
       svg.append('defs').selectAll('marker')
         .data(['arrow-default', 'arrow-cross'])
@@ -1085,11 +1088,33 @@ class DashboardGenerator:
       gLinks = g.append('g').attr('class', 'links');
       gNodes = g.append('g').attr('class', 'nodes');
 
+      // Pre-compute balanced radial cluster centroids to keep all clusters organized and visible
+      const clusters = KB_DATA.clusters || [];
+      const clusterCount = Math.max(clusters.length, 1);
+      const clusterCenters = {};
+      const layoutRadius = Math.min(width, height) * 0.32;
+      clusters.forEach((c, idx) => {
+        const angle = (idx / clusterCount) * 2 * Math.PI - Math.PI / 2;
+        clusterCenters[c.id] = {
+          x: width / 2 + Math.cos(angle) * layoutRadius,
+          y: height / 2 + Math.sin(angle) * layoutRadius
+        };
+      });
+
+      // Initial placement near cluster centroids
+      rawNodes.forEach(n => {
+        const center = clusterCenters[n.cluster_id] || { x: width / 2, y: height / 2 };
+        n.x = center.x + (Math.random() - 0.5) * 80;
+        n.y = center.y + (Math.random() - 0.5) * 80;
+      });
+
       simulation = d3.forceSimulation(rawNodes)
-        .force('link', d3.forceLink(rawLinks).id(d => d.id).distance(d => d.is_cross_cluster ? 130 : 80))
-        .force('charge', d3.forceManyBody().strength(-260))
+        .force('link', d3.forceLink(rawLinks).id(d => d.id).distance(d => d.is_cross_cluster ? 120 : 65))
+        .force('charge', d3.forceManyBody().strength(-180))
         .force('center', d3.forceCenter(width / 2, height / 2))
-        .force('collision', d3.forceCollide().radius(d => (d.is_hub ? 32 : 22)));
+        .force('collision', d3.forceCollide().radius(d => (d.is_hub ? 30 : 20)))
+        .force('clusterX', d3.forceX(d => (clusterCenters[d.cluster_id] ? clusterCenters[d.cluster_id].x : width / 2)).strength(0.16))
+        .force('clusterY', d3.forceY(d => (clusterCenters[d.cluster_id] ? clusterCenters[d.cluster_id].y : height / 2)).strength(0.16));
 
       linkElements = gLinks.selectAll('line')
         .data(rawLinks)
@@ -1121,6 +1146,7 @@ class DashboardGenerator:
         .attr('text-anchor', 'middle')
         .text(d => d.name);
 
+      let tickCounter = 0;
       simulation.on('tick', () => {
         linkElements
           .attr('x1', d => d.source.x)
@@ -1130,7 +1156,20 @@ class DashboardGenerator:
 
         nodeElements
           .attr('transform', d => `translate(${d.x},${d.y})`);
+
+        tickCounter++;
+        // Auto-frame all clusters during early simulation stabilization
+        if (tickCounter === 15 || tickCounter === 45) {
+          zoomToFitAll(false);
+        }
       });
+
+      simulation.on('end', () => {
+        zoomToFitAll(true);
+      });
+
+      // Immediate auto-fit framing
+      zoomToFitAll(false);
 
       function dragstarted(event, d) {
         if (!event.active && !isPhysicsPaused) simulation.alphaTarget(0.3).restart();
@@ -1149,6 +1188,147 @@ class DashboardGenerator:
           d.fx = null;
           d.fy = null;
         }
+      }
+    }
+
+    /* Auto-fit and frame all clusters and nodes into the main view */
+    function zoomToFitAll(animate = true, duration = 750) {
+      if (!rawNodes || rawNodes.length === 0 || !svg || !d3Zoom) return;
+      const container = document.getElementById('graph-container');
+      if (!container) return;
+      const width = container.clientWidth || 800;
+      const height = container.clientHeight || 700;
+      const padding = 70;
+
+      let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+      rawNodes.forEach(d => {
+        if (d.x !== undefined && d.y !== undefined) {
+          if (d.x < minX) minX = d.x;
+          if (d.x > maxX) maxX = d.x;
+          if (d.y < minY) minY = d.y;
+          if (d.y > maxY) maxY = d.y;
+        }
+      });
+
+      if (minX === Infinity) return;
+
+      const graphWidth = Math.max(maxX - minX, 100);
+      const graphHeight = Math.max(maxY - minY, 100);
+      const midX = (minX + maxX) / 2;
+      const midY = (minY + maxY) / 2;
+
+      const scale = Math.min(
+        (width - padding * 2) / graphWidth,
+        (height - padding * 2) / graphHeight,
+        1.1
+      );
+      const clampedScale = Math.max(0.12, Math.min(scale, 1.1));
+
+      const transform = d3.zoomIdentity
+        .translate(width / 2, height / 2)
+        .scale(clampedScale)
+        .translate(-midX, -midY);
+
+      if (animate) {
+        svg.transition().duration(duration).call(d3Zoom.transform, transform);
+      } else {
+        svg.call(d3Zoom.transform, transform);
+      }
+    }
+
+    /* Smoothly zoom and center on a specific thematic cluster */
+    function zoomToCluster(clusterId, animate = true, duration = 750) {
+      if (!rawNodes || rawNodes.length === 0 || !svg || !d3Zoom) return;
+      const clusterNodes = rawNodes.filter(d => d.cluster_id === clusterId);
+      if (!clusterNodes || clusterNodes.length === 0) {
+        zoomToFitAll(true);
+        return;
+      }
+
+      const container = document.getElementById('graph-container');
+      if (!container) return;
+      const width = container.clientWidth || 800;
+      const height = container.clientHeight || 700;
+      const padding = 85;
+
+      let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+      clusterNodes.forEach(d => {
+        if (d.x !== undefined && d.y !== undefined) {
+          if (d.x < minX) minX = d.x;
+          if (d.x > maxX) maxX = d.x;
+          if (d.y < minY) minY = d.y;
+          if (d.y > maxY) maxY = d.y;
+        }
+      });
+
+      if (minX === Infinity) return;
+
+      const clusterWidth = Math.max(maxX - minX, 120);
+      const clusterHeight = Math.max(maxY - minY, 120);
+      const midX = (minX + maxX) / 2;
+      const midY = (minY + maxY) / 2;
+
+      const scale = Math.min(
+        (width - padding * 2) / clusterWidth,
+        (height - padding * 2) / clusterHeight,
+        1.8
+      );
+      const clampedScale = Math.max(0.35, Math.min(scale, 1.8));
+
+      const transform = d3.zoomIdentity
+        .translate(width / 2, height / 2)
+        .scale(clampedScale)
+        .translate(-midX, -midY);
+
+      if (animate) {
+        svg.transition().duration(duration).call(d3Zoom.transform, transform);
+      } else {
+        svg.call(d3Zoom.transform, transform);
+      }
+    }
+
+    /* Zoom to frame a specific list of nodes */
+    function zoomToNodes(nodesList, animate = true, duration = 750) {
+      if (!nodesList || nodesList.length === 0 || !svg || !d3Zoom) return;
+      const container = document.getElementById('graph-container');
+      if (!container) return;
+      const width = container.clientWidth || 800;
+      const height = container.clientHeight || 700;
+      const padding = 80;
+
+      let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+      nodesList.forEach(d => {
+        if (d.x !== undefined && d.y !== undefined) {
+          if (d.x < minX) minX = d.x;
+          if (d.x > maxX) maxX = d.x;
+          if (d.y < minY) minY = d.y;
+          if (d.y > maxY) maxY = d.y;
+        }
+      });
+
+      if (minX === Infinity) return;
+
+      const nWidth = Math.max(maxX - minX, 120);
+      const nHeight = Math.max(maxY - minY, 120);
+      const midX = (minX + maxX) / 2;
+      const midY = (minY + maxY) / 2;
+
+      const scale = Math.min(
+        (width - padding * 2) / nWidth,
+        (height - padding * 2) / nHeight,
+        1.6
+      );
+      const clampedScale = Math.max(0.25, Math.min(scale, 1.6));
+
+      const transform = d3.zoomIdentity
+        .translate(width / 2, height / 2)
+        .scale(clampedScale)
+        .translate(-midX, -midY);
+
+      if (animate) {
+        svg.transition().duration(duration).call(d3Zoom.transform, transform);
+      } else {
+        svg.call(d3Zoom.transform, transform);
       }
     }
 
@@ -1173,7 +1353,7 @@ class DashboardGenerator:
 
     function selectNode(nodeId) {
       selectedNodeId = nodeId;
-      const node = (KB_DATA.graph.nodes || []).find(n => String(n.id) === String(nodeId) || n.name === nodeId);
+      const node = (rawNodes || []).find(n => String(n.id) === String(nodeId) || n.name === nodeId);
       if (!node) return;
 
       const targetActualId = node.id;
@@ -1193,8 +1373,8 @@ class DashboardGenerator:
       const sidebar = document.getElementById('graph-sidebar');
       if (!sidebar) return;
 
-      const incoming = (KB_DATA.graph.links || []).filter(l => String(l.target.id || l.target) === String(targetActualId));
-      const outgoing = (KB_DATA.graph.links || []).filter(l => String(l.source.id || l.source) === String(targetActualId));
+      const incoming = (rawLinks || []).filter(l => String(l.target.id || l.target) === String(targetActualId));
+      const outgoing = (rawLinks || []).filter(l => String(l.source.id || l.source) === String(targetActualId));
 
       const outgoingHtml = outgoing.length === 0 
         ? '<div style="font-size: 0.75rem; color: var(--text-dim);">No outgoing dependencies</div>'
@@ -1271,19 +1451,20 @@ class DashboardGenerator:
     function focusNodeOnGraph(nodeId) {
       switchTab('tab-graph');
       selectNode(nodeId);
-      const node = (KB_DATA.graph.nodes || []).find(n => String(n.id) === String(nodeId) || n.name === nodeId);
-      if (node && node.x !== undefined && node.y !== undefined && svg) {
+      const node = (rawNodes || []).find(n => String(n.id) === String(nodeId) || n.name === nodeId);
+      if (node && node.x !== undefined && node.y !== undefined && svg && d3Zoom) {
         const container = document.getElementById('graph-container');
         const width = container.clientWidth || 800;
         const height = container.clientHeight || 700;
-        svg.transition().duration(750).call(
-          d3.zoom().transform,
-          d3.zoomIdentity.translate(width / 2 - node.x * 1.5, height / 2 - node.y * 1.5).scale(1.5)
-        );
+        const transform = d3.zoomIdentity
+          .translate(width / 2, height / 2)
+          .scale(1.6)
+          .translate(-node.x, -node.y);
+        svg.transition().duration(750).call(d3Zoom.transform, transform);
       }
     }
 
-    /* Filter Graph by Cross-Cluster Matrix Cell */
+    /* Filter Graph by Cross-Cluster Matrix Cell and Zoom */
     function filterMatrixCell(srcClusterId, tgtClusterId) {
       switchTab('tab-graph');
       document.getElementById('graph-cluster-filter').value = 'all';
@@ -1301,7 +1482,10 @@ class DashboardGenerator:
         const match = (sCluster === srcClusterId && tCluster === tgtClusterId) || (sCluster === tgtClusterId && tCluster === srcClusterId);
         return !match;
       });
-      showToast(`Filtered graph for ${srcClusterId} &rarr; ${tgtClusterId}`);
+
+      const cellNodes = rawNodes.filter(d => d.cluster_id === srcClusterId || d.cluster_id === tgtClusterId);
+      zoomToNodes(cellNodes, true);
+      showToast(`Filtered and focused on ${srcClusterId} &rarr; ${tgtClusterId}`);
     }
 
     /* Repository Matcher & Chat Engine in JS */
@@ -1485,6 +1669,11 @@ class DashboardGenerator:
     function onClusterFilterChange(clusterId) {
       activeClusterFilter = clusterId;
       applyGraphFilters();
+      if (clusterId === 'all') {
+        zoomToFitAll(true);
+      } else {
+        zoomToCluster(clusterId, true);
+      }
     }
 
     function onEdgeFilterChange(edgeType) {
@@ -1545,12 +1734,6 @@ class DashboardGenerator:
 
     function resetGraphView() {
       resetSidebarDrawer();
-      if (svg) {
-        svg.transition().duration(500).call(
-          d3.zoom().transform,
-          d3.zoomIdentity
-        );
-      }
       const clusterSelect = document.getElementById('graph-cluster-filter');
       if (clusterSelect) clusterSelect.value = 'all';
       const edgeSelect = document.getElementById('graph-edge-filter');
@@ -1561,7 +1744,8 @@ class DashboardGenerator:
       activeEdgeFilter = 'all';
       if (nodeElements) nodeElements.classed('dimmed', false).classed('active', false);
       if (linkElements) linkElements.classed('dimmed', false).classed('highlighted', false);
-      showToast('Graph view reset.');
+      zoomToFitAll(true);
+      showToast('Graph view reset to show all clusters.');
     }
 
     /* Cluster Cards */
