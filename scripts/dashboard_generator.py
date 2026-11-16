@@ -1,22 +1,73 @@
 """
-Interactive Canvas UI Dashboard Generator.
+Interactive HTML Dashboard Generator.
 
-Generates a standalone, highly interactive HTML5 Canvas application with dynamic D3.js
-force-directed knowledge graphs, expandable cluster cards, searchable repository
-data tables, deep inspection drawers, a built-in client-side scanner, and an intelligent
-Repository Matcher & Search Assistant.
+Generates a standalone, offline-first, security-hardened, WCAG 2.2 AA accessible
+HTML5 application with vendored D3.js v7 force-directed knowledge graphs,
+expandable cluster cards, searchable repository data tables, inspection drawers,
+a hardened client-side scanner, and a local Repository Matcher and Search tool.
 """
 
+import base64
+import hashlib
+import html
 import json
 import os
+import re
 from typing import Any, Dict
+
+from scripts.security_utils import assert_not_symlink_file, validate_path_safe
 
 
 class DashboardGenerator:
-    """Generates an interactive HTML5 Canvas UI dashboard."""
+    """Generates a self-contained interactive HTML5 dashboard."""
+
+    VENDOR_D3_PATH = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)), "vendor", "d3.v7.min.js"
+    )
+    VENDOR_D3_SHA256 = (
+        "f2094bbf6141b359722c4fe454eb6c4b0f0e42cc10cc7af921fc158fceb86539"
+    )
 
     def __init__(self, output_dir: str = "output"):
         self.output_dir = output_dir
+
+    @classmethod
+    def _load_vendored_d3(cls) -> str:
+        """Load vendored D3.js v7 bundle and verify its pinned SHA-256 integrity hash."""
+        if not os.path.isfile(cls.VENDOR_D3_PATH):
+            raise RuntimeError(
+                f"Vendored D3 bundle not found at '{cls.VENDOR_D3_PATH}'."
+            )
+        with open(cls.VENDOR_D3_PATH, "rb") as f:
+            raw_bytes = f.read()
+        actual_sha = hashlib.sha256(raw_bytes).hexdigest()
+        if actual_sha != cls.VENDOR_D3_SHA256:
+            raise RuntimeError(
+                f"Vendored D3 SHA-256 integrity mismatch: expected {cls.VENDOR_D3_SHA256}, "
+                f"got {actual_sha}."
+            )
+        script_text = raw_bytes.decode("utf-8")
+        if "</script" in script_text.lower():
+            raise RuntimeError("Vendored D3 bundle contains unexpected closing script tag.")
+        return script_text
+
+    @staticmethod
+    def _safe_json_for_script(data: Any) -> str:
+        """Serialize JSON safely for embedding inside <script type='application/json'>."""
+        raw = json.dumps(data, ensure_ascii=False)
+        return (
+            raw.replace("&", "\\u0026")
+            .replace("<", "\\u003c")
+            .replace(">", "\\u003e")
+            .replace("\u2028", "\\u2028")
+            .replace("\u2029", "\\u2029")
+        )
+
+    @staticmethod
+    def _csp_sha256(script_body: str) -> str:
+        """Compute exact CSP sha256-<base64> token for an inline script block."""
+        digest = hashlib.sha256(script_body.encode("utf-8")).digest()
+        return f"'sha256-{base64.b64encode(digest).decode('ascii')}'"
 
     def generate(
         self,
@@ -25,10 +76,12 @@ class DashboardGenerator:
         graph_data: Dict[str, Any],
     ) -> str:
         """
-        Produce standalone dashboard.html tailored for Canvas iframe and browser rendering.
+        Produce standalone dashboard.html for embedded webview and browser rendering.
         """
-        os.makedirs(self.output_dir, exist_ok=True)
-        dashboard_path = os.path.join(self.output_dir, "dashboard.html")
+        safe_output_dir = validate_path_safe(self.output_dir, for_write=True)
+        os.makedirs(safe_output_dir, exist_ok=True)
+        dashboard_path = os.path.join(safe_output_dir, "dashboard.html")
+        assert_not_symlink_file(dashboard_path)
 
         embedded_payload = {
             "metadata": metadata,
@@ -52,9 +105,26 @@ class DashboardGenerator:
         return dashboard_path
 
     def _build_html(self, data: Dict[str, Any]) -> str:
-        json_data_str = json.dumps(data)
-        owner_name = data.get("metadata", {}).get("owner", "")
-        target_url = data.get("metadata", {}).get("input_url", "")
+        json_data_str = self._safe_json_for_script(data)
+        d3_script_body = self._load_vendored_d3()
+        app_script_body = self._get_app_script()
+
+        d3_hash = self._csp_sha256(d3_script_body)
+        app_hash = self._csp_sha256(app_script_body)
+        csp_content = (
+            "default-src 'none'; "
+            f"script-src {d3_hash} {app_hash}; "
+            "style-src 'unsafe-inline'; "
+            "connect-src https://api.github.com; "
+            "img-src 'self' data:; "
+            "font-src 'none'; "
+            "object-src 'none'; "
+            "base-uri 'none'; "
+            "form-action 'none';"
+        )
+
+        owner_name = str(data.get("metadata", {}).get("owner", "") or "")
+        target_url = str(data.get("metadata", {}).get("input_url", "") or "")
 
         if not target_url or target_url == "GitHub Target":
             target_display = "Target: None (Enter a GitHub URL above to scan)"
@@ -64,67 +134,92 @@ class DashboardGenerator:
             input_value = target_url
 
         if not owner_name or owner_name == "Repository Organization":
-            title_name = "Repository Architecture Canvas"
+            title_name = "Repository Architecture Dashboard"
         else:
-            title_name = f"Repository Architecture Canvas - {owner_name}"
+            title_name = f"Repository Architecture Dashboard - {owner_name}"
 
         template = r"""<!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="__CSP_CONTENT__" />
+  <meta name="referrer" content="no-referrer" />
   <title>__TITLE_NAME__</title>
-  <script src="https://d3js.org/d3.v7.min.js"></script>
   <style>
     :root {
       --bg-base: #0f172a;
       --bg-surface: #1e293b;
-      --bg-surface-elevated: #334155;
-      --bg-surface-subtle: rgba(30, 41, 59, 0.78);
-      --border-color: #334155;
-      --border-hover: #475569;
+      --bg-surface-elevated: #293548;
+      --bg-surface-subtle: rgba(30, 41, 59, 0.90);
+      --border-color: #475569;
+      --border-control: #7c8ea6;
+      --border-hover: #3b4b63;
       --text-main: #f8fafc;
-      --text-muted: #94a3b8;
-      --text-dim: #64748b;
-      --primary: #3b82f6;
-      --primary-hover: #2563eb;
-      --accent: #06b6d4;
-      --success: #10b981;
-      --warning: #f59e0b;
-      --danger: #ef4444;
-      --graph-link-stroke: #64748b;
+      --text-muted: #cbd5e1;
+      --text-dim: #94a3b8;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --primary-text: #60a5fa;
+      --accent-text: #22d3ee;
+      --tag-text: #93c5fd;
+      --tag-tech-text: #6ee7b7;
+      --success-text: #34d399;
+      --warning-text: #fbbf24;
+      --danger-text: #fca5a5;
+      --danger-bg: #3b1720;
+      --danger-border: #f87171;
+      --tooltip-title: #38bdf8;
+      --focus-ring: #38bdf8;
+      --matrix-active-bg: #1e3a5f;
+      --matrix-active-text: #e0f2fe;
+      --graph-link-stroke: #7c8ea6;
       --graph-link-cross: #94a3b8;
-      --graph-link-weak: #475569;
+      --graph-link-weak: #64748b;
       --graph-node-stroke: #0f172a;
       --graph-hub-stroke: #fbbf24;
-      --graph-label-halo: rgba(15, 23, 42, 0.92);
-      --graph-pill-bg: rgba(15, 23, 42, 0.92);
-      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+      --graph-label-halo: rgba(15, 23, 42, 0.94);
+      --graph-pill-bg: rgba(15, 23, 42, 0.94);
+      --font-sans: system-ui, ui-sans-serif, Helvetica, Arial, sans-serif;
+      --font-mono: ui-monospace, "Liberation Mono", "DejaVu Sans Mono", monospace;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.08);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.16), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.32);
     }
 
     [data-theme="light"] {
       --bg-base: #f8fafc;
       --bg-surface: #ffffff;
-      --bg-surface-elevated: #f1f5f9;
-      --bg-surface-subtle: rgba(255, 255, 255, 0.86);
-      --border-color: #e2e8f0;
-      --border-hover: #cbd5e1;
+      --bg-surface-elevated: #eef2f6;
+      --bg-surface-subtle: rgba(255, 255, 255, 0.94);
+      --border-color: #cbd5e1;
+      --border-control: #64748b;
+      --border-hover: #dbe4ef;
       --text-main: #0f172a;
-      --text-muted: #475569;
-      --text-dim: #94a3b8;
-      --primary: #2563eb;
-      --primary-hover: #1d4ed8;
-      --graph-link-stroke: #64748b;
-      --graph-link-cross: #475569;
-      --graph-link-weak: #94a3b8;
+      --text-muted: #334155;
+      --text-dim: #475569;
+      --primary: #1d4ed8;
+      --primary-hover: #1e40af;
+      --primary-text: #1d4ed8;
+      --accent-text: #0e7490;
+      --tag-text: #1e40af;
+      --tag-tech-text: #065f46;
+      --success-text: #065f46;
+      --warning-text: #92400e;
+      --danger-text: #b91c1c;
+      --danger-bg: #fef2f2;
+      --danger-border: #b91c1c;
+      --tooltip-title: #0369a1;
+      --focus-ring: #1d4ed8;
+      --matrix-active-bg: #dbeafe;
+      --matrix-active-text: #1e3a8a;
+      --graph-link-stroke: #475569;
+      --graph-link-cross: #334155;
+      --graph-link-weak: #64748b;
       --graph-node-stroke: #ffffff;
-      --graph-hub-stroke: #d97706;
-      --graph-label-halo: rgba(248, 250, 252, 0.94);
-      --graph-pill-bg: rgba(255, 255, 255, 0.95);
+      --graph-hub-stroke: #b45309;
+      --graph-label-halo: rgba(248, 250, 252, 0.95);
+      --graph-pill-bg: rgba(255, 255, 255, 0.96);
     }
 
     * {
@@ -144,6 +239,47 @@ class DashboardGenerator:
       min-height: 100vh;
     }
 
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .skip-link {
+      position: absolute;
+      left: 12px;
+      top: -60px;
+      z-index: 1000;
+      background-color: var(--primary);
+      color: #ffffff;
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 0.88rem;
+      text-decoration: none;
+      border: 2px solid #ffffff;
+    }
+
+    .skip-link:focus {
+      top: 12px;
+    }
+
+    a:focus-visible,
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    textarea:focus-visible,
+    [tabindex]:focus-visible {
+      outline: 2px solid var(--focus-ring);
+      outline-offset: 2px;
+    }
+
     .topbar {
       display: flex;
       justify-content: space-between;
@@ -154,13 +290,14 @@ class DashboardGenerator:
       position: sticky;
       top: 0;
       z-index: 50;
-      gap: 16px;
+      gap: 12px;
       flex-wrap: wrap;
     }
 
     .topbar-brand {
       display: flex;
       flex-direction: column;
+      min-width: 0;
     }
 
     .topbar-title {
@@ -168,11 +305,13 @@ class DashboardGenerator:
       font-weight: 700;
       letter-spacing: -0.02em;
       color: var(--text-main);
+      line-height: 1.3;
     }
 
     .topbar-subtitle {
       font-size: 0.78rem;
       color: var(--text-muted);
+      overflow-wrap: anywhere;
     }
 
     .scan-bar {
@@ -182,20 +321,26 @@ class DashboardGenerator:
       background-color: var(--bg-base);
       padding: 4px 8px;
       border-radius: 6px;
-      border: 1px solid var(--border-color);
-      flex: 1;
+      border: 1px solid var(--border-control);
+      flex: 1 1 240px;
       max-width: 520px;
+      min-width: 0;
+    }
+
+    .scan-bar:focus-within {
+      border-color: var(--focus-ring);
     }
 
     .scan-input {
       flex: 1;
-      background: none;
+      min-width: 0;
+      background: transparent;
       border: none;
       color: var(--text-main);
       font-size: 0.85rem;
       font-family: var(--font-mono);
-      outline: none;
       padding: 4px 6px;
+      min-height: 28px;
     }
 
     .scan-input::placeholder {
@@ -204,16 +349,19 @@ class DashboardGenerator:
 
     .btn {
       padding: 6px 12px;
+      min-height: 30px;
+      min-width: 28px;
       font-size: 0.82rem;
       font-weight: 600;
       border-radius: 5px;
-      border: 1px solid var(--border-color);
+      border: 1px solid var(--border-control);
       background-color: var(--bg-surface-elevated);
       color: var(--text-main);
       cursor: pointer;
-      transition: all 0.15s ease;
+      transition: background-color 0.15s ease, border-color 0.15s ease;
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 6px;
       white-space: nowrap;
     }
@@ -221,6 +369,11 @@ class DashboardGenerator:
     .btn:hover {
       background-color: var(--border-hover);
       border-color: var(--text-muted);
+    }
+
+    .btn:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
     }
 
     .btn-primary {
@@ -235,19 +388,25 @@ class DashboardGenerator:
     }
 
     .btn-sm {
-      padding: 4px 8px;
-      font-size: 0.75rem;
+      padding: 4px 10px;
+      min-height: 28px;
+      font-size: 0.78rem;
     }
 
     .topbar-actions {
       display: flex;
       gap: 8px;
       align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .topbar-actions select {
+      max-width: 100%;
     }
 
     .metric-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 160px), 1fr));
       gap: 12px;
       padding: 16px 20px;
     }
@@ -260,16 +419,16 @@ class DashboardGenerator:
       display: flex;
       flex-direction: column;
       box-shadow: var(--shadow-sm);
-      transition: transform 0.15s, border-color 0.15s;
+      transition: transform 0.15s ease, border-color 0.15s ease;
     }
 
     .metric-card:hover {
-      border-color: var(--primary);
+      border-color: var(--primary-text);
       transform: translateY(-2px);
     }
 
     .metric-label {
-      font-size: 0.72rem;
+      font-size: 0.74rem;
       text-transform: uppercase;
       letter-spacing: 0.05em;
       color: var(--text-muted);
@@ -284,7 +443,7 @@ class DashboardGenerator:
     }
 
     .metric-subtext {
-      font-size: 0.72rem;
+      font-size: 0.76rem;
       color: var(--text-dim);
       margin-top: 4px;
     }
@@ -300,18 +459,20 @@ class DashboardGenerator:
       border-bottom: 1px solid var(--border-color);
       margin-bottom: 16px;
       overflow-x: auto;
+      flex-wrap: wrap;
     }
 
     .tab-btn {
-      padding: 8px 16px;
+      padding: 8px 14px;
+      min-height: 36px;
       background: none;
       border: none;
-      border-bottom: 2px solid transparent;
+      border-bottom: 3px solid transparent;
       color: var(--text-muted);
       font-size: 0.88rem;
       font-weight: 600;
       cursor: pointer;
-      transition: all 0.15s ease;
+      transition: color 0.15s ease, border-color 0.15s ease;
       white-space: nowrap;
     }
 
@@ -320,8 +481,8 @@ class DashboardGenerator:
     }
 
     .tab-btn.active {
-      color: var(--primary);
-      border-bottom-color: var(--primary);
+      color: var(--primary-text);
+      border-bottom-color: var(--primary-text);
     }
 
     .tab-pane {
@@ -350,13 +511,17 @@ class DashboardGenerator:
         grid-template-columns: 1fr;
         height: auto;
       }
+      .graph-sidebar {
+        border-left: none;
+        border-top: 1px solid var(--border-color);
+      }
     }
 
-    .graph-canvas-container {
+    .graph-viewport-container {
       position: relative;
       width: 100%;
       height: 100%;
-      min-height: 540px;
+      min-height: 520px;
       background: radial-gradient(circle at center, var(--bg-surface-elevated) 0%, var(--bg-base) 100%);
       overflow: hidden;
     }
@@ -371,31 +536,34 @@ class DashboardGenerator:
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: 5px;
+      gap: 6px;
       background-color: var(--bg-surface-subtle);
       padding: 6px 8px;
       border-radius: 6px;
-      border: 1px solid var(--border-color);
+      border: 1px solid var(--border-control);
       z-index: 10;
       backdrop-filter: blur(8px);
     }
 
-    .graph-controls select, .graph-controls input {
+    .graph-controls select,
+    .graph-controls input {
       padding: 4px 6px;
+      min-height: 28px;
       background-color: var(--bg-surface-elevated);
-      border: 1px solid var(--border-color);
+      border: 1px solid var(--border-control);
       color: var(--text-main);
       border-radius: 4px;
-      font-size: 0.74rem;
+      font-size: 0.76rem;
+      max-width: 100%;
     }
 
     .graph-controls input#graph-search {
-      width: 138px;
+      width: 148px;
     }
 
     .graph-controls .btn-sm {
-      padding: 4px 7px;
-      font-size: 0.74rem;
+      padding: 4px 8px;
+      font-size: 0.76rem;
     }
 
     .graph-zoom-bar {
@@ -406,7 +574,7 @@ class DashboardGenerator:
       align-items: center;
       gap: 4px;
       background-color: var(--bg-surface-subtle);
-      border: 1px solid var(--border-color);
+      border: 1px solid var(--border-control);
       border-radius: 6px;
       padding: 4px 6px;
       z-index: 10;
@@ -415,13 +583,13 @@ class DashboardGenerator:
     }
 
     .zoom-btn {
-      width: 26px;
-      height: 26px;
-      border: 1px solid var(--border-color);
+      min-width: 28px;
+      min-height: 28px;
+      border: 1px solid var(--border-control);
       border-radius: 4px;
       background-color: var(--bg-surface-elevated);
       color: var(--text-main);
-      font-size: 0.85rem;
+      font-size: 0.9rem;
       font-weight: 700;
       cursor: pointer;
       display: inline-flex;
@@ -438,15 +606,15 @@ class DashboardGenerator:
     .zoom-btn-fit {
       width: auto;
       padding: 0 8px;
-      font-size: 0.72rem;
+      font-size: 0.76rem;
       font-weight: 600;
     }
 
     .zoom-level {
-      min-width: 40px;
+      min-width: 44px;
       text-align: center;
       font-family: var(--font-mono);
-      font-size: 0.72rem;
+      font-size: 0.76rem;
       color: var(--text-muted);
       user-select: none;
     }
@@ -471,16 +639,16 @@ class DashboardGenerator:
     }
 
     .cluster-hull {
-      fill-opacity: 0.065;
-      stroke-opacity: 0.24;
+      fill-opacity: 0.08;
+      stroke-opacity: 0.30;
       stroke-dasharray: 5, 4;
       cursor: pointer;
       transition: fill-opacity 0.2s ease, stroke-opacity 0.2s ease;
     }
 
     .cluster-hull:hover {
-      fill-opacity: 0.11;
-      stroke-opacity: 0.42;
+      fill-opacity: 0.14;
+      stroke-opacity: 0.50;
     }
 
     .cluster-title {
@@ -504,31 +672,31 @@ class DashboardGenerator:
     .graph-link {
       fill: none;
       stroke: var(--graph-link-stroke);
-      stroke-opacity: 0.44;
+      stroke-opacity: 0.48;
       stroke-linecap: round;
       transition: stroke-opacity 0.2s ease, opacity 0.2s ease;
     }
 
     .graph-link.cross-cluster {
       stroke: var(--graph-link-cross);
-      stroke-opacity: 0.36;
+      stroke-opacity: 0.40;
       stroke-dasharray: 5, 4;
     }
 
     .graph-link.weak-link {
       stroke: var(--graph-link-weak);
-      stroke-opacity: 0.18;
+      stroke-opacity: 0.24;
       stroke-dasharray: 2.5, 3.5;
     }
 
     .graph-link.highlighted {
-      stroke: #38bdf8 !important;
+      stroke: var(--focus-ring) !important;
       stroke-opacity: 0.95 !important;
       stroke-dasharray: none !important;
     }
 
     .graph-link.dimmed {
-      opacity: 0.04;
+      opacity: 0.05;
     }
 
     .edge-labels-layer {
@@ -537,7 +705,7 @@ class DashboardGenerator:
 
     .edge-label-bg {
       fill: var(--graph-pill-bg);
-      stroke: var(--border-color);
+      stroke: var(--border-control);
     }
 
     .edge-label-text {
@@ -550,6 +718,15 @@ class DashboardGenerator:
     .graph-node {
       cursor: pointer;
       transition: opacity 0.2s ease;
+    }
+
+    .graph-node:focus {
+      outline: none;
+    }
+
+    .graph-node:focus-visible circle.node-circle {
+      stroke: var(--focus-ring) !important;
+      stroke-width: 4px !important;
     }
 
     .graph-node circle.node-circle {
@@ -575,7 +752,7 @@ class DashboardGenerator:
 
     .node-label-bg {
       fill: var(--graph-pill-bg);
-      stroke: var(--border-color);
+      stroke: var(--border-control);
     }
 
     .node-label-text {
@@ -608,30 +785,97 @@ class DashboardGenerator:
       color: var(--text-dim);
       font-size: 0.85rem;
       padding: 20px;
-      line-height: 1.4;
+      line-height: 1.45;
+    }
+
+    .sidebar-link-btn {
+      width: 100%;
+      text-align: left;
+      cursor: pointer;
+      padding: 8px 10px;
+      min-height: 36px;
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-control);
+      border-radius: 5px;
+      font-size: 0.8rem;
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      transition: background-color 0.15s ease, border-color 0.15s ease;
+    }
+
+    .sidebar-link-btn:hover {
+      background: var(--border-hover);
+      border-color: var(--primary-text);
     }
 
     .badge {
-      display: inline-block;
-      padding: 2px 7px;
-      font-size: 0.72rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 2px 8px;
+      font-size: 0.74rem;
       font-weight: 600;
       border-radius: 4px;
       background-color: var(--bg-surface-elevated);
       color: var(--text-main);
-      border: 1px solid var(--border-color);
+      border: 1px solid var(--border-control);
+    }
+
+    .color-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+      flex-shrink: 0;
+      border: 1px solid rgba(15, 23, 42, 0.35);
+    }
+
+    .badge-hub {
+      color: var(--warning-text);
+      border-color: var(--warning-text);
+    }
+
+    .badge-bridge {
+      color: var(--accent-text);
+      border-color: var(--accent-text);
+    }
+
+    .badge-high {
+      color: var(--success-text);
+      border-color: var(--success-text);
+    }
+
+    .badge-moderate {
+      color: var(--warning-text);
+      border-color: var(--warning-text);
     }
 
     .tag {
       display: inline-block;
-      padding: 2px 6px;
-      font-size: 0.68rem;
+      padding: 2px 7px;
+      font-size: 0.72rem;
       border-radius: 3px;
       background-color: var(--bg-surface-elevated);
-      color: #93c5fd;
+      color: var(--tag-text);
       margin: 2px;
       font-family: var(--font-mono);
-      border: 1px solid var(--border-color);
+      border: 1px solid var(--border-control);
+    }
+
+    .tag-tech {
+      color: var(--tag-tech-text);
+    }
+
+    .ext-link {
+      color: var(--primary-text);
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    .ext-link:hover {
+      color: var(--text-main);
     }
 
     /* Query Matcher Tab */
@@ -639,24 +883,27 @@ class DashboardGenerator:
       background-color: var(--bg-surface);
       border: 1px solid var(--border-color);
       border-radius: 8px;
-      padding: 24px;
+      padding: 20px;
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      gap: 18px;
       box-shadow: var(--shadow-sm);
     }
 
     .matcher-search-box {
       display: flex;
       gap: 10px;
-      align-items: center;
+      align-items: stretch;
+      flex-wrap: wrap;
     }
 
     .matcher-input {
-      flex: 1;
+      flex: 1 1 220px;
+      min-width: 0;
       padding: 10px 14px;
+      min-height: 40px;
       background-color: var(--bg-base);
-      border: 1px solid var(--border-color);
+      border: 1px solid var(--border-control);
       border-radius: 6px;
       color: var(--text-main);
       font-size: 0.95rem;
@@ -670,36 +917,56 @@ class DashboardGenerator:
     }
 
     .chip-btn {
-      padding: 4px 10px;
+      padding: 5px 12px;
+      min-height: 30px;
       background-color: var(--bg-surface-elevated);
-      border: 1px solid var(--border-color);
+      border: 1px solid var(--border-control);
       border-radius: 20px;
-      color: var(--text-muted);
-      font-size: 0.78rem;
+      color: var(--text-main);
+      font-size: 0.8rem;
       cursor: pointer;
-      transition: all 0.15s ease;
+      transition: background-color 0.15s ease, border-color 0.15s ease;
     }
 
     .chip-btn:hover {
       background-color: var(--border-hover);
-      color: var(--text-main);
-      border-color: var(--primary);
+      border-color: var(--primary-text);
     }
 
     .matcher-result-card {
       background-color: var(--bg-surface-elevated);
-      border: 1px solid var(--border-color);
+      border: 1px solid var(--border-control);
       border-radius: 8px;
-      padding: 20px;
+      padding: 18px;
       display: flex;
       flex-direction: column;
       gap: 12px;
     }
 
+    .matcher-no-match {
+      background: var(--danger-bg);
+      border: 1px solid var(--danger-border);
+      padding: 18px;
+      border-radius: 8px;
+    }
+
+    .matcher-alt-btn {
+      background: none;
+      border: none;
+      padding: 2px 4px;
+      min-height: 28px;
+      color: var(--primary-text);
+      font-weight: 700;
+      font-size: 0.84rem;
+      cursor: pointer;
+      text-decoration: underline;
+      text-align: left;
+    }
+
     /* Cluster Cards Grid */
     .cluster-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
       gap: 16px;
     }
 
@@ -711,21 +978,35 @@ class DashboardGenerator:
       display: flex;
       flex-direction: column;
       gap: 10px;
-      cursor: pointer;
-      transition: all 0.15s ease;
+      transition: border-color 0.15s ease, transform 0.15s ease;
       border-left-width: 4px;
       box-shadow: var(--shadow-sm);
     }
 
     .cluster-card:hover {
-      border-color: var(--text-muted);
+      border-color: var(--border-control);
       transform: translateY(-2px);
+    }
+
+    .cluster-card-toggle {
+      width: 100%;
+      background: none;
+      border: none;
+      padding: 0;
+      text-align: left;
+      color: inherit;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
 
     .cluster-card-header {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
+      gap: 8px;
+      width: 100%;
     }
 
     .cluster-card-title {
@@ -735,24 +1016,27 @@ class DashboardGenerator:
     }
 
     .cluster-card-desc {
-      font-size: 0.82rem;
+      font-size: 0.84rem;
       color: var(--text-muted);
+      margin-top: 2px;
     }
 
     .cluster-card-stats {
       display: flex;
       gap: 14px;
-      font-size: 0.78rem;
+      flex-wrap: wrap;
+      font-size: 0.8rem;
       color: var(--text-muted);
       border-top: 1px solid var(--border-color);
       padding-top: 10px;
+      width: 100%;
     }
 
     .cluster-repos-list {
       display: none;
-      margin-top: 8px;
-      padding-top: 8px;
-      border-top: 1px dashed var(--border-color);
+      margin-top: 4px;
+      padding-top: 10px;
+      border-top: 1px dashed var(--border-control);
     }
 
     .cluster-card.expanded .cluster-repos-list {
@@ -760,20 +1044,25 @@ class DashboardGenerator:
     }
 
     .cluster-repo-item {
-      font-size: 0.8rem;
+      width: 100%;
+      font-size: 0.82rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 6px 8px;
+      padding: 6px 10px;
+      min-height: 32px;
       background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-control);
       border-radius: 4px;
+      color: var(--text-main);
       cursor: pointer;
-      transition: background 0.15s ease;
+      text-align: left;
+      transition: background-color 0.15s ease, border-color 0.15s ease;
     }
 
     .cluster-repo-item:hover {
       background: var(--border-hover);
-      color: var(--primary);
+      border-color: var(--primary-text);
     }
 
     /* Repository Data Table */
@@ -794,11 +1083,12 @@ class DashboardGenerator:
     }
 
     .table-search {
-      flex: 1;
-      min-width: 220px;
+      flex: 1 1 200px;
+      min-width: 0;
       padding: 6px 10px;
+      min-height: 34px;
       background-color: var(--bg-base);
-      border: 1px solid var(--border-color);
+      border: 1px solid var(--border-control);
       border-radius: 5px;
       color: var(--text-main);
       font-size: 0.85rem;
@@ -813,20 +1103,33 @@ class DashboardGenerator:
 
     table.data-table th {
       background-color: var(--bg-surface-elevated);
-      padding: 10px 14px;
+      padding: 8px 12px;
       font-weight: 600;
       color: var(--text-muted);
       border-bottom: 1px solid var(--border-color);
-      cursor: pointer;
       user-select: none;
     }
 
-    table.data-table th:hover {
+    .table-sort-btn {
+      background: none;
+      border: none;
       color: var(--text-main);
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      padding: 4px 2px;
+      min-height: 28px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .table-sort-btn:hover {
+      color: var(--primary-text);
     }
 
     table.data-table td {
-      padding: 10px 14px;
+      padding: 10px 12px;
       border-bottom: 1px solid var(--border-color);
       color: var(--text-main);
     }
@@ -843,26 +1146,43 @@ class DashboardGenerator:
       margin-top: 14px;
     }
 
-    .matrix-table th, .matrix-table td {
+    .matrix-table th,
+    .matrix-table td {
       border: 1px solid var(--border-color);
-      padding: 8px;
+      padding: 6px 8px;
       text-align: center;
     }
 
     .matrix-table th {
       background-color: var(--bg-surface-elevated);
-      color: var(--text-muted);
+      color: var(--text-main);
+    }
+
+    .matrix-table th[scope="row"] {
+      text-align: left;
+      font-weight: 600;
     }
 
     .matrix-cell-active {
-      background-color: rgba(59, 130, 246, 0.2);
-      color: #93c5fd;
+      background-color: var(--matrix-active-bg);
+      padding: 2px;
+    }
+
+    .matrix-cell-btn {
+      width: 100%;
+      min-width: 28px;
+      min-height: 28px;
+      background-color: transparent;
+      border: 1px solid transparent;
+      border-radius: 4px;
+      color: var(--matrix-active-text);
       font-weight: 700;
+      font-size: 0.84rem;
       cursor: pointer;
     }
 
-    .matrix-cell-active:hover {
-      background-color: rgba(59, 130, 246, 0.4);
+    .matrix-cell-btn:hover {
+      background-color: var(--primary);
       color: #ffffff;
     }
 
@@ -870,10 +1190,10 @@ class DashboardGenerator:
       position: absolute;
       padding: 8px 12px;
       background-color: var(--bg-surface);
-      border: 1px solid var(--border-color);
+      border: 1px solid var(--border-control);
       border-radius: 6px;
       color: var(--text-main);
-      font-size: 0.78rem;
+      font-size: 0.8rem;
       pointer-events: none;
       z-index: 100;
       max-width: 260px;
@@ -888,164 +1208,247 @@ class DashboardGenerator:
       color: var(--text-main);
       padding: 10px 16px;
       border-radius: 6px;
-      border: 1px solid var(--border-color);
+      border: 1px solid var(--border-control);
       box-shadow: var(--shadow-lg);
       z-index: 999;
-      font-size: 0.82rem;
+      font-size: 0.84rem;
       display: none;
+      max-width: calc(100vw - 40px);
+    }
+
+    .site-footer {
+      border-top: 1px solid var(--border-color);
+      background-color: var(--bg-surface);
+      padding: 12px 20px;
+      font-size: 0.78rem;
+      color: var(--text-dim);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    @media (max-width: 640px) {
+      .topbar {
+        padding: 10px 12px;
+      }
+      .metric-grid {
+        padding: 12px;
+      }
+      .main-container {
+        padding: 0 12px 24px;
+      }
+      .scan-bar {
+        flex-basis: 100%;
+        max-width: 100%;
+      }
+      .topbar-actions {
+        width: 100%;
+      }
+      .graph-controls input#graph-search {
+        width: 100%;
+      }
+      .site-footer {
+        padding: 12px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+      .metric-card:hover,
+      .cluster-card:hover {
+        transform: none;
+      }
     }
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to main content</a>
 
   <!-- Top Navigation & Scanning Bar -->
   <header class="topbar">
     <div class="topbar-brand">
-      <div class="topbar-title">Repository Architecture Canvas</div>
+      <h1 class="topbar-title">Repository Architecture Dashboard</h1>
       <div class="topbar-subtitle" id="active-target-display">__TARGET_DISPLAY__</div>
     </div>
 
     <!-- Live Address Scan Input -->
-    <div class="scan-bar">
-      <input type="text" id="scan-target-input" class="scan-input" value="__INPUT_VALUE__" placeholder="Enter any public GitHub Org or Repo URL (e.g. github.com/pallets or https://github.com/fastapi/fastapi)" onkeydown="if(event.key==='Enter') scanAddressInput();" />
-      <button class="btn btn-primary btn-sm" onclick="scanAddressInput()">Scan Address</button>
+    <div class="scan-bar" role="search" aria-label="Scan public GitHub target">
+      <label for="scan-target-input" class="sr-only">Public GitHub organization, user, or repository URL</label>
+      <input
+        type="text"
+        id="scan-target-input"
+        class="scan-input"
+        value="__INPUT_VALUE__"
+        placeholder="Public GitHub Org or Repo URL (e.g. github.com/pallets)"
+      />
+      <button type="button" id="btn-scan-address" class="btn btn-primary btn-sm">Scan Address</button>
     </div>
 
     <div class="topbar-actions">
-      <select id="preset-selector" class="btn btn-sm" onchange="onPresetChange(this.value)">
+      <label for="preset-selector" class="sr-only">Select dataset preset</label>
+      <select id="preset-selector" class="btn btn-sm">
         <option value="current">Current Scanned Dataset</option>
         <option value="synthetic">Synthetic Multi-Domain Demo (16 Repos)</option>
-        <option value="pallets">Pallets Org (Flask, Click, Jinja, Werkzeug)</option>
-        <option value="fastapi">FastAPI Ecosystem</option>
+        <option value="pallets">Pallets Org (Live GitHub Fetch)</option>
+        <option value="fastapi">FastAPI Ecosystem (Live GitHub Fetch)</option>
       </select>
-      <button class="btn btn-sm" onclick="toggleTheme()">Theme</button>
-      <button class="btn btn-sm" onclick="exportDataJson()">Export JSON</button>
-      <button class="btn btn-primary btn-sm" onclick="window.print()">Print View</button>
+      <button type="button" id="btn-toggle-theme" class="btn btn-sm" aria-pressed="false" aria-label="Switch to light theme">Theme</button>
+      <button type="button" id="btn-export-json" class="btn btn-sm">Export JSON</button>
+      <button type="button" id="btn-print-view" class="btn btn-primary btn-sm">Print View</button>
     </div>
   </header>
 
   <!-- Metric Summary Cards -->
-  <section class="metric-grid" id="metric-summary-container">
+  <section class="metric-grid" id="metric-summary-container" aria-label="Repository portfolio metrics">
     <!-- Populated dynamically -->
   </section>
 
   <!-- Main Container with Tabs -->
-  <main class="main-container">
-    <div class="nav-tabs">
-      <button class="tab-btn active" onclick="switchTab('tab-graph')">Knowledge Graph</button>
-      <button class="tab-btn" onclick="switchTab('tab-matcher')">Repository Matcher & Chat</button>
-      <button class="tab-btn" onclick="switchTab('tab-clusters')">Cluster Explorer</button>
-      <button class="tab-btn" onclick="switchTab('tab-repos')">Repository Catalog</button>
-      <button class="tab-btn" onclick="switchTab('tab-matrix')">Cross-Domain Flow</button>
-      <button class="tab-btn" onclick="switchTab('tab-raw')">Raw JSON & Config</button>
+  <main id="main-content" class="main-container" tabindex="-1">
+    <div class="nav-tabs" role="tablist" aria-label="Dashboard sections">
+      <button type="button" class="tab-btn active" role="tab" id="btn-tab-graph" aria-selected="true" aria-controls="tab-graph" tabindex="0" data-tab="tab-graph">Knowledge Graph</button>
+      <button type="button" class="tab-btn" role="tab" id="btn-tab-matcher" aria-selected="false" aria-controls="tab-matcher" tabindex="-1" data-tab="tab-matcher">Repository Matcher &amp; Chat</button>
+      <button type="button" class="tab-btn" role="tab" id="btn-tab-clusters" aria-selected="false" aria-controls="tab-clusters" tabindex="-1" data-tab="tab-clusters">Cluster Explorer</button>
+      <button type="button" class="tab-btn" role="tab" id="btn-tab-repos" aria-selected="false" aria-controls="tab-repos" tabindex="-1" data-tab="tab-repos">Repository Catalog</button>
+      <button type="button" class="tab-btn" role="tab" id="btn-tab-matrix" aria-selected="false" aria-controls="tab-matrix" tabindex="-1" data-tab="tab-matrix">Cross-Domain Flow</button>
+      <button type="button" class="tab-btn" role="tab" id="btn-tab-raw" aria-selected="false" aria-controls="tab-raw" tabindex="-1" data-tab="tab-raw">Raw JSON &amp; Config</button>
     </div>
 
     <!-- TAB 1: KNOWLEDGE GRAPH -->
-    <div id="tab-graph" class="tab-pane active">
+    <div id="tab-graph" class="tab-pane active" role="tabpanel" aria-labelledby="btn-tab-graph">
+      <h2 class="sr-only">Interactive Repository Knowledge Graph</h2>
       <div class="graph-layout">
-        <div class="graph-canvas-container" id="graph-container">
-          <div class="graph-controls">
-            <input type="text" id="graph-search" placeholder="Search node or tech..." oninput="onGraphSearch(this.value)" />
-            <select id="graph-cluster-filter" onchange="onClusterFilterChange(this.value)">
+        <div class="graph-viewport-container" id="graph-container">
+          <div class="graph-controls" role="toolbar" aria-label="Graph filters and layout controls">
+            <label for="graph-search" class="sr-only">Search graph nodes or technologies</label>
+            <input type="text" id="graph-search" placeholder="Search node or tech..." />
+            <label for="graph-cluster-filter" class="sr-only">Filter graph by domain cluster</label>
+            <select id="graph-cluster-filter">
               <option value="all">All Clusters</option>
             </select>
-            <select id="graph-edge-filter" onchange="onEdgeFilterChange(this.value)">
+            <label for="graph-edge-filter" class="sr-only">Filter graph by relationship type</label>
+            <select id="graph-edge-filter">
               <option value="all">All Relationships</option>
               <option value="depends_on">Dependencies Only</option>
               <option value="cross_cluster">Cross-Cluster Only</option>
               <option value="shares_tech">Shared Tech Stack</option>
             </select>
-            <select id="graph-label-mode" onchange="onLabelModeChange(this.value)" title="Node label visibility mode">
+            <label for="graph-label-mode" class="sr-only">Node label visibility mode</label>
+            <select id="graph-label-mode" title="Node label visibility mode">
               <option value="smart" selected>Labels: Smart (Zoom)</option>
               <option value="all">Labels: All</option>
               <option value="hubs">Labels: Hubs &amp; Hover</option>
             </select>
-            <select id="graph-spacing-mode" onchange="onSpacingModeChange(this.value)" title="Node &amp; cluster spacing">
+            <label for="graph-spacing-mode" class="sr-only">Node and cluster spacing mode</label>
+            <select id="graph-spacing-mode" title="Node &amp; cluster spacing">
               <option value="balanced" selected>Spacing: Balanced</option>
               <option value="wide">Spacing: Wide</option>
               <option value="compact">Spacing: Compact</option>
             </select>
-            <button class="btn btn-sm" onclick="resetGraphView()">Reset View</button>
-            <button class="btn btn-sm" id="btn-toggle-physics" onclick="togglePhysics()">Pause Physics</button>
+            <button type="button" id="btn-reset-graph" class="btn btn-sm">Reset View</button>
+            <button type="button" class="btn btn-sm" id="btn-toggle-physics" aria-pressed="false">Pause Physics</button>
           </div>
-          <svg class="graph-svg" id="graph-svg"></svg>
-          <div class="graph-zoom-bar" aria-label="Graph zoom controls">
-            <button class="zoom-btn" onclick="zoomGraphBy(1.35)" title="Zoom In">+</button>
-            <span class="zoom-level" id="graph-zoom-level">100%</span>
-            <button class="zoom-btn" onclick="zoomGraphBy(0.74)" title="Zoom Out">&minus;</button>
-            <button class="zoom-btn zoom-btn-fit" onclick="zoomToFitAll(true)" title="Fit All Clusters">Fit</button>
+          <svg class="graph-svg" id="graph-svg" role="img" aria-labelledby="graph-svg-title graph-svg-desc">
+            <title id="graph-svg-title">Repository Architecture Knowledge Graph</title>
+            <desc id="graph-svg-desc">Interactive force-directed graph showing repositories grouped by domain clusters and connected by dependencies. Tab through nodes and press Enter or Space to inspect repository details.</desc>
+          </svg>
+          <div class="graph-zoom-bar" role="group" aria-label="Graph zoom controls">
+            <button type="button" id="btn-zoom-in" class="zoom-btn" title="Zoom In" aria-label="Zoom in">+</button>
+            <span class="zoom-level" id="graph-zoom-level" aria-live="polite">100%</span>
+            <button type="button" id="btn-zoom-out" class="zoom-btn" title="Zoom Out" aria-label="Zoom out">-</button>
+            <button type="button" id="btn-zoom-fit" class="zoom-btn zoom-btn-fit" title="Fit All Clusters" aria-label="Fit all clusters in view">Fit</button>
           </div>
-          <div class="graph-tooltip" id="graph-tooltip" style="display: none;"></div>
+          <div class="graph-tooltip" id="graph-tooltip" role="tooltip" style="display: none;"></div>
         </div>
 
-        <div class="graph-sidebar" id="graph-sidebar">
+        <aside class="graph-sidebar" id="graph-sidebar" aria-label="Selected repository inspector">
           <div class="drawer-empty">
             Select any node or repository in the graph to inspect architectural dependencies, technology stack, and cluster connections.
           </div>
-        </div>
+        </aside>
       </div>
     </div>
 
     <!-- TAB 2: REPOSITORY MATCHER & CHAT -->
-    <div id="tab-matcher" class="tab-pane">
+    <div id="tab-matcher" class="tab-pane" role="tabpanel" aria-labelledby="btn-tab-matcher">
       <div class="matcher-container">
         <div>
-          <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 6px;">Repository Matcher & Capability Search</h2>
-          <p style="font-size: 0.85rem; color: var(--text-muted);">
-            Describe what program, library, or software functionality you need. The matcher will evaluate all repositories in this organization to find the best match or report if none fits.
+          <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 6px;">Repository Matcher &amp; Capability Search</h2>
+          <p style="font-size: 0.86rem; color: var(--text-muted);">
+            Describe what program, library, or software functionality you need. The matcher evaluates all repositories in this organization locally to find the best match or report if none fits.
           </p>
         </div>
 
         <div class="matcher-search-box">
-          <input type="text" id="matcher-query-input" class="matcher-input" placeholder="e.g., 'Python SDK for platform API', 'OAuth2 authentication service', 'Video transcoding'..." onkeydown="if(event.key==='Enter') executeMatcherQuery();" />
-          <button class="btn btn-primary" onclick="executeMatcherQuery()">Find Best Repository</button>
+          <label for="matcher-query-input" class="sr-only">Describe the repository capability you need</label>
+          <input
+            type="text"
+            id="matcher-query-input"
+            class="matcher-input"
+            placeholder="e.g., 'Python SDK for platform API', 'OAuth2 authentication service', 'Video transcoding'..."
+          />
+          <button type="button" id="btn-run-matcher" class="btn btn-primary">Find Best Repository</button>
         </div>
 
-        <div class="chips-container">
-          <span style="font-size: 0.78rem; color: var(--text-dim);">Suggestions:</span>
-          <button class="chip-btn" onclick="setQueryChip('Patient clinical EHR records and FHIR')">Patient EHR Records</button>
-          <button class="chip-btn" onclick="setQueryChip('DNA and RNA bioinformatics genomics pipeline')">Genomics Sequencing</button>
-          <button class="chip-btn" onclick="setQueryChip('OAuth2 and user login authentication service')">User Authentication</button>
-          <button class="chip-btn" onclick="setQueryChip('Subscription billing and Stripe payments')">Subscription Billing</button>
-          <button class="chip-btn" onclick="setQueryChip('Python client SDK for platform API automation')">Python Client SDK</button>
-          <button class="chip-btn" onclick="setQueryChip('Terraform and Kubernetes cloud infrastructure')">Terraform DevOps</button>
-          <button class="chip-btn" onclick="setQueryChip('Blockchain cryptocurrency mining smart contract')">Crypto Mining (Non-matching demo)</button>
+        <div class="chips-container" role="group" aria-label="Example capability queries">
+          <span style="font-size: 0.8rem; color: var(--text-dim);">Suggestions:</span>
+          <button type="button" class="chip-btn" data-chip-query="Patient clinical EHR records and FHIR">Patient EHR Records</button>
+          <button type="button" class="chip-btn" data-chip-query="DNA and RNA bioinformatics genomics pipeline">Genomics Sequencing</button>
+          <button type="button" class="chip-btn" data-chip-query="OAuth2 and user login authentication service">User Authentication</button>
+          <button type="button" class="chip-btn" data-chip-query="Subscription billing and payment webhooks">Subscription Billing</button>
+          <button type="button" class="chip-btn" data-chip-query="Python client SDK for platform API automation">Python Client SDK</button>
+          <button type="button" class="chip-btn" data-chip-query="Terraform and Kubernetes cloud infrastructure">Terraform DevOps</button>
+          <button type="button" class="chip-btn" data-chip-query="Blockchain cryptocurrency mining smart contract">Crypto Mining (Non-matching demo)</button>
         </div>
 
-        <div id="matcher-result-area">
+        <div id="matcher-result-area" aria-live="polite">
           <div style="text-align: center; color: var(--text-dim); padding: 30px; font-size: 0.88rem;">
-            Type a capability request above or click a suggestion chip to find the best-suited repository.
+            Type a capability request above or select a suggestion chip to find the best-suited repository.
           </div>
         </div>
       </div>
     </div>
 
     <!-- TAB 3: CLUSTERS EXPLORER -->
-    <div id="tab-clusters" class="tab-pane">
+    <div id="tab-clusters" class="tab-pane" role="tabpanel" aria-labelledby="btn-tab-clusters">
+      <h2 class="sr-only">Domain Cluster Explorer</h2>
       <div class="cluster-grid" id="cluster-cards-container">
         <!-- Populated by JS -->
       </div>
     </div>
 
     <!-- TAB 4: REPOSITORY CATALOG -->
-    <div id="tab-repos" class="tab-pane">
+    <div id="tab-repos" class="tab-pane" role="tabpanel" aria-labelledby="btn-tab-repos">
+      <h2 class="sr-only">Repository Catalog</h2>
       <div class="table-container">
         <div class="table-controls">
-          <input type="text" class="table-search" id="repo-table-search" placeholder="Filter repositories by name, language, or topic..." oninput="filterRepoTable()" />
-          <select id="table-cluster-filter" onchange="filterRepoTable()" class="table-search" style="max-width: 200px;">
+          <label for="repo-table-search" class="sr-only">Filter repositories by name, language, or topic</label>
+          <input type="text" class="table-search" id="repo-table-search" placeholder="Filter repositories by name, language, or topic..." />
+          <label for="table-cluster-filter" class="sr-only">Filter catalog by domain cluster</label>
+          <select id="table-cluster-filter" class="table-search" style="max-width: 220px;">
             <option value="all">All Clusters</option>
           </select>
         </div>
         <table class="data-table" id="repo-data-table">
+          <caption class="sr-only">Scanned repositories with domain cluster, primary language, stars, graph connections, and architectural role</caption>
           <thead>
             <tr>
-              <th onclick="sortTable(0)">Repository</th>
-              <th onclick="sortTable(1)">Cluster</th>
-              <th onclick="sortTable(2)">Language</th>
-              <th onclick="sortTable(3)">Stars</th>
-              <th onclick="sortTable(4)">Connections</th>
-              <th onclick="sortTable(5)">Role</th>
-              <th>Action</th>
+              <th scope="col" aria-sort="none"><button type="button" class="table-sort-btn" data-sort-col="0">Repository</button></th>
+              <th scope="col" aria-sort="none"><button type="button" class="table-sort-btn" data-sort-col="1">Cluster</button></th>
+              <th scope="col" aria-sort="none"><button type="button" class="table-sort-btn" data-sort-col="2">Language</button></th>
+              <th scope="col" aria-sort="none"><button type="button" class="table-sort-btn" data-sort-col="3">Stars</button></th>
+              <th scope="col" aria-sort="none"><button type="button" class="table-sort-btn" data-sort-col="4">Connections</button></th>
+              <th scope="col" aria-sort="none"><button type="button" class="table-sort-btn" data-sort-col="5">Role</button></th>
+              <th scope="col">Action</th>
             </tr>
           </thead>
           <tbody id="repo-table-body">
@@ -1056,11 +1459,11 @@ class DashboardGenerator:
     </div>
 
     <!-- TAB 5: CROSS-DOMAIN FLOW MATRIX -->
-    <div id="tab-matrix" class="tab-pane">
+    <div id="tab-matrix" class="tab-pane" role="tabpanel" aria-labelledby="btn-tab-matrix">
       <div style="background-color: var(--bg-surface); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color);">
-        <h3 style="margin-bottom: 8px; font-size: 1.1rem;">Inter-Cluster Architecture Connectivity Matrix</h3>
+        <h2 style="margin-bottom: 8px; font-size: 1.15rem;">Inter-Cluster Architecture Connectivity Matrix</h2>
         <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 16px;">
-          Rows represent source domain origins; columns represent target domain interfaces. Click any active cell to filter connections on the graph.
+          Rows represent source domain origins; columns represent target domain interfaces. Activate any non-zero cell to filter connections on the graph.
         </p>
         <div id="matrix-container" style="overflow-x: auto;">
           <!-- Populated by JS -->
@@ -1069,21 +1472,51 @@ class DashboardGenerator:
     </div>
 
     <!-- TAB 6: RAW JSON & CONFIG -->
-    <div id="tab-raw" class="tab-pane">
+    <div id="tab-raw" class="tab-pane" role="tabpanel" aria-labelledby="btn-tab-raw">
       <div style="background-color: var(--bg-surface); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 12px;">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <h3 style="font-size: 1.1rem;">Raw Knowledge Base Payload</h3>
-          <button class="btn btn-sm btn-primary" onclick="copyRawJson()">Copy JSON</button>
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;">
+          <h2 style="font-size: 1.15rem;">Raw Knowledge Base Payload</h2>
+          <button type="button" id="btn-copy-json" class="btn btn-sm btn-primary">Copy JSON</button>
         </div>
-        <textarea id="raw-json-viewer" readonly style="width: 100%; height: 420px; font-family: var(--font-mono); font-size: 0.8rem; background: var(--bg-base); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 6px; padding: 12px;"></textarea>
+        <label for="raw-json-viewer" class="sr-only">Raw knowledge base JSON payload</label>
+        <textarea id="raw-json-viewer" readonly style="width: 100%; height: 420px; font-family: var(--font-mono); font-size: 0.82rem; background: var(--bg-base); color: var(--text-main); border: 1px solid var(--border-control); border-radius: 6px; padding: 12px;"></textarea>
       </div>
     </div>
   </main>
 
-  <div id="toast" class="toast-msg"></div>
+  <footer class="site-footer" role="contentinfo">
+    <span>Offline-first dashboard: zero cookies, zero browser storage, and zero external requests on load.</span>
+    <span>Live scanning ("Scan Address" or live presets) sends requests directly to <code>https://api.github.com</code>.</span>
+  </footer>
 
-  <script>
-    let KB_DATA = __EMBEDDED_JSON__;
+  <div id="toast" class="toast-msg" role="status" aria-live="polite" aria-atomic="true"></div>
+
+  <script id="kb-data" type="application/json">__EMBEDDED_JSON__</script>
+  <script>__D3_SCRIPT__</script>
+  <script>__APP_SCRIPT__</script>
+</body>
+</html>
+"""
+        replacements = {
+            "__CSP_CONTENT__": csp_content,
+            "__TITLE_NAME__": html.escape(title_name, quote=True),
+            "__TARGET_DISPLAY__": html.escape(target_display, quote=True),
+            "__INPUT_VALUE__": html.escape(input_value, quote=True),
+            "__EMBEDDED_JSON__": json_data_str,
+            "__D3_SCRIPT__": d3_script_body,
+            "__APP_SCRIPT__": app_script_body,
+        }
+        return re.sub(
+            r"__[A-Z0-9_]+__",
+            lambda match: replacements.get(match.group(0), match.group(0)),
+            template,
+        )
+
+    @staticmethod
+    def _get_app_script() -> str:
+        return r"""
+    const kbDataElement = document.getElementById('kb-data');
+    let KB_DATA = kbDataElement ? JSON.parse(kbDataElement.textContent) : {};
     let INITIAL_KB_DATA = JSON.parse(JSON.stringify(KB_DATA));
 
     let simulation;
@@ -1100,12 +1533,18 @@ class DashboardGenerator:
     let selectedNodeId = null;
     let hoveredNodeId = null;
     let isPhysicsPaused = false;
+    let isScanning = false;
     let activeClusterFilter = 'all';
     let activeEdgeFilter = 'all';
     let activeLabelMode = 'smart';
     let activeSpacingMode = 'balanced';
     let activeSearchQuery = '';
     let activeMatrixPair = null;
+    let toastTimer = null;
+
+    const HEX_COLOR_RE = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
+    const OWNER_RE = /^[A-Za-z0-9](?:[A-Za-z0-9_-]{0,38})$/;
+    const REPO_RE = /^[A-Za-z0-9._-]{1,100}$/;
 
     const GENERIC_TERMS = new Set([
       "service", "engine", "system", "app", "application", "platform",
@@ -1120,9 +1559,197 @@ class DashboardGenerator:
       "tell", "show", "give", "help", "about", "handling", "suited"
     ]);
 
+    /* Security & Rendering Sanitization Helpers */
+    function escapeHtml(value) {
+      if (value === null || value === undefined) return '';
+      return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+        .replace(/`/g, '&#96;');
+    }
+
+    function sanitizeUrl(url) {
+      if (typeof url !== 'string') return '#';
+      const trimmed = url.trim();
+      if (!trimmed) return '#';
+      try {
+        const parsed = new URL(trimmed);
+        if (parsed.protocol === 'https:' || parsed.protocol === 'http:') {
+          return parsed.href;
+        }
+      } catch (e) {
+        return '#';
+      }
+      return '#';
+    }
+
+    function sanitizeColor(color, fallback = '#3B82F6') {
+      if (typeof color === 'string' && HEX_COLOR_RE.test(color.trim())) {
+        return color.trim();
+      }
+      return fallback;
+    }
+
+    function renderClusterBadgeHtml(name, color) {
+      const safeColor = sanitizeColor(color, '#3B82F6');
+      return `<span class="badge cluster-badge"><span class="color-dot" style="background-color: ${safeColor};" aria-hidden="true"></span><span>${escapeHtml(name || 'General')}</span></span>`;
+    }
+
+    function renderSafeLinkHtml(url, labelText, className = 'ext-link') {
+      const safeHref = sanitizeUrl(url);
+      if (safeHref === '#') {
+        return `<span>${escapeHtml(labelText)}</span>`;
+      }
+      return `<a href="${escapeHtml(safeHref)}" target="_blank" rel="noopener noreferrer" class="${className}">${escapeHtml(labelText)}<span class="sr-only"> (opens in new tab)</span></a>`;
+    }
+
+    function prefersReducedMotion() {
+      return Boolean(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
+      bindStaticEvents();
       refreshAllViews();
     });
+
+    function bindStaticEvents() {
+      const scanInput = document.getElementById('scan-target-input');
+      if (scanInput) {
+        scanInput.addEventListener('keydown', (event) => {
+          if (event.key === 'Enter') scanAddressInput();
+        });
+      }
+
+      const btnScan = document.getElementById('btn-scan-address');
+      if (btnScan) btnScan.addEventListener('click', () => scanAddressInput());
+
+      const presetSelector = document.getElementById('preset-selector');
+      if (presetSelector) {
+        presetSelector.addEventListener('change', (event) => onPresetChange(event.target.value));
+      }
+
+      const btnTheme = document.getElementById('btn-toggle-theme');
+      if (btnTheme) btnTheme.addEventListener('click', () => toggleTheme());
+
+      const btnExport = document.getElementById('btn-export-json');
+      if (btnExport) btnExport.addEventListener('click', () => exportDataJson());
+
+      const btnPrint = document.getElementById('btn-print-view');
+      if (btnPrint) btnPrint.addEventListener('click', () => window.print());
+
+      // Accessible ARIA tab switching + Arrow/Home/End keyboard navigation
+      const tabButtons = Array.from(document.querySelectorAll('.tab-btn[role="tab"]'));
+      tabButtons.forEach((btn, index) => {
+        btn.addEventListener('click', () => {
+          const tabId = btn.getAttribute('data-tab');
+          if (tabId) switchTab(tabId);
+        });
+        btn.addEventListener('keydown', (event) => {
+          let nextIdx = null;
+          if (event.key === 'ArrowRight') nextIdx = (index + 1) % tabButtons.length;
+          else if (event.key === 'ArrowLeft') nextIdx = (index - 1 + tabButtons.length) % tabButtons.length;
+          else if (event.key === 'Home') nextIdx = 0;
+          else if (event.key === 'End') nextIdx = tabButtons.length - 1;
+          if (nextIdx !== null) {
+            event.preventDefault();
+            const targetBtn = tabButtons[nextIdx];
+            const tabId = targetBtn.getAttribute('data-tab');
+            if (tabId) switchTab(tabId);
+            targetBtn.focus();
+          }
+        });
+      });
+
+      const graphSearch = document.getElementById('graph-search');
+      if (graphSearch) graphSearch.addEventListener('input', (e) => onGraphSearch(e.target.value));
+
+      const graphClusterFilter = document.getElementById('graph-cluster-filter');
+      if (graphClusterFilter) graphClusterFilter.addEventListener('change', (e) => onClusterFilterChange(e.target.value));
+
+      const graphEdgeFilter = document.getElementById('graph-edge-filter');
+      if (graphEdgeFilter) graphEdgeFilter.addEventListener('change', (e) => onEdgeFilterChange(e.target.value));
+
+      const graphLabelMode = document.getElementById('graph-label-mode');
+      if (graphLabelMode) graphLabelMode.addEventListener('change', (e) => onLabelModeChange(e.target.value));
+
+      const graphSpacingMode = document.getElementById('graph-spacing-mode');
+      if (graphSpacingMode) graphSpacingMode.addEventListener('change', (e) => onSpacingModeChange(e.target.value));
+
+      const btnResetGraph = document.getElementById('btn-reset-graph');
+      if (btnResetGraph) btnResetGraph.addEventListener('click', () => resetGraphView());
+
+      const btnTogglePhysics = document.getElementById('btn-toggle-physics');
+      if (btnTogglePhysics) btnTogglePhysics.addEventListener('click', () => togglePhysics());
+
+      const btnZoomIn = document.getElementById('btn-zoom-in');
+      if (btnZoomIn) btnZoomIn.addEventListener('click', () => zoomGraphBy(1.35));
+
+      const btnZoomOut = document.getElementById('btn-zoom-out');
+      if (btnZoomOut) btnZoomOut.addEventListener('click', () => zoomGraphBy(0.74));
+
+      const btnZoomFit = document.getElementById('btn-zoom-fit');
+      if (btnZoomFit) btnZoomFit.addEventListener('click', () => zoomToFitAll(true));
+
+      const matcherInput = document.getElementById('matcher-query-input');
+      if (matcherInput) {
+        matcherInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') executeMatcherQuery();
+        });
+      }
+
+      const btnRunMatcher = document.getElementById('btn-run-matcher');
+      if (btnRunMatcher) btnRunMatcher.addEventListener('click', () => executeMatcherQuery());
+
+      document.querySelectorAll('.chip-btn[data-chip-query]').forEach((chip) => {
+        chip.addEventListener('click', () => {
+          setQueryChip(chip.getAttribute('data-chip-query') || '');
+        });
+      });
+
+      const repoTableSearch = document.getElementById('repo-table-search');
+      if (repoTableSearch) repoTableSearch.addEventListener('input', () => filterRepoTable());
+
+      const tableClusterFilter = document.getElementById('table-cluster-filter');
+      if (tableClusterFilter) tableClusterFilter.addEventListener('change', () => filterRepoTable());
+
+      document.querySelectorAll('.table-sort-btn[data-sort-col]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const col = parseInt(btn.getAttribute('data-sort-col'), 10);
+          if (!Number.isNaN(col)) sortTable(col);
+        });
+      });
+
+      const btnCopyJson = document.getElementById('btn-copy-json');
+      if (btnCopyJson) btnCopyJson.addEventListener('click', () => copyRawJson());
+
+      // Delegated handlers for dynamically rendered controls (zero inline onclick)
+      document.addEventListener('click', (event) => {
+        const focusBtn = event.target.closest('[data-focus-node]');
+        if (focusBtn) {
+          event.stopPropagation();
+          const nodeId = focusBtn.getAttribute('data-focus-node');
+          if (nodeId !== null) focusNodeOnGraph(nodeId);
+          return;
+        }
+
+        const matrixBtn = event.target.closest('[data-matrix-src][data-matrix-tgt]');
+        if (matrixBtn) {
+          const src = matrixBtn.getAttribute('data-matrix-src');
+          const tgt = matrixBtn.getAttribute('data-matrix-tgt');
+          if (src && tgt) filterMatrixCell(src, tgt);
+          return;
+        }
+
+        const clusterToggle = event.target.closest('.cluster-card-toggle');
+        if (clusterToggle) {
+          const card = clusterToggle.closest('.cluster-card');
+          if (card) toggleClusterCard(card, clusterToggle);
+        }
+      });
+    }
 
     let resizeTimer = null;
     window.addEventListener('resize', () => {
@@ -1166,13 +1793,15 @@ class DashboardGenerator:
     }
 
     function switchTab(tabId) {
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-
-      const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick') && b.getAttribute('onclick').includes(tabId));
-      if (activeBtn) activeBtn.classList.add('active');
-      const pane = document.getElementById(tabId);
-      if (pane) pane.classList.add('active');
+      document.querySelectorAll('.tab-btn[role="tab"]').forEach(b => {
+        const isActive = b.getAttribute('data-tab') === tabId;
+        b.classList.toggle('active', isActive);
+        b.setAttribute('aria-selected', isActive ? 'true' : 'false');
+        b.setAttribute('tabindex', isActive ? '0' : '-1');
+      });
+      document.querySelectorAll('.tab-pane').forEach(p => {
+        p.classList.toggle('active', p.id === tabId);
+      });
 
       if (tabId === 'tab-graph' && svg) {
         const container = document.getElementById('graph-container');
@@ -1187,6 +1816,11 @@ class DashboardGenerator:
       const current = document.documentElement.getAttribute('data-theme');
       const next = current === 'light' ? 'dark' : 'light';
       document.documentElement.setAttribute('data-theme', next);
+      const btn = document.getElementById('btn-toggle-theme');
+      if (btn) {
+        btn.setAttribute('aria-pressed', next === 'light' ? 'true' : 'false');
+        btn.setAttribute('aria-label', next === 'light' ? 'Switch to dark theme' : 'Switch to light theme');
+      }
       updateSemanticZoom();
       showToast('Theme switched to ' + next);
     }
@@ -1194,18 +1828,18 @@ class DashboardGenerator:
     function showToast(msg) {
       const t = document.getElementById('toast');
       if (!t) return;
-      t.textContent = msg;
+      t.textContent = String(msg);
       t.style.display = 'block';
-      setTimeout(() => { t.style.display = 'none'; }, 2500);
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => { t.style.display = 'none'; }, 2800);
     }
 
     function renderMetricSummary() {
-      const meta = KB_DATA.metadata || {};
       const summary = KB_DATA.graph || {};
       const repos = KB_DATA.repositories || [];
       const clusters = KB_DATA.clusters || [];
 
-      const totalStars = repos.reduce((sum, r) => sum + (r.stars || 0), 0);
+      const totalStars = repos.reduce((sum, r) => sum + (Number(r.stars) || 0), 0);
 
       const items = [
         { label: 'Total Repositories', val: repos.length, sub: 'Active codebases' },
@@ -1219,9 +1853,9 @@ class DashboardGenerator:
       if (container) {
         container.innerHTML = items.map(it => `
           <div class="metric-card">
-            <div class="metric-label">${it.label}</div>
-            <div class="metric-value">${it.val}</div>
-            <div class="metric-subtext">${it.sub}</div>
+            <div class="metric-label">${escapeHtml(it.label)}</div>
+            <div class="metric-value">${escapeHtml(it.val)}</div>
+            <div class="metric-subtext">${escapeHtml(it.sub)}</div>
           </div>
         `).join('');
       }
@@ -1235,8 +1869,8 @@ class DashboardGenerator:
         clusterSelectGraph.innerHTML = '<option value="all">All Clusters</option>';
         (KB_DATA.clusters || []).forEach(c => {
           const opt1 = document.createElement('option');
-          opt1.value = c.id;
-          opt1.textContent = c.name;
+          opt1.value = String(c.id || '');
+          opt1.textContent = String(c.name || c.id || '');
           clusterSelectGraph.appendChild(opt1);
         });
       }
@@ -1245,8 +1879,8 @@ class DashboardGenerator:
         clusterSelectTable.innerHTML = '<option value="all">All Clusters</option>';
         (KB_DATA.clusters || []).forEach(c => {
           const opt2 = document.createElement('option');
-          opt2.value = c.id;
-          opt2.textContent = c.name;
+          opt2.value = String(c.id || '');
+          opt2.textContent = String(c.name || c.id || '');
           clusterSelectTable.appendChild(opt2);
         });
       }
@@ -1301,7 +1935,7 @@ class DashboardGenerator:
         return {
           id,
           name: meta.name || (nodes.find(n => n.cluster_id === id) || {}).cluster_name || id,
-          color: meta.color || (nodes.find(n => n.cluster_id === id) || {}).cluster_color || '#3b82f6',
+          color: sanitizeColor(meta.color || (nodes.find(n => n.cluster_id === id) || {}).cluster_color, '#3B82F6'),
           count: nodeCountByCluster[id] || 1
         };
       });
@@ -1310,7 +1944,6 @@ class DashboardGenerator:
       const cCount = activeClusters.length;
       if (cCount === 0) return { centers, baseRadius: 320 * spacingMult, orderedClusters: [] };
 
-      // Build inter-cluster affinity weights so connected domains sit adjacent around the ring
       const affinity = {};
       const totalCross = {};
       activeClusters.forEach(c => {
@@ -1333,7 +1966,6 @@ class DashboardGenerator:
         }
       });
 
-      // Greedy connectivity ordering around the ring to reduce cross-graph edge crossings
       const remaining = [...activeClusters].sort((a, b) => (totalCross[b.id] - totalCross[a.id]) || (b.count - a.count));
       const ordered = [];
       if (remaining.length > 0) {
@@ -1370,7 +2002,6 @@ class DashboardGenerator:
         return { centers, baseRadius: halfSep, orderedClusters: ordered };
       }
 
-      // Proportional arc allocation around a widescreen ellipse matching container aspect ratio
       const interGap = 115 * spacingMult;
       const spans = ordered.map(c => 2 * bubbleRadius(c.count) + interGap);
       const totalPerimeter = spans.reduce((acc, s) => acc + s, 0);
@@ -1457,14 +2088,14 @@ class DashboardGenerator:
       const height = container.clientHeight || 660;
 
       if (simulation) simulation.stop();
-      d3.select('#graph-svg').selectAll('*').remove();
+      // Preserve accessible <title> and <desc> inside SVG
+      d3.select('#graph-svg').selectAll('g, defs').remove();
 
-      rawNodes = (KB_DATA.graph.nodes || []).map(d => Object.assign({}, d));
-      rawLinks = (KB_DATA.graph.links || []).map(d => Object.assign({}, d));
+      rawNodes = (KB_DATA.graph && KB_DATA.graph.nodes ? KB_DATA.graph.nodes : []).map(d => Object.assign({}, d));
+      rawLinks = (KB_DATA.graph && KB_DATA.graph.links ? KB_DATA.graph.links : []).map(d => Object.assign({}, d));
       currentZoomTransform = d3.zoomIdentity;
       hoveredNodeId = null;
 
-      // Detect bidirectional link pairs so they curve in opposite directions instead of stacking
       const dirSet = new Set();
       rawLinks.forEach(l => {
         const s = String(typeof l.source === 'object' ? l.source.id : l.source);
@@ -1509,7 +2140,7 @@ class DashboardGenerator:
         { id: 'arrow-default', fill: 'var(--graph-link-stroke)' },
         { id: 'arrow-cross', fill: 'var(--graph-link-cross)' },
         { id: 'arrow-weak', fill: 'var(--graph-link-weak)' },
-        { id: 'arrow-highlight', fill: '#38bdf8' }
+        { id: 'arrow-highlight', fill: 'var(--focus-ring)' }
       ];
       defs.selectAll('marker')
         .data(markerConfigs)
@@ -1558,6 +2189,9 @@ class DashboardGenerator:
         .data(rawNodes)
         .enter().append('g')
         .attr('class', 'graph-node')
+        .attr('tabindex', '0')
+        .attr('role', 'button')
+        .attr('aria-label', d => `${d.name || 'Repository'}, cluster ${d.cluster_name || 'General'}, ${d.total_degree || 0} connections`)
         .call(d3.drag()
           .on('start', dragstarted)
           .on('drag', dragged)
@@ -1567,6 +2201,12 @@ class DashboardGenerator:
           event.stopPropagation();
           selectNode(d.id);
         })
+        .on('keydown', (event, d) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            selectNode(d.id);
+          }
+        })
         .on('mouseover', handleNodeMouseOver)
         .on('mousemove', handleNodeMouseMove)
         .on('mouseout', handleNodeMouseOut);
@@ -1574,7 +2214,7 @@ class DashboardGenerator:
       nodeElements.append('circle')
         .attr('class', 'node-circle')
         .attr('r', d => getNodeBaseRadius(d))
-        .attr('fill', d => d.cluster_color || '#3b82f6')
+        .attr('fill', d => sanitizeColor(d.cluster_color, '#3B82F6'))
         .attr('stroke', d => d.is_hub ? 'var(--graph-hub-stroke)' : 'var(--graph-node-stroke)');
 
       nodeLabelElements = gNodeLabels.selectAll('g')
@@ -1590,9 +2230,8 @@ class DashboardGenerator:
 
       nodeLabelElements.append('text')
         .attr('class', 'node-label-text')
-        .text(d => d.name);
+        .text(d => d.name || '');
 
-      // Synchronous warmup ticks so the initial layout renders already calm, spacious, and untangled
       simulation.stop();
       for (let i = 0; i < 120; i++) {
         simulation.tick();
@@ -1608,11 +2247,10 @@ class DashboardGenerator:
         updateSemanticZoom();
       });
 
-      // Immediately frame the stabilized spacious layout
       zoomToFitAll(false);
       refreshGraphHighlights();
 
-      if (!isPhysicsPaused) {
+      if (!isPhysicsPaused && !prefersReducedMotion()) {
         simulation.alpha(0.14).restart();
       }
 
@@ -1657,8 +2295,8 @@ class DashboardGenerator:
         simulation.tick();
       }
       renderGraphPositions();
-      zoomToFitAll(true, 550);
-      if (!isPhysicsPaused) {
+      zoomToFitAll(!prefersReducedMotion(), 550);
+      if (!isPhysicsPaused && !prefersReducedMotion()) {
         simulation.alpha(0.12).restart();
       }
       showToast('Graph spacing set to ' + activeSpacingMode);
@@ -1703,7 +2341,6 @@ class DashboardGenerator:
         const cx = mx + nx * curveOffset;
         const cy = my + ny * curveOffset;
 
-        // Trim curve start and end precisely at node rims so arrowheads kiss target perimeter cleanly
         const srcR = getNodeWorldRadius(d.source, k) + 1.5 * padScale;
         const tgtR = getNodeWorldRadius(d.target, k) + 4.5 * padScale;
 
@@ -1719,7 +2356,6 @@ class DashboardGenerator:
         const endX = dist > srcR + tgtR + 4 ? tx - (tdx / tlen) * tgtR : tx;
         const endY = dist > srcR + tgtR + 4 ? ty - (tdy / tlen) * tgtR : ty;
 
-        // Store quadratic Bezier geometry & midpoint (t = 0.5) for collision-free hover/select edge labels
         d._p0x = startX;
         d._p0y = startY;
         d._cx = cx;
@@ -1752,14 +2388,13 @@ class DashboardGenerator:
           byCluster[cid] = {
             id: cid,
             name: n.cluster_name || cid,
-            color: n.cluster_color || '#3b82f6',
+            color: sanitizeColor(n.cluster_color, '#3B82F6'),
             nodes: []
           };
         }
         byCluster[cid].nodes.push(n);
       });
 
-      const graphMidX = count > 0 ? sumX / count : 0;
       const graphMidY = count > 0 ? sumY / count : 0;
       const hullLine = d3.line().curve(d3.curveCatmullRomClosed.alpha(0.5));
       const octAngles = [0, 1, 2, 3, 4, 5, 6, 7].map(i => (i * Math.PI) / 4);
@@ -1780,7 +2415,6 @@ class DashboardGenerator:
         const hull = d3.polygonHull(pts) || pts;
         const pathD = hullLine(hull);
 
-        // Compute hull vertical bounds so cluster title sits cleanly centered above (top half) or below (bottom half)
         let hullMinY = Infinity, hullMaxY = -Infinity;
         hull.forEach(p => {
           if (p[1] < hullMinY) hullMinY = p[1];
@@ -1836,7 +2470,7 @@ class DashboardGenerator:
         .attr('stroke', d => d.color);
 
       merged.select('text.cluster-title')
-        .text(d => d.name.toUpperCase());
+        .text(d => String(d.name || '').toUpperCase());
 
       groups.exit().remove();
       clusterRegionCache = clusterRegions;
@@ -1861,13 +2495,11 @@ class DashboardGenerator:
       const viewW = container ? (container.clientWidth || 900) : 900;
       const viewH = container ? (container.clientHeight || 660) : 660;
 
-      // Update zoom indicator badge
       const zoomBadge = document.getElementById('graph-zoom-level');
       if (zoomBadge) {
         zoomBadge.textContent = Math.round(k * 100) + '%';
       }
 
-      // 1. Scale node circles smoothly with zoom (compact when zoomed out, richer when zoomed in)
       const strokeScale = 1 / Math.pow(k, 0.55);
       nodeElements.select('circle.node-circle')
         .attr('r', d => getNodeWorldRadius(d, k))
@@ -1876,7 +2508,6 @@ class DashboardGenerator:
           return ((isFocus ? 3.2 : (d.is_hub ? 2.2 : 1.6)) * strokeScale) + 'px';
         });
 
-      // Scale link strokes & arrowhead markers crisply at every zoom level
       if (linkElements) {
         linkElements.style('stroke-width', d => {
           const isWeak = d.type === 'shares_tech' || d.type === 'cluster_peer';
@@ -1892,20 +2523,18 @@ class DashboardGenerator:
       }
       updateLinkPaths();
 
-      // 2. Scale & position centered cluster titles above/below each hull, recording screen rects to prevent collisions
       const clusterLabelScreenFont = clampVal(9.2 + (k - 0.5) * 1.4, 8.8, 11.2);
       const clusterLabelWorldFont = clusterLabelScreenFont / k;
-      const clusterTitleOpacity = k > 2.35 ? 0.25 : 0.80;
+      const clusterTitleOpacity = k > 2.35 ? 0.25 : 0.86;
       const clusterTitleBoxes = [];
 
       if (gClusters) {
         gClusters.selectAll('g.cluster-zone').each(function(d) {
           const isDimmed = d3.select(this).classed('dimmed');
           const offsetWorld = 12 / k;
-          const estW = d.name.length * clusterLabelScreenFont * 0.62 + 8;
+          const estW = String(d.name || '').length * clusterLabelScreenFont * 0.62 + 8;
           const estH = clusterLabelScreenFont + 6;
 
-          // Keep cluster title centered on hull, gently clamped horizontally inside canvas edges when zoomed at overview
           let sx = d.cx * k + tx;
           if (k <= 1.15) {
             sx = clampVal(sx, estW / 2 + 12, viewW - estW / 2 - 12);
@@ -1937,14 +2566,12 @@ class DashboardGenerator:
         });
       }
 
-      // 3. Semantic Zoom + Full-Name-First 4-Quadrant Collision-Free Node Label Placement
       const screenFont = clampVal(9.5 + (k - 0.5) * 2.4, 9.5, 13.5);
       const haloWorldWidth = 3.6 / k;
 
       const focusId = hoveredNodeId !== null ? String(hoveredNodeId) : (selectedNodeId !== null ? String(selectedNodeId) : null);
       const focusNeighbors = focusId ? getNeighborIdSet(focusId) : new Set();
 
-      // Compute graph centroid for outward-first radial label placement (keeps center web clear)
       let gSumX = 0, gSumY = 0, gCount = 0;
       rawNodes.forEach(n => {
         if (n.x !== undefined && n.y !== undefined) {
@@ -1956,7 +2583,6 @@ class DashboardGenerator:
       const graphMidX = gCount > 0 ? gSumX / gCount : 0;
       const graphMidY = gCount > 0 ? gSumY / gCount : 0;
 
-      // Reserve ALL non-dimmed node circle screen boxes first so NO label ever covers another node
       const occupiedRects = [...clusterTitleBoxes];
       const nodeScreenMeta = new Map();
 
@@ -2047,7 +2673,6 @@ class DashboardGenerator:
         };
       }
 
-      // Sort nodes by label display priority
       const prioritized = [...rawNodes].sort((a, b) => getLabelPriority(b, focusId, focusNeighbors) - getLabelPriority(a, focusId, focusNeighbors));
       const placements = new Map();
 
@@ -2070,10 +2695,9 @@ class DashboardGenerator:
           return;
         }
 
-        const rawName = d.name || '';
+        const rawName = String(d.name || '');
         const labelFontScreen = isPrimaryFocus ? Math.min(screenFont + 1.2, 14.5) : screenFont;
 
-        // Order quadrants outward-first from graph centroid so labels sit cleanly away from central edges
         const vx = (d.x || 0) - graphMidX;
         const vy = (d.y || 0) - graphMidY;
         let order;
@@ -2083,13 +2707,12 @@ class DashboardGenerator:
           order = vy >= 0 ? ['below', 'right', 'left', 'above'] : ['above', 'right', 'left', 'below'];
         }
 
-        // Full-name-first placement: show full name whenever it fits without collision; fall back to 18-char truncation only when tight
         let finalText = rawName;
         let result = findBestCandidate(meta, rawName, labelFontScreen, order);
         const forceFull = isPrimaryFocus || isSearchHit || k >= 0.95;
 
         if (!result.chosen && !forceFull && rawName.length > 18) {
-          const shortName = rawName.slice(0, 17) + '…';
+          const shortName = rawName.slice(0, 17) + '\u2026';
           const shortRes = findBestCandidate(meta, shortName, labelFontScreen, order);
           if (shortRes.chosen || activeLabelMode === 'all') {
             finalText = shortName;
@@ -2165,7 +2788,6 @@ class DashboardGenerator:
         }
       });
 
-      // 4. Render concise collision-free relationship badges ONLY on active/hovered connected edges
       renderActiveEdgeLabels(focusId, k, tx, ty, occupiedRects);
     }
 
@@ -2220,13 +2842,12 @@ class DashboardGenerator:
 
       candidateLinks.forEach(l => {
         if (placedEdges.length >= 10) return;
-        const rawLabel = l.label || l.type || '';
-        const text = rawLabel.length > 22 ? rawLabel.slice(0, 21) + '…' : rawLabel;
+        const rawLabel = String(l.label || l.type || '');
+        const text = rawLabel.length > 22 ? rawLabel.slice(0, 21) + '\u2026' : rawLabel;
         const wScreen = text.length * edgeFontScreen * 0.56 + 10;
         const hScreen = edgeFontScreen + 6;
         const screenLen = (l._worldLen || 0) * k;
 
-        // Skip short edges where a midpoint pill would collide with endpoint nodes
         if (screenLen < Math.max(92, wScreen * 0.85)) return;
 
         let chosenPos = null;
@@ -2327,8 +2948,8 @@ class DashboardGenerator:
             const match = (d.name || '').toLowerCase().includes(activeSearchQuery) ||
               (d.description || '').toLowerCase().includes(activeSearchQuery) ||
               (d.primary_language || '').toLowerCase().includes(activeSearchQuery) ||
-              (d.topics || []).some(t => t.toLowerCase().includes(activeSearchQuery)) ||
-              (d.tech_stack || []).some(t => t.toLowerCase().includes(activeSearchQuery));
+              (d.topics || []).some(t => String(t).toLowerCase().includes(activeSearchQuery)) ||
+              (d.tech_stack || []).some(t => String(t).toLowerCase().includes(activeSearchQuery));
             if (!match) return true;
           }
           return false;
@@ -2393,7 +3014,6 @@ class DashboardGenerator:
       updateSemanticZoom();
     }
 
-    /* Shared framing helper with asymmetric top padding to clear the floating controls bar */
     function frameNodes(nodesList, options = {}) {
       if (!nodesList || nodesList.length === 0 || !svg || !d3Zoom) return;
       const container = document.getElementById('graph-container');
@@ -2410,8 +3030,8 @@ class DashboardGenerator:
       const margin = options.nodeMargin !== undefined ? options.nodeMargin : 76;
       const minScale = options.minScale || 0.16;
       const maxScale = options.maxScale || 1.25;
-      const animate = options.animate !== undefined ? options.animate : true;
-      const duration = options.duration || 650;
+      const shouldAnimate = (options.animate !== undefined ? options.animate : true) && !prefersReducedMotion();
+      const duration = shouldAnimate ? (options.duration || 650) : 0;
 
       let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
       nodesList.forEach(d => {
@@ -2441,19 +3061,17 @@ class DashboardGenerator:
         .scale(scale)
         .translate(-midX, -midY);
 
-      if (animate) {
+      if (shouldAnimate && duration > 0) {
         svg.transition().duration(duration).call(d3Zoom.transform, transform);
       } else {
         svg.call(d3Zoom.transform, transform);
       }
     }
 
-    /* Auto-fit and frame all clusters and nodes into the main view */
     function zoomToFitAll(animate = true, duration = 650) {
       frameNodes(rawNodes, { animate, duration, minScale: 0.14, maxScale: 1.05, nodeMargin: 82 });
     }
 
-    /* Smoothly zoom and center on a specific thematic cluster */
     function zoomToCluster(clusterId, animate = true, duration = 650) {
       const clusterNodes = (rawNodes || []).filter(d => d.cluster_id === clusterId);
       if (clusterNodes.length === 0) {
@@ -2463,15 +3081,17 @@ class DashboardGenerator:
       frameNodes(clusterNodes, { animate, duration, minScale: 0.45, maxScale: 1.75, nodeMargin: 85 });
     }
 
-    /* Zoom to frame a specific list of nodes */
     function zoomToNodes(nodesList, animate = true, duration = 650) {
       frameNodes(nodesList, { animate, duration, minScale: 0.25, maxScale: 1.55, nodeMargin: 75 });
     }
 
-    /* Zoom in / out smoothly from the bottom-right controls */
     function zoomGraphBy(factor) {
       if (!svg || !d3Zoom) return;
-      svg.transition().duration(260).call(d3Zoom.scaleBy, factor);
+      if (prefersReducedMotion()) {
+        svg.call(d3Zoom.scaleBy, factor);
+      } else {
+        svg.transition().duration(260).call(d3Zoom.scaleBy, factor);
+      }
     }
 
     function positionTooltip(event) {
@@ -2498,10 +3118,10 @@ class DashboardGenerator:
       if (!tooltip) return;
       tooltip.style.display = 'block';
       tooltip.innerHTML = `
-        <div style="font-weight: 700; color: #38bdf8; margin-bottom: 2px;">${d.name}</div>
-        <div style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 4px;">${d.cluster_name}</div>
-        <div style="font-size: 0.75rem; line-height: 1.35;">${d.description || 'No description'}</div>
-        <div style="margin-top: 6px; font-size: 0.7rem; color: var(--text-dim);">Connections: ${d.total_degree || 0} &middot; ${d.primary_language || 'Other'}</div>
+        <div style="font-weight: 700; color: var(--tooltip-title); margin-bottom: 2px;">${escapeHtml(d.name)}</div>
+        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px;">${escapeHtml(d.cluster_name || 'General')}</div>
+        <div style="font-size: 0.78rem; line-height: 1.35;">${escapeHtml(d.description || 'No description')}</div>
+        <div style="margin-top: 6px; font-size: 0.74rem; color: var(--text-dim);">Connections: ${escapeHtml(d.total_degree || 0)} | ${escapeHtml(d.primary_language || 'Other')}</div>
       `;
       positionTooltip(event);
     }
@@ -2529,73 +3149,78 @@ class DashboardGenerator:
       const sidebar = document.getElementById('graph-sidebar');
       if (!sidebar) return;
 
-      const incoming = (rawLinks || []).filter(l => String(l.target.id || l.target) === String(targetActualId));
-      const outgoing = (rawLinks || []).filter(l => String(l.source.id || l.source) === String(targetActualId));
+      const incoming = (rawLinks || []).filter(l => String(l.target.id !== undefined ? l.target.id : l.target) === String(targetActualId));
+      const outgoing = (rawLinks || []).filter(l => String(l.source.id !== undefined ? l.source.id : l.source) === String(targetActualId));
 
-      const outgoingHtml = outgoing.length === 0 
-        ? '<div style="font-size: 0.75rem; color: var(--text-dim);">No outgoing dependencies</div>'
+      const outgoingHtml = outgoing.length === 0
+        ? '<div style="font-size: 0.78rem; color: var(--text-dim);">No outgoing dependencies</div>'
         : outgoing.map(l => {
-            const targetName = (l.target.name || l.target);
-            const targetId = (l.target.id || l.target);
-            return `<div onclick="focusNodeOnGraph('${targetId}')" style="cursor: pointer; padding: 6px; background: var(--bg-surface-elevated); border-radius: 4px; font-size: 0.78rem;">
-              <span style="color: var(--primary);">&rarr; ${targetName}</span>
-              <div style="color: var(--text-dim); font-size: 0.7rem;">${l.label || l.type}</div>
-            </div>`;
+            const targetName = (l.target && l.target.name) ? l.target.name : l.target;
+            const targetId = (l.target && l.target.id !== undefined) ? l.target.id : l.target;
+            return `<button type="button" class="sidebar-link-btn" data-focus-node="${escapeHtml(String(targetId))}">
+              <span style="color: var(--primary-text); font-weight: 600;">-> ${escapeHtml(targetName)}</span>
+              <span style="color: var(--text-dim); font-size: 0.74rem;">${escapeHtml(l.label || l.type || '')}</span>
+            </button>`;
           }).join('');
 
-      const incomingHtml = incoming.length === 0 
-        ? '<div style="font-size: 0.75rem; color: var(--text-dim);">No incoming consumers</div>'
+      const incomingHtml = incoming.length === 0
+        ? '<div style="font-size: 0.78rem; color: var(--text-dim);">No incoming consumers</div>'
         : incoming.map(l => {
-            const srcName = (l.source.name || l.source);
-            const srcId = (l.source.id || l.source);
-            return `<div onclick="focusNodeOnGraph('${srcId}')" style="cursor: pointer; padding: 6px; background: var(--bg-surface-elevated); border-radius: 4px; font-size: 0.78rem;">
-              <span style="color: var(--accent);">&larr; ${srcName}</span>
-              <div style="color: var(--text-dim); font-size: 0.7rem;">${l.label || l.type}</div>
-            </div>`;
+            const srcName = (l.source && l.source.name) ? l.source.name : l.source;
+            const srcId = (l.source && l.source.id !== undefined) ? l.source.id : l.source;
+            return `<button type="button" class="sidebar-link-btn" data-focus-node="${escapeHtml(String(srcId))}">
+              <span style="color: var(--accent-text); font-weight: 600;"><- ${escapeHtml(srcName)}</span>
+              <span style="color: var(--text-dim); font-size: 0.74rem;">${escapeHtml(l.label || l.type || '')}</span>
+            </button>`;
           }).join('');
+
+      const safeUrl = sanitizeUrl(node.html_url);
+      const repoLinkHtml = safeUrl !== '#'
+        ? `<a href="${escapeHtml(safeUrl)}" target="_blank" rel="noopener noreferrer" class="ext-link" style="font-size: 0.82rem;">View on GitHub<span class="sr-only"> (opens in new tab)</span></a>`
+        : '<span style="font-size: 0.8rem; color: var(--text-dim);">Repository URL unavailable</span>';
 
       sidebar.innerHTML = `
         <div>
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-            <span class="badge" style="background-color: ${node.cluster_color}20; border-color: ${node.cluster_color}; color: ${node.cluster_color};">${node.cluster_name}</span>
-            ${node.is_hub ? '<span class="badge" style="background-color: #f59e0b20; border-color: #f59e0b; color: #f59e0b;">Architecture Hub</span>' : ''}
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; margin-bottom: 6px;">
+            ${renderClusterBadgeHtml(node.cluster_name, node.cluster_color)}
+            ${node.is_hub ? '<span class="badge badge-hub">Architecture Hub</span>' : ''}
           </div>
-          <h2 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 4px;">${node.name}</h2>
-          <a href="${node.html_url}" target="_blank" style="font-size: 0.8rem; color: var(--primary); text-decoration: none;">View on GitHub &rarr;</a>
+          <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 4px; overflow-wrap: anywhere;">${escapeHtml(node.name)}</h3>
+          ${repoLinkHtml}
         </div>
 
-        <div style="font-size: 0.82rem; color: var(--text-muted); border-top: 1px solid var(--border-color); padding-top: 10px;">
-          ${node.description || 'No description available.'}
+        <div style="font-size: 0.84rem; color: var(--text-muted); border-top: 1px solid var(--border-color); padding-top: 10px;">
+          ${escapeHtml(node.description || 'No description available.')}
         </div>
 
         <div>
-          <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-dim); margin-bottom: 6px;">Tech Stack & Topics</div>
+          <div style="font-size: 0.76rem; text-transform: uppercase; color: var(--text-dim); margin-bottom: 6px;">Tech Stack &amp; Topics</div>
           <div>
-            ${(node.topics || []).map(t => `<span class="tag">#${t}</span>`).join('')}
-            ${(node.tech_stack || []).map(t => `<span class="tag" style="color: #6ee7b7;">${t}</span>`).join('')}
+            ${(node.topics || []).map(t => `<span class="tag">#${escapeHtml(t)}</span>`).join('')}
+            ${(node.tech_stack || []).map(t => `<span class="tag tag-tech">${escapeHtml(t)}</span>`).join('')}
           </div>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 0.8rem;">
-          <div style="background: var(--bg-surface-elevated); padding: 8px; border-radius: 4px;">
-            <div style="color: var(--text-dim); font-size: 0.7rem;">Language</div>
-            <div style="font-weight: 600;">${node.primary_language || 'Other'}</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 0.82rem;">
+          <div style="background: var(--bg-surface-elevated); padding: 8px; border-radius: 4px; border: 1px solid var(--border-color);">
+            <div style="color: var(--text-dim); font-size: 0.74rem;">Language</div>
+            <div style="font-weight: 600;">${escapeHtml(node.primary_language || 'Other')}</div>
           </div>
-          <div style="background: var(--bg-surface-elevated); padding: 8px; border-radius: 4px;">
-            <div style="color: var(--text-dim); font-size: 0.7rem;">Stars / Forks</div>
-            <div style="font-weight: 600;">${node.stars || 0} / ${node.forks || 0}</div>
+          <div style="background: var(--bg-surface-elevated); padding: 8px; border-radius: 4px; border: 1px solid var(--border-color);">
+            <div style="color: var(--text-dim); font-size: 0.74rem;">Stars / Forks</div>
+            <div style="font-weight: 600;">${escapeHtml(node.stars || 0)} / ${escapeHtml(node.forks || 0)}</div>
           </div>
         </div>
 
         <div style="border-top: 1px solid var(--border-color); padding-top: 10px;">
-          <div style="font-size: 0.8rem; font-weight: 600; margin-bottom: 6px;">Outgoing Dependencies (${outgoing.length})</div>
+          <div style="font-size: 0.82rem; font-weight: 600; margin-bottom: 6px;">Outgoing Dependencies (${outgoing.length})</div>
           <div style="display: flex; flex-direction: column; gap: 6px;">
             ${outgoingHtml}
           </div>
         </div>
 
         <div style="border-top: 1px solid var(--border-color); padding-top: 10px;">
-          <div style="font-size: 0.8rem; font-weight: 600; margin-bottom: 6px;">Incoming Consumers (${incoming.length})</div>
+          <div style="font-size: 0.82rem; font-weight: 600; margin-bottom: 6px;">Incoming Consumers (${incoming.length})</div>
           <div style="display: flex; flex-direction: column; gap: 6px;">
             ${incomingHtml}
           </div>
@@ -2603,7 +3228,6 @@ class DashboardGenerator:
       `;
     }
 
-    /* Focus node and navigate to Graph Tab */
     function focusNodeOnGraph(nodeId) {
       switchTab('tab-graph');
       selectNode(nodeId);
@@ -2616,11 +3240,14 @@ class DashboardGenerator:
           .translate(width / 2, height / 2)
           .scale(1.45)
           .translate(-node.x, -node.y);
-        svg.transition().duration(700).call(d3Zoom.transform, transform);
+        if (prefersReducedMotion()) {
+          svg.call(d3Zoom.transform, transform);
+        } else {
+          svg.transition().duration(700).call(d3Zoom.transform, transform);
+        }
       }
     }
 
-    /* Filter Graph by Cross-Cluster Matrix Cell and Zoom */
     function filterMatrixCell(srcClusterId, tgtClusterId) {
       switchTab('tab-graph');
       const clusterEl = document.getElementById('graph-cluster-filter');
@@ -2647,8 +3274,10 @@ class DashboardGenerator:
     }
 
     function executeMatcherQuery() {
-      const query = (document.getElementById('matcher-query-input').value || '').trim();
+      const queryEl = document.getElementById('matcher-query-input');
+      const query = (queryEl ? queryEl.value : '').trim();
       const area = document.getElementById('matcher-result-area');
+      if (!area) return;
 
       if (!query) {
         showToast('Please type a program or capability query.');
@@ -2671,8 +3300,8 @@ class DashboardGenerator:
         const desc = (repo.description || '').toLowerCase();
         const readme = (repo.readme_summary || '').toLowerCase();
         const lang = (repo.primary_language || '').toLowerCase();
-        const topics = (repo.topics || []).map(t => t.toLowerCase());
-        const tech = (repo.tech_stack || []).map(t => t.toLowerCase());
+        const topics = (repo.topics || []).map(t => String(t).toLowerCase());
+        const tech = (repo.tech_stack || []).map(t => String(t).toLowerCase());
         const cluster = (repo.cluster_name || '').toLowerCase();
 
         if (query.length > 5 && (desc.includes(query.toLowerCase()) || name.includes(query.toLowerCase()))) {
@@ -2749,11 +3378,11 @@ class DashboardGenerator:
       if (finalResults.length === 0 || finalResults[0].score < 3.5) {
         const domainNames = (KB_DATA.clusters || []).map(c => c.name).join(', ');
         area.innerHTML = `
-          <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger); padding: 18px; border-radius: 8px;">
-            <div style="font-weight: 700; color: var(--danger); margin-bottom: 6px; font-size: 1rem;">No matching repository found</div>
-            <div style="font-size: 0.85rem; color: var(--text-main); line-height: 1.4;">
-              No repository in this organization can answer your need for <strong>"${query}"</strong>.<br/>
-              The scanned organization contains repositories across these domains: <em>${domainNames || 'None'}</em>.
+          <div class="matcher-no-match">
+            <div style="font-weight: 700; color: var(--danger-text); margin-bottom: 6px; font-size: 1rem;">No matching repository found</div>
+            <div style="font-size: 0.86rem; color: var(--text-main); line-height: 1.45;">
+              No repository in this organization can answer your need for <strong>"${escapeHtml(query)}"</strong>.<br/>
+              The scanned organization contains repositories across these domains: <em>${escapeHtml(domainNames || 'None')}</em>.
             </div>
           </div>
         `;
@@ -2761,37 +3390,37 @@ class DashboardGenerator:
       }
 
       const best = finalResults[0];
-      const confidence = best.score >= 6.0 ? 'High Confidence' : 'Moderate Confidence';
-      const confColor = best.score >= 6.0 ? 'var(--success)' : 'var(--warning)';
-
+      const isHigh = best.score >= 6.0;
+      const confidence = isHigh ? 'High Confidence' : 'Moderate Confidence';
+      const badgeClass = isHigh ? 'badge-high' : 'badge-moderate';
       const alternatives = finalResults.slice(1, 4);
 
       area.innerHTML = `
         <div class="matcher-result-card">
           <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 8px;">
             <div>
-              <span class="badge" style="background: ${confColor}20; color: ${confColor}; border-color: ${confColor}; margin-bottom: 6px;">${confidence} (Score: ${best.score.toFixed(1)})</span>
-              <h3 style="font-size: 1.3rem; font-weight: 700;">
-                <a href="${best.repo.html_url}" target="_blank" style="color: var(--primary); text-decoration: none;">${best.repo.name} &rarr;</a>
+              <span class="badge ${badgeClass}" style="margin-bottom: 6px;">${escapeHtml(confidence)} (Score: ${escapeHtml(best.score.toFixed(1))})</span>
+              <h3 style="font-size: 1.25rem; font-weight: 700;">
+                ${renderSafeLinkHtml(best.repo.html_url, (best.repo.name || 'Repository') + ' \u2192')}
               </h3>
             </div>
-            <button class="btn btn-primary btn-sm" onclick="focusNodeOnGraph('${best.repo.id}')">Locate on Knowledge Graph</button>
+            <button type="button" class="btn btn-primary btn-sm" data-focus-node="${escapeHtml(String(best.repo.id))}">Locate on Knowledge Graph</button>
           </div>
 
           <div style="font-size: 0.9rem; color: var(--text-main);">
-            ${best.repo.description}
+            ${escapeHtml(best.repo.description || 'No description available.')}
           </div>
 
-          <div style="display: flex; gap: 12px; font-size: 0.82rem; color: var(--text-muted);">
-            <div><strong>Domain:</strong> <span class="badge" style="background: ${best.repo.cluster_color}20; color: ${best.repo.cluster_color};">${best.repo.cluster_name}</span></div>
-            <div><strong>Language:</strong> ${best.repo.primary_language || 'Other'}</div>
-            <div><strong>Stars:</strong> ${best.repo.stars || 0}</div>
+          <div style="display: flex; gap: 12px; flex-wrap: wrap; font-size: 0.84rem; color: var(--text-muted); align-items: center;">
+            <div><strong>Domain:</strong> ${renderClusterBadgeHtml(best.repo.cluster_name, best.repo.cluster_color)}</div>
+            <div><strong>Language:</strong> ${escapeHtml(best.repo.primary_language || 'Other')}</div>
+            <div><strong>Stars:</strong> ${escapeHtml(best.repo.stars || 0)}</div>
           </div>
 
           <div style="border-top: 1px solid var(--border-color); padding-top: 10px;">
             <div style="font-size: 0.78rem; text-transform: uppercase; color: var(--text-dim); margin-bottom: 6px;">Why this repository matches your query:</div>
-            <ul style="padding-left: 20px; font-size: 0.85rem; color: var(--text-main); line-height: 1.4;">
-              ${best.reasons.map(r => `<li>${r}</li>`).join('')}
+            <ul style="padding-left: 20px; font-size: 0.85rem; color: var(--text-main); line-height: 1.45;">
+              ${best.reasons.map(r => `<li>${escapeHtml(r)}</li>`).join('')}
             </ul>
           </div>
 
@@ -2800,12 +3429,12 @@ class DashboardGenerator:
               <div style="font-size: 0.78rem; text-transform: uppercase; color: var(--text-dim); margin-bottom: 8px;">Alternative Candidates:</div>
               <div style="display: flex; flex-direction: column; gap: 6px;">
                 ${alternatives.map(alt => `
-                  <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; background: var(--bg-surface); border-radius: 4px; font-size: 0.82rem;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; padding: 6px 10px; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 4px; font-size: 0.82rem;">
                     <div>
-                      <strong style="color: var(--text-main); cursor: pointer;" onclick="focusNodeOnGraph('${alt.repo.id}')">${alt.repo.name}</strong>
-                      <span style="color: var(--text-muted); font-size: 0.75rem;"> - ${alt.repo.description}</span>
+                      <button type="button" class="matcher-alt-btn" data-focus-node="${escapeHtml(String(alt.repo.id))}">${escapeHtml(alt.repo.name)}</button>
+                      <span style="color: var(--text-muted); font-size: 0.78rem;"> - ${escapeHtml(alt.repo.description || '')}</span>
                     </div>
-                    <span class="badge" style="font-size: 0.7rem;">${alt.repo.primary_language}</span>
+                    <span class="badge">${escapeHtml(alt.repo.primary_language || 'Other')}</span>
                   </div>
                 `).join('')}
               </div>
@@ -2855,10 +3484,16 @@ class DashboardGenerator:
       const btn = document.getElementById('btn-toggle-physics');
       if (isPhysicsPaused) {
         if (simulation) simulation.stop();
-        if (btn) btn.textContent = 'Resume Physics';
+        if (btn) {
+          btn.textContent = 'Resume Physics';
+          btn.setAttribute('aria-pressed', 'true');
+        }
       } else {
         if (simulation) simulation.alpha(0.25).restart();
-        if (btn) btn.textContent = 'Pause Physics';
+        if (btn) {
+          btn.textContent = 'Pause Physics';
+          btn.setAttribute('aria-pressed', 'false');
+        }
       }
     }
 
@@ -2888,40 +3523,48 @@ class DashboardGenerator:
       const repos = KB_DATA.repositories || [];
       const repoMap = new Map(repos.map(r => [r.id, r]));
 
-      container.innerHTML = clusters.map(c => `
-        <div class="cluster-card" style="border-left-color: ${c.color || '#3b82f6'};" onclick="toggleClusterCard(this)">
-          <div class="cluster-card-header">
-            <div>
-              <div class="cluster-card-title">${c.name}</div>
-              <div class="cluster-card-desc">${c.description}</div>
+      container.innerHTML = clusters.map((c, idx) => {
+        const safeColor = sanitizeColor(c.color, '#3B82F6');
+        const listId = `cluster-repos-${idx}`;
+        return `
+        <article class="cluster-card" style="border-left-color: ${safeColor};">
+          <button type="button" class="cluster-card-toggle" aria-expanded="false" aria-controls="${listId}">
+            <div class="cluster-card-header">
+              <div>
+                <h3 class="cluster-card-title">${escapeHtml(c.name)}</h3>
+                <p class="cluster-card-desc">${escapeHtml(c.description || '')}</p>
+              </div>
+              ${renderClusterBadgeHtml(`${c.repo_count || 0} repos`, safeColor)}
             </div>
-            <span class="badge" style="background: ${c.color}20; color: ${c.color}; border-color: ${c.color};">${c.repo_count} repos</span>
-          </div>
 
-          <div class="cluster-card-stats">
-            <div><strong>Stars:</strong> ${c.total_stars}</div>
-            <div><strong>Languages:</strong> ${(c.top_languages || []).join(', ') || 'N/A'}</div>
-          </div>
+            <div class="cluster-card-stats">
+              <div><strong>Stars:</strong> ${escapeHtml(c.total_stars || 0)}</div>
+              <div><strong>Languages:</strong> ${escapeHtml((c.top_languages || []).join(', ') || 'N/A')}</div>
+            </div>
+          </button>
 
-          <div class="cluster-repos-list">
-            <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-dim); margin-bottom: 6px;">Repositories (Click to inspect):</div>
-            <div style="display: flex; flex-direction: column; gap: 4px;">
+          <div class="cluster-repos-list" id="${listId}">
+            <div style="font-size: 0.76rem; text-transform: uppercase; color: var(--text-dim); margin-bottom: 6px;">Repositories (Select to inspect):</div>
+            <div style="display: flex; flex-direction: column; gap: 6px;">
               ${(c.repositories || []).map(rid => {
                 const r = repoMap.get(rid);
                 if (!r) return '';
-                return `<div class="cluster-repo-item" onclick="event.stopPropagation(); focusNodeOnGraph('${r.id}')">
-                  <span style="font-family: var(--font-mono);">${r.name}</span>
-                  <span style="color: var(--text-muted); font-size: 0.75rem;">${r.primary_language} &rarr;</span>
-                </div>`;
+                return `<button type="button" class="cluster-repo-item" data-focus-node="${escapeHtml(String(r.id))}">
+                  <span style="font-family: var(--font-mono);">${escapeHtml(r.name)}</span>
+                  <span style="color: var(--text-muted); font-size: 0.76rem;">${escapeHtml(r.primary_language || 'Other')}</span>
+                </button>`;
               }).join('')}
             </div>
           </div>
-        </div>
-      `).join('');
+        </article>`;
+      }).join('');
     }
 
-    function toggleClusterCard(card) {
-      card.classList.toggle('expanded');
+    function toggleClusterCard(card, toggleBtn) {
+      const expanded = card.classList.toggle('expanded');
+      if (toggleBtn) {
+        toggleBtn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+      }
     }
 
     /* Repository Catalog Table */
@@ -2933,20 +3576,25 @@ class DashboardGenerator:
       const tbody = document.getElementById('repo-table-body');
       if (!tbody) return;
 
-      tbody.innerHTML = repos.map(r => `
-        <tr data-name="${r.name.toLowerCase()}" data-cluster="${r.cluster_id}" data-lang="${(r.primary_language || '').toLowerCase()}">
+      tbody.innerHTML = repos.map(r => {
+        const connections = r.centrality_score ? ((r.in_degree || 0) + (r.out_degree || 0)) : 0;
+        const roleHtml = r.is_hub
+          ? '<span class="badge badge-hub">Hub</span>'
+          : (r.is_bridge ? '<span class="badge badge-bridge">Bridge</span>' : '<span style="color: var(--text-dim);">-</span>');
+        return `
+        <tr data-name="${escapeHtml((r.name || '').toLowerCase())}" data-cluster="${escapeHtml(String(r.cluster_id || ''))}" data-lang="${escapeHtml((r.primary_language || '').toLowerCase())}">
           <td>
-            <strong><a href="${r.html_url}" target="_blank" style="color: var(--text-main); text-decoration: none;">${r.name}</a></strong>
-            <div style="font-size: 0.75rem; color: var(--text-muted); max-width: 320px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${r.description}</div>
+            <strong>${renderSafeLinkHtml(r.html_url, r.name || 'repository')}</strong>
+            <div style="font-size: 0.78rem; color: var(--text-muted); max-width: 320px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(r.description || '')}</div>
           </td>
-          <td><span class="badge" style="background: ${r.cluster_color}20; color: ${r.cluster_color};">${r.cluster_name}</span></td>
-          <td>${r.primary_language || 'Other'}</td>
-          <td>${r.stars || 0}</td>
-          <td>${r.centrality_score ? (r.in_degree + r.out_degree) : 0}</td>
-          <td>${r.is_hub ? '<span class="badge" style="color: #fbbf24;">Hub</span>' : (r.is_bridge ? '<span class="badge" style="color: #38bdf8;">Bridge</span>' : '<span style="color: var(--text-dim);">-</span>')}</td>
-          <td><button class="btn btn-sm" onclick="focusNodeOnGraph('${r.id}')">Inspect</button></td>
-        </tr>
-      `).join('');
+          <td>${renderClusterBadgeHtml(r.cluster_name, r.cluster_color)}</td>
+          <td>${escapeHtml(r.primary_language || 'Other')}</td>
+          <td>${escapeHtml(r.stars || 0)}</td>
+          <td>${escapeHtml(connections)}</td>
+          <td>${roleHtml}</td>
+          <td><button type="button" class="btn btn-sm" data-focus-node="${escapeHtml(String(r.id))}" aria-label="Inspect ${escapeHtml(r.name || 'repository')} on knowledge graph">Inspect</button></td>
+        </tr>`;
+      }).join('');
     }
 
     function filterRepoTable() {
@@ -2955,9 +3603,9 @@ class DashboardGenerator:
       const rows = document.querySelectorAll('#repo-table-body tr');
 
       rows.forEach(row => {
-        const name = row.getAttribute('data-name');
-        const rCluster = row.getAttribute('data-cluster');
-        const lang = row.getAttribute('data-lang');
+        const name = row.getAttribute('data-name') || '';
+        const rCluster = row.getAttribute('data-cluster') || '';
+        const lang = row.getAttribute('data-lang') || '';
 
         const matchesQuery = name.includes(query) || lang.includes(query);
         const matchesCluster = (cluster === 'all' || rCluster === cluster);
@@ -2979,6 +3627,10 @@ class DashboardGenerator:
         repoSortAsc = true;
       }
 
+      table.querySelectorAll('thead th[aria-sort]').forEach((th, idx) => {
+        th.setAttribute('aria-sort', idx === colIndex ? (repoSortAsc ? 'ascending' : 'descending') : 'none');
+      });
+
       rows.sort((a, b) => {
         const cellA = a.children[colIndex].textContent.trim();
         const cellB = b.children[colIndex].textContent.trim();
@@ -2999,76 +3651,164 @@ class DashboardGenerator:
     function renderMatrix() {
       const container = document.getElementById('matrix-container');
       if (!container) return;
-      const matrix = KB_DATA.graph.connectivity_matrix || {};
+      const matrix = (KB_DATA.graph && KB_DATA.graph.connectivity_matrix) || {};
       const clusters = KB_DATA.clusters || [];
 
-      let html = '<table class="matrix-table"><thead><tr><th>Source \\ Target</th>';
+      let htmlOut = '<table class="matrix-table"><caption class="sr-only">Inter-cluster architecture connectivity matrix</caption><thead><tr><th scope="col">Source \\ Target</th>';
       clusters.forEach(c => {
-        html += `<th title="${c.description}">${c.name}</th>`;
+        htmlOut += `<th scope="col" title="${escapeHtml(c.description || '')}">${escapeHtml(c.name)}</th>`;
       });
-      html += '</tr></thead><tbody>';
+      htmlOut += '</tr></thead><tbody>';
 
       clusters.forEach(src => {
-        html += `<tr><td style="text-align: left; font-weight: 600;">${src.name}</td>`;
+        htmlOut += `<tr><th scope="row">${escapeHtml(src.name)}</th>`;
         clusters.forEach(tgt => {
           const count = (matrix[src.id] && matrix[src.id][tgt.id]) || 0;
-          const activeClass = count > 0 ? 'matrix-cell-active' : '';
-          const clickHandler = count > 0 ? `onclick="filterMatrixCell('${src.id}', '${tgt.id}')"` : '';
-          html += `<td class="${activeClass}" ${clickHandler}>${count > 0 ? count : '-'}</td>`;
+          if (count > 0) {
+            htmlOut += `<td class="matrix-cell-active"><button type="button" class="matrix-cell-btn" data-matrix-src="${escapeHtml(String(src.id))}" data-matrix-tgt="${escapeHtml(String(tgt.id))}" aria-label="Filter ${escapeHtml(count)} connections from ${escapeHtml(src.name)} to ${escapeHtml(tgt.name)}">${escapeHtml(count)}</button></td>`;
+          } else {
+            htmlOut += '<td><span aria-label="0 connections">-</span></td>';
+          }
         });
-        html += '</tr>';
+        htmlOut += '</tr>';
       });
 
-      html += '</tbody></table>';
-      container.innerHTML = html;
+      htmlOut += '</tbody></table>';
+      container.innerHTML = htmlOut;
     }
 
-    /* Client-Side Live Scanning in Canvas */
+    /* Hardened Client-Side Live Scanning */
+    function parseClientGitHubTarget(rawInput) {
+      const cleaned = (rawInput || '').trim();
+      if (!cleaned || /\s/.test(cleaned) || cleaned.includes('?') || cleaned.includes('#') || cleaned.includes('..')) {
+        return null;
+      }
+
+      let pathPart = '';
+      if (cleaned.includes('://')) {
+        let parsed;
+        try {
+          parsed = new URL(cleaned);
+        } catch (e) {
+          return null;
+        }
+        if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') return null;
+        const host = parsed.hostname.toLowerCase();
+        if (host !== 'github.com' && host !== 'www.github.com') return null;
+        if (parsed.search || parsed.hash) return null;
+        pathPart = parsed.pathname.replace(/^\/+|\/+$/g, '');
+      } else {
+        let stripped = cleaned.replace(/^www\./i, '');
+        if (/^github\.com\//i.test(stripped)) {
+          stripped = stripped.slice('github.com/'.length);
+        } else if (stripped.includes(':') || stripped.includes('.')) {
+          return null;
+        }
+        pathPart = stripped.replace(/^\/+|\/+$/g, '');
+      }
+
+      const parts = pathPart.split('/').filter(Boolean);
+      if (parts.length === 0) return null;
+      let owner = parts[0];
+      let repoName = null;
+
+      if (owner === 'orgs' || owner === 'users') {
+        if (parts.length < 2) return null;
+        owner = parts[1];
+        repoName = parts.length >= 3 ? parts[2] : null;
+      } else if (parts.length >= 2) {
+        repoName = parts[1];
+      }
+
+      if (!OWNER_RE.test(owner)) return null;
+      if (repoName !== null) {
+        if (repoName.endsWith('.git')) repoName = repoName.slice(0, -4);
+        if (repoName === '.' || repoName === '..' || !REPO_RE.test(repoName)) return null;
+      }
+
+      return { owner, repoName };
+    }
+
+    async function fetchWithTimeout(url, timeoutMs = 15000) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
+      try {
+        return await fetch(url, {
+          signal: controller.signal,
+          credentials: 'omit',
+          referrerPolicy: 'no-referrer',
+          headers: { 'Accept': 'application/vnd.github.v3+json' }
+        });
+      } finally {
+        clearTimeout(timer);
+      }
+    }
+
     async function scanAddressInput() {
-      const input = document.getElementById('scan-target-input').value.trim();
+      if (isScanning) {
+        showToast('A GitHub scan is already in progress.');
+        return;
+      }
+      const inputEl = document.getElementById('scan-target-input');
+      const btnScan = document.getElementById('btn-scan-address');
+      const input = (inputEl ? inputEl.value : '').trim();
       if (!input) {
-        showToast('Please enter a GitHub URL or handle.');
+        showToast('Please enter a public GitHub URL or handle.');
         return;
       }
 
-      showToast('Scanning ' + input + '...');
-      let target = input.replace(/^https?:\/\//, '').replace(/^github\.com\//, '').replace(/^orgs\//, '').replace(/\/$/, '');
-      const parts = target.split('/').filter(Boolean);
-      const owner = parts[0];
-      const repoName = parts.length >= 2 ? parts[1] : null;
+      const parsed = parseClientGitHubTarget(input);
+      if (!parsed) {
+        showToast('Invalid GitHub target. Enter a valid github.com owner or owner/repo.');
+        return;
+      }
+
+      const { owner, repoName } = parsed;
+      const encOwner = encodeURIComponent(owner);
+      const encRepo = repoName ? encodeURIComponent(repoName) : null;
+
+      isScanning = true;
+      if (btnScan) btnScan.disabled = true;
+      showToast('Scanning ' + owner + (repoName ? '/' + repoName : '') + ' via api.github.com...');
 
       try {
-        if (repoName) {
-          // Single repository scan
-          const res = await fetch(`https://api.github.com/repos/${owner}/${repoName}`);
+        if (encRepo) {
+          const res = await fetchWithTimeout(`https://api.github.com/repos/${encOwner}/${encRepo}`);
           if (res.status === 200) {
             const rawRepo = await res.json();
-            processClientRepos(owner, input, [rawRepo]);
-            showToast(`Successfully loaded repository ${owner}/${repoName}!`);
-            return;
+            if (rawRepo && typeof rawRepo === 'object' && !Array.isArray(rawRepo)) {
+              processClientRepos(owner, input, [rawRepo]);
+              showToast(`Successfully loaded repository ${owner}/${repoName}!`);
+              return;
+            }
           }
         }
 
-        const res = await fetch(`https://api.github.com/orgs/${owner}/repos?per_page=100&sort=updated`);
+        const res = await fetchWithTimeout(`https://api.github.com/orgs/${encOwner}/repos?per_page=100&sort=updated`);
         if (res.status === 200) {
           const rawRepos = await res.json();
-          processClientRepos(owner, input, rawRepos);
-          showToast(`Successfully loaded ${rawRepos.length} repos from ${owner}!`);
+          if (!Array.isArray(rawRepos)) throw new Error('Unexpected API payload');
+          processClientRepos(owner, input, rawRepos.slice(0, 100));
+          showToast(`Successfully loaded ${Math.min(rawRepos.length, 100)} repos from ${owner}!`);
         } else if (res.status === 404) {
-          const userRes = await fetch(`https://api.github.com/users/${owner}/repos?per_page=100&sort=updated`);
+          const userRes = await fetchWithTimeout(`https://api.github.com/users/${encOwner}/repos?per_page=100&sort=updated`);
           if (userRes.status === 200) {
             const rawRepos = await userRes.json();
-            processClientRepos(owner, input, rawRepos);
-            showToast(`Loaded ${rawRepos.length} repos from user ${owner}!`);
+            if (!Array.isArray(rawRepos)) throw new Error('Unexpected API payload');
+            processClientRepos(owner, input, rawRepos.slice(0, 100));
+            showToast(`Loaded ${Math.min(rawRepos.length, 100)} repos from user ${owner}!`);
           } else {
-            showToast(`GitHub account not found. Loading synthetic preview.`);
+            showToast('GitHub account not found. Loading synthetic preview.');
             onPresetChange('synthetic');
           }
         } else {
           showToast(`GitHub API rate limit or error (HTTP ${res.status}).`);
         }
       } catch (err) {
-        showToast('Network / CORS limitation in iframe. Use Python CLI or local preset.');
+        showToast('Network, timeout, or CORS limitation. Use Python CLI or local preset.');
+      } finally {
+        isScanning = false;
+        if (btnScan) btnScan.disabled = false;
       }
     }
 
@@ -3076,22 +3816,22 @@ class DashboardGenerator:
       const taxonomy = [
         { id: "medical-healthcare", name: "Medical & Healthcare", description: "Clinical systems, electronic health records (EHR/EMR), patient care, FHIR, and telehealth.", color: "#0EA5E9", keywords: ["medical", "healthcare", "clinical", "patient", "health", "ehr", "emr", "fhir", "hl7", "dicom", "hospital", "telehealth", "hipaa", "diagnosis"] },
         { id: "life-sciences-bio", name: "Life Sciences & Bioinformatics", description: "Genomics sequencing pipelines, DNA/RNA molecular biology, and clinical trials research.", color: "#14B8A6", keywords: ["genomics", "bioinformatics", "biology", "dna", "rna", "sequencing", "protein", "crispr", "pharma", "biotech", "molecular", "clinical-trials", "laboratory"] },
-        { id: "finance-billing", name: "Finance, Billing & Commerce", description: "Payment processing, subscription billing, invoices, accounting, and e-commerce checkout.", color: "#10B981", keywords: ["billing", "payment", "invoice", "subscription", "stripe", "checkout", "finance", "banking", "accounting", "ecommerce", "ledger"] },
+        { id: "finance-billing", name: "Finance, Billing & Commerce", description: "Payment processing, subscription billing, invoices, accounting, and e-commerce checkout.", color: "#10B981", keywords: ["billing", "payment", "invoice", "subscription", "checkout", "finance", "banking", "accounting", "ecommerce", "ledger"] },
         { id: "security-identity", name: "Security, Identity & Access", description: "Authentication, OAuth2/OIDC identity providers, token issuance, RBAC, and encryption.", color: "#EC4899", keywords: ["auth", "authentication", "oauth", "oauth2", "oidc", "identity", "security", "rbac", "jwt", "token", "encryption", "sso", "login"] },
-        { id: "data-ai-analytics", name: "Data Intelligence & AI/ML", description: "Machine learning models, inference engines, vector search, streaming pipelines, and analytics.", color: "#8B5CF6", keywords: ["ai", "ml", "analytics", "pipeline", "etl", "kafka", "spark", "warehouse", "embeddings", "rag", "llm", "model", "inference"] },
+        { id: "data-ai-analytics", name: "Data Intelligence & AI/ML", description: "Machine learning models, inference engines, vector search, streaming pipelines, and analytics.", color: "#8B5CF6", keywords: ["ai", "ml", "analytics", "pipeline", "etl", "kafka", "flink", "warehouse", "embeddings", "rag", "llm", "model", "inference"] },
         { id: "developer-tooling", name: "Developer Tooling & SDKs", description: "Client SDKs, CLI tools, API bindings, linters, code generators, and testing harnesses.", color: "#F59E0B", keywords: ["sdk", "cli", "client-library", "tooling", "generator", "plugin", "agent", "linter", "wrapper", "bindings"] },
-        { id: "infrastructure-devops", name: "Infrastructure & Cloud Operations", description: "Cloud infrastructure as code, Terraform, Kubernetes, Helm, Docker, and CI/CD.", color: "#EF4444", keywords: ["infra", "infrastructure", "terraform", "k8s", "kubernetes", "docker", "helm", "ci-cd", "cloud", "aws", "gcp", "deploy"] },
+        { id: "infrastructure-devops", name: "Infrastructure & Cloud Operations", description: "Cloud infrastructure as code, Terraform, Kubernetes, Helm, Docker, and CI/CD.", color: "#EF4444", keywords: ["infra", "infrastructure", "terraform", "k8s", "kubernetes", "docker", "helm", "ci-cd", "cloud", "deploy"] },
         { id: "core-platform", name: "Core Platform & Business Services", description: "Routing gateways, user profiles, tenancy, notification dispatchers, and domain services.", color: "#3B82F6", keywords: ["gateway", "proxy", "user-service", "tenancy", "notification", "dispatch", "engine", "router", "service"] },
-        { id: "frontend-applications", name: "User Applications & Web Portals", description: "Web portals, dashboards, customer interfaces, mobile apps, and interactive web apps.", color: "#06B6D4", keywords: ["portal", "app", "ui", "dashboard", "web", "frontend", "mobile", "ios", "android", "console", "react", "vue"] },
+        { id: "frontend-applications", name: "User Applications & Web Portals", description: "Web portals, dashboards, customer interfaces, mobile apps, and interactive web apps.", color: "#06B6D4", keywords: ["portal", "app", "ui", "dashboard", "web", "frontend", "mobile", "console", "react", "vue"] },
         { id: "utilities-libraries", name: "Utilities & Shared Libraries", description: "Shared common utilities, protocol buffer contracts, data schemas, and helper libraries.", color: "#64748B", keywords: ["utils", "utilities", "common", "shared", "core-lib", "proto", "contracts", "schemas", "helpers", "types"] },
         { id: "documentation-specs", name: "Documentation & Specifications", description: "Architectural blueprints, technical guides, OpenAPI specs, and RFC standards.", color: "#475569", keywords: ["docs", "documentation", "spec", "specification", "rfc", "guide", "architecture", "standard", "wiki"] }
       ];
 
       const repos = rawRepos.map((r, i) => {
-        const topics = r.topics || [];
-        const name = r.name || '';
-        const desc = (r.description || '').toLowerCase();
-        
+        const topics = Array.isArray(r.topics) ? r.topics.map(t => String(t)) : [];
+        const name = String(r.name || '');
+        const desc = String(r.description || '').toLowerCase();
+
         let assignedCluster = taxonomy[taxonomy.length - 2];
         for (const tax of taxonomy) {
           if (tax.keywords.some(k => name.toLowerCase().includes(k) || topics.includes(k) || desc.includes(k))) {
@@ -3102,16 +3842,16 @@ class DashboardGenerator:
 
         return {
           id: r.id || (i + 1),
-          name: r.name,
-          full_name: r.full_name || `${owner}/${r.name}`,
-          html_url: r.html_url,
-          description: r.description || "No description provided.",
-          primary_language: r.language || "Other",
+          name: name,
+          full_name: String(r.full_name || `${owner}/${name}`),
+          html_url: sanitizeUrl(r.html_url),
+          description: String(r.description || "No description provided."),
+          primary_language: String(r.language || "Other"),
           topics: topics,
-          tech_stack: [r.language].filter(Boolean),
-          stars: r.stargazers_count || 0,
-          forks: r.forks_count || 0,
-          open_issues: r.open_issues_count || 0,
+          tech_stack: [r.language].filter(Boolean).map(String),
+          stars: Number(r.stargazers_count) || 0,
+          forks: Number(r.forks_count) || 0,
+          open_issues: Number(r.open_issues_count) || 0,
           cluster_id: assignedCluster.id,
           cluster_name: assignedCluster.name,
           cluster_color: assignedCluster.color,
@@ -3185,7 +3925,8 @@ class DashboardGenerator:
         }
       };
 
-      document.getElementById('active-target-display').textContent = 'Target: ' + inputUrl;
+      const targetDisplay = document.getElementById('active-target-display');
+      if (targetDisplay) targetDisplay.textContent = 'Target: ' + inputUrl;
       refreshAllViews();
     }
 
@@ -3195,11 +3936,13 @@ class DashboardGenerator:
       } else if (val === 'synthetic') {
         KB_DATA = JSON.parse(JSON.stringify(INITIAL_KB_DATA));
       } else if (val === 'pallets') {
-        document.getElementById('scan-target-input').value = 'https://github.com/pallets';
+        const input = document.getElementById('scan-target-input');
+        if (input) input.value = 'https://github.com/pallets';
         scanAddressInput();
         return;
       } else if (val === 'fastapi') {
-        document.getElementById('scan-target-input').value = 'https://github.com/fastapi';
+        const input = document.getElementById('scan-target-input');
+        if (input) input.value = 'https://github.com/fastapi';
         scanAddressInput();
         return;
       }
@@ -3218,28 +3961,22 @@ class DashboardGenerator:
           }
           showToast('JSON copied to clipboard!');
         } catch (e) {
-          document.execCommand('copy');
+          try { document.execCommand('copy'); } catch (_) {}
           showToast('JSON copied to clipboard!');
         }
       }
     }
 
     function exportDataJson() {
-      const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(KB_DATA, null, 2));
+      const blob = new Blob([JSON.stringify(KB_DATA, null, 2)], { type: 'application/json;charset=utf-8' });
+      const blobUrl = URL.createObjectURL(blob);
       const downloadAnchor = document.createElement('a');
-      downloadAnchor.setAttribute('href', dataStr);
+      downloadAnchor.setAttribute('href', blobUrl);
       downloadAnchor.setAttribute('download', 'knowledge_base_export.json');
       document.body.appendChild(downloadAnchor);
       downloadAnchor.click();
       downloadAnchor.remove();
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
       showToast('Exporting JSON file...');
     }
-  </script>
-</body>
-</html>
 """
-        return (template
-                .replace("__TITLE_NAME__", title_name)
-                .replace("__TARGET_DISPLAY__", target_display)
-                .replace("__INPUT_VALUE__", input_value)
-                .replace("__EMBEDDED_JSON__", json_data_str))

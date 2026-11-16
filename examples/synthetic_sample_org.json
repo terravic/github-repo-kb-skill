@@ -3,7 +3,7 @@
     "owner": "sample-platform",
     "input_url": "https://github.com/sample-platform",
     "target_type": "organization",
-    "description": "Synthetic multi-domain health-tech, life sciences, and cloud platform enterprise organization.",
+    "description": "Synthetic multi-domain health-tech, life sciences, and cloud platform organization.",
     "is_offline_fixture": true
   },
   "repositories": [
@@ -83,7 +83,7 @@
       "forks": 76,
       "open_issues": 15,
       "license": "Apache-2.0",
-      "tech_stack": ["Python", "C++", "Nextflow", "Spark"],
+      "tech_stack": ["Python", "C++", "Nextflow", "Flink"],
       "dependencies": ["sample-common-lib", "sample-data-pipeline"],
       "readme_summary": "Distributed bioinformatics workflow for genome alignment, variant calling, and gene expression profiling."
     },
@@ -108,14 +108,14 @@
       "name": "sample-billing-engine",
       "full_name": "sample-platform/sample-billing-engine",
       "html_url": "https://github.com/sample-platform/sample-billing-engine",
-      "description": "Subscription lifecycle, usage meter aggregation, invoice generation, and Stripe payment webhook processing service.",
+      "description": "Subscription lifecycle, usage meter aggregation, invoice generation, and payment gateway webhook processing service.",
       "primary_language": "Python",
-      "topics": ["billing", "payment", "invoice", "subscription", "stripe", "finance", "accounting"],
+      "topics": ["billing", "payment", "invoice", "subscription", "checkout", "finance", "accounting"],
       "stars": 328,
       "forks": 41,
       "open_issues": 14,
       "license": "Apache-2.0",
-      "tech_stack": ["Python", "FastAPI", "PostgreSQL", "Stripe"],
+      "tech_stack": ["Python", "FastAPI", "PostgreSQL", "Webhooks"],
       "dependencies": ["sample-auth-service", "sample-common-lib"],
       "readme_summary": "Automated recurring billing, credit card payment processing, and usage-based invoice generation."
     },
@@ -142,12 +142,12 @@
       "html_url": "https://github.com/sample-platform/sample-data-pipeline",
       "description": "Distributed real-time streaming pipeline and ETL workers aggregating telemetry events into data warehouse.",
       "primary_language": "Python",
-      "topics": ["pipeline", "etl", "kafka", "spark", "analytics", "data", "warehouse"],
+      "topics": ["pipeline", "etl", "kafka", "flink", "analytics", "data", "warehouse"],
       "stars": 419,
       "forks": 58,
       "open_issues": 9,
       "license": "Apache-2.0",
-      "tech_stack": ["Python", "Kafka", "Spark", "ClickHouse"],
+      "tech_stack": ["Python", "Kafka", "Flink", "ClickHouse"],
       "dependencies": ["sample-common-lib"],
       "readme_summary": "Streaming Kafka consumer workers ingesting real-time clinical and operational telemetry."
     },
@@ -229,7 +229,7 @@
       "license": "Apache-2.0",
       "tech_stack": ["Terraform", "Kubernetes", "Helm", "Docker", "GitHub Actions"],
       "dependencies": ["sample-api-gateway", "sample-data-pipeline"],
-      "readme_summary": "Infrastructure-as-Code definitions for provisioning AWS EKS clusters, VPCs, and databases."
+      "readme_summary": "Infrastructure-as-Code definitions for provisioning Kubernetes clusters, VPCs, and databases."
     },
     {
       "id": 115,

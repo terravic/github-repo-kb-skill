@@ -4,9 +4,9 @@
     "target_url": "https://github.com/sample-platform",
     "target_type": "organization",
     "owner": "sample-platform",
-    "description": "Synthetic multi-domain health-tech, life sciences, and cloud platform enterprise organization.",
+    "description": "Synthetic multi-domain health-tech, life sciences, and cloud platform organization.",
     "is_offline_fixture": true,
-    "generated_at": "2026-08-24 20:42:50 UTC"
+    "generated_at": "2026-11-16 23:45:49 UTC"
   },
   "summary": {
     "total_repositories": 16,
@@ -58,7 +58,7 @@
       ],
       "total_stars": 947,
       "top_languages": [
-        "Other"
+        "Go"
       ]
     },
     {
@@ -74,7 +74,9 @@
       ],
       "total_stars": 865,
       "top_languages": [
-        "Other"
+        "Go",
+        "TypeScript",
+        "Python"
       ]
     },
     {
@@ -89,7 +91,7 @@
       ],
       "total_stars": 1264,
       "top_languages": [
-        "Other"
+        "Python"
       ]
     },
     {
@@ -104,7 +106,8 @@
       ],
       "total_stars": 785,
       "top_languages": [
-        "Other"
+        "Python",
+        "TypeScript"
       ]
     },
     {
@@ -118,7 +121,7 @@
       ],
       "total_stars": 612,
       "top_languages": [
-        "Other"
+        "Go"
       ]
     },
     {
@@ -132,7 +135,7 @@
       ],
       "total_stars": 510,
       "top_languages": [
-        "Other"
+        "Python"
       ]
     },
     {
@@ -146,7 +149,7 @@
       ],
       "total_stars": 328,
       "top_languages": [
-        "Other"
+        "Python"
       ]
     },
     {
@@ -160,7 +163,7 @@
       ],
       "total_stars": 560,
       "top_languages": [
-        "Other"
+        "HCL"
       ]
     },
     {
@@ -174,7 +177,7 @@
       ],
       "total_stars": 310,
       "top_languages": [
-        "Other"
+        "Go"
       ]
     },
     {
@@ -188,7 +191,7 @@
       ],
       "total_stars": 180,
       "top_languages": [
-        "Other"
+        "Markdown"
       ]
     }
   ],
@@ -199,13 +202,13 @@
       "full_name": "sample-platform/sample-api-gateway",
       "html_url": "https://github.com/sample-platform/sample-api-gateway",
       "description": "High-performance edge reverse proxy and authentication gateway routing traffic to core microservices.",
-      "primary_language": "Other",
+      "primary_language": "Go",
       "topics": [
-        "router",
-        "proxy",
+        "core-service",
         "gateway",
         "grpc",
-        "core-service"
+        "proxy",
+        "router"
       ],
       "stars": 482,
       "forks": 65,
@@ -238,16 +241,16 @@
       "full_name": "sample-platform/sample-auth-service",
       "html_url": "https://github.com/sample-platform/sample-auth-service",
       "description": "OAuth2 / OIDC identity provider, JWT token manager, and role-based access control (RBAC) security enforcement service.",
-      "primary_language": "Other",
+      "primary_language": "Go",
       "topics": [
-        "jwt",
+        "auth",
         "authentication",
         "identity",
-        "oidc",
+        "jwt",
         "oauth2",
-        "security",
-        "auth",
-        "rbac"
+        "oidc",
+        "rbac",
+        "security"
       ],
       "stars": 612,
       "forks": 94,
@@ -278,16 +281,16 @@
       "full_name": "sample-platform/sample-patient-records",
       "html_url": "https://github.com/sample-platform/sample-patient-records",
       "description": "Electronic health record (EHR/EMR) service with HL7 FHIR interoperability, clinical notes, and HIPAA compliant patient store.",
-      "primary_language": "Other",
+      "primary_language": "Go",
       "topics": [
-        "medical",
+        "clinical",
+        "ehr",
+        "fhir",
         "healthcare",
         "hipaa",
+        "medical",
         "patient",
-        "fhir",
-        "clinical",
-        "records",
-        "ehr"
+        "records"
       ],
       "stars": 340,
       "forks": 42,
@@ -319,15 +322,15 @@
       "full_name": "sample-platform/sample-telehealth-portal",
       "html_url": "https://github.com/sample-platform/sample-telehealth-portal",
       "description": "Clinical patient and physician portal for telemedicine appointments, medical charts, and telehealth video consultations.",
-      "primary_language": "Other",
+      "primary_language": "TypeScript",
       "topics": [
-        "medical",
-        "healthcare",
-        "telehealth",
-        "portal",
-        "patient",
         "clinical",
-        "react"
+        "healthcare",
+        "medical",
+        "patient",
+        "portal",
+        "react",
+        "telehealth"
       ],
       "stars": 295,
       "forks": 38,
@@ -359,15 +362,15 @@
       "full_name": "sample-platform/sample-genomics-pipeline",
       "html_url": "https://github.com/sample-platform/sample-genomics-pipeline",
       "description": "High-throughput bioinformatics pipeline for DNA/RNA sequencing variant analysis and molecular genetics assays.",
-      "primary_language": "Other",
+      "primary_language": "Python",
       "topics": [
+        "bioinformatics",
         "biology",
+        "biotech",
+        "dna",
         "genetics",
         "genomics",
-        "biotech",
-        "sequencing",
-        "bioinformatics",
-        "dna"
+        "sequencing"
       ],
       "stars": 510,
       "forks": 76,
@@ -384,9 +387,9 @@
       ],
       "tech_stack": [
         "C++",
+        "Flink",
         "Nextflow",
-        "Python",
-        "Spark"
+        "Python"
       ],
       "readme_summary": "Distributed bioinformatics workflow for genome alignment, variant calling, and gene expression profiling.",
       "cluster_id": "life-sciences-bio",
@@ -399,15 +402,15 @@
       "full_name": "sample-platform/sample-clinical-trials",
       "html_url": "https://github.com/sample-platform/sample-clinical-trials",
       "description": "Life sciences research platform for managing clinical trials, participant cohorts, biomarker datasets, and bio-specimens.",
-      "primary_language": "Other",
+      "primary_language": "Python",
       "topics": [
-        "clinical-trials",
-        "specimen",
-        "laboratory",
+        "bioinformatics",
         "biomarker",
-        "research",
+        "clinical-trials",
+        "laboratory",
         "pharma",
-        "bioinformatics"
+        "research",
+        "specimen"
       ],
       "stars": 230,
       "forks": 25,
@@ -437,16 +440,16 @@
       "name": "sample-billing-engine",
       "full_name": "sample-platform/sample-billing-engine",
       "html_url": "https://github.com/sample-platform/sample-billing-engine",
-      "description": "Subscription lifecycle, usage meter aggregation, invoice generation, and Stripe payment webhook processing service.",
-      "primary_language": "Other",
+      "description": "Subscription lifecycle, usage meter aggregation, invoice generation, and payment gateway webhook processing service.",
+      "primary_language": "Python",
       "topics": [
-        "finance",
-        "stripe",
-        "billing",
-        "invoice",
         "accounting",
-        "subscription",
-        "payment"
+        "billing",
+        "checkout",
+        "finance",
+        "invoice",
+        "payment",
+        "subscription"
       ],
       "stars": 328,
       "forks": 41,
@@ -465,7 +468,7 @@
         "FastAPI",
         "PostgreSQL",
         "Python",
-        "Stripe"
+        "Webhooks"
       ],
       "readme_summary": "Automated recurring billing, credit card payment processing, and usage-based invoice generation.",
       "cluster_id": "finance-billing",
@@ -478,15 +481,15 @@
       "full_name": "sample-platform/sample-ai-engine",
       "html_url": "https://github.com/sample-platform/sample-ai-engine",
       "description": "LLM inference orchestrator, vector embeddings pipeline, and automated anomaly detection model.",
-      "primary_language": "Other",
+      "primary_language": "Python",
       "topics": [
-        "vector",
-        "rag",
-        "inference",
+        "ai",
         "embeddings",
-        "ml",
+        "inference",
         "llm",
-        "ai"
+        "ml",
+        "rag",
+        "vector"
       ],
       "stars": 845,
       "forks": 132,
@@ -518,15 +521,15 @@
       "full_name": "sample-platform/sample-data-pipeline",
       "html_url": "https://github.com/sample-platform/sample-data-pipeline",
       "description": "Distributed real-time streaming pipeline and ETL workers aggregating telemetry events into data warehouse.",
-      "primary_language": "Other",
+      "primary_language": "Python",
       "topics": [
-        "pipeline",
-        "kafka",
-        "spark",
-        "warehouse",
         "analytics",
         "data",
-        "etl"
+        "etl",
+        "flink",
+        "kafka",
+        "pipeline",
+        "warehouse"
       ],
       "stars": 419,
       "forks": 58,
@@ -542,9 +545,9 @@
       ],
       "tech_stack": [
         "ClickHouse",
+        "Flink",
         "Kafka",
-        "Python",
-        "Spark"
+        "Python"
       ],
       "readme_summary": "Streaming Kafka consumer workers ingesting real-time clinical and operational telemetry.",
       "cluster_id": "data-ai-analytics",
@@ -557,14 +560,14 @@
       "full_name": "sample-platform/sample-user-service",
       "html_url": "https://github.com/sample-platform/sample-user-service",
       "description": "User profiles, tenant management, and organization membership service.",
-      "primary_language": "Other",
+      "primary_language": "Go",
       "topics": [
-        "tenancy",
-        "user-service",
-        "membership",
         "grpc",
+        "membership",
         "organization",
-        "tenant"
+        "tenancy",
+        "tenant",
+        "user-service"
       ],
       "stars": 275,
       "forks": 32,
@@ -596,14 +599,14 @@
       "full_name": "sample-platform/sample-notification-service",
       "html_url": "https://github.com/sample-platform/sample-notification-service",
       "description": "Multi-channel notification dispatcher for transactional email, SMS, and webhook alerts.",
-      "primary_language": "Other",
+      "primary_language": "Go",
       "topics": [
-        "notification",
-        "dispatch",
-        "service",
-        "sms",
         "alerts",
-        "email"
+        "dispatch",
+        "email",
+        "notification",
+        "service",
+        "sms"
       ],
       "stars": 190,
       "forks": 22,
@@ -634,13 +637,13 @@
       "full_name": "sample-platform/sample-python-sdk",
       "html_url": "https://github.com/sample-platform/sample-python-sdk",
       "description": "Python SDK and CLI client for automation scripts, data science workloads, and backend integration.",
-      "primary_language": "Other",
+      "primary_language": "Python",
       "topics": [
-        "tooling",
+        "cli",
+        "client-library",
         "python",
         "sdk",
-        "cli",
-        "client-library"
+        "tooling"
       ],
       "stars": 365,
       "forks": 47,
@@ -670,13 +673,13 @@
       "full_name": "sample-platform/sample-js-sdk",
       "html_url": "https://github.com/sample-platform/sample-js-sdk",
       "description": "Official TypeScript and JavaScript client SDK for integrating with platform APIs.",
-      "primary_language": "Other",
+      "primary_language": "TypeScript",
       "topics": [
-        "sdk",
-        "typescript",
+        "client-library",
         "npm",
+        "sdk",
         "tooling",
-        "client-library"
+        "typescript"
       ],
       "stars": 420,
       "forks": 63,
@@ -706,16 +709,16 @@
       "full_name": "sample-platform/sample-infrastructure",
       "html_url": "https://github.com/sample-platform/sample-infrastructure",
       "description": "Terraform modules, Kubernetes Helm charts, and CI/CD pipelines deploying the entire platform to multi-region cloud.",
-      "primary_language": "Other",
+      "primary_language": "HCL",
       "topics": [
-        "terraform",
+        "ci-cd",
+        "docker",
+        "helm",
         "infra",
-        "kubernetes",
         "infrastructure",
         "k8s",
-        "helm",
-        "docker",
-        "ci-cd"
+        "kubernetes",
+        "terraform"
       ],
       "stars": 560,
       "forks": 88,
@@ -733,11 +736,12 @@
       "tech_stack": [
         "Docker",
         "GitHub Actions",
+        "HCL",
         "Helm",
         "Kubernetes",
         "Terraform"
       ],
-      "readme_summary": "Infrastructure-as-Code definitions for provisioning AWS EKS clusters, VPCs, and databases.",
+      "readme_summary": "Infrastructure-as-Code definitions for provisioning Kubernetes clusters, VPCs, and databases.",
       "cluster_id": "infrastructure-devops",
       "cluster_name": "Infrastructure & Cloud Operations",
       "cluster_color": "#EF4444"
@@ -748,15 +752,15 @@
       "full_name": "sample-platform/sample-common-lib",
       "html_url": "https://github.com/sample-platform/sample-common-lib",
       "description": "Shared Go and Python utilities, protocol buffer contracts, structured logging, and database helpers.",
-      "primary_language": "Other",
+      "primary_language": "Go",
       "topics": [
-        "core-lib",
-        "shared",
         "common",
-        "utils",
-        "types",
+        "core-lib",
+        "proto",
         "schemas",
-        "proto"
+        "shared",
+        "types",
+        "utils"
       ],
       "stars": 310,
       "forks": 35,
@@ -785,14 +789,14 @@
       "full_name": "sample-platform/sample-architecture-docs",
       "html_url": "https://github.com/sample-platform/sample-architecture-docs",
       "description": "System architecture blueprints, technical RFCs, security whitepapers, and developer documentation.",
-      "primary_language": "Other",
+      "primary_language": "Markdown",
       "topics": [
-        "documentation",
+        "architecture",
         "docs",
+        "documentation",
         "guide",
         "rfc",
-        "spec",
-        "architecture"
+        "spec"
       ],
       "stars": 180,
       "forks": 19,
@@ -823,13 +827,13 @@
         "full_name": "sample-platform/sample-api-gateway",
         "html_url": "https://github.com/sample-platform/sample-api-gateway",
         "description": "High-performance edge reverse proxy and authentication gateway routing traffic to core microservices.",
-        "primary_language": "Other",
+        "primary_language": "Go",
         "topics": [
-          "router",
-          "proxy",
+          "core-service",
           "gateway",
           "grpc",
-          "core-service"
+          "proxy",
+          "router"
         ],
         "tech_stack": [
           "Docker",
@@ -857,16 +861,16 @@
         "full_name": "sample-platform/sample-auth-service",
         "html_url": "https://github.com/sample-platform/sample-auth-service",
         "description": "OAuth2 / OIDC identity provider, JWT token manager, and role-based access control (RBAC) security enforcement service.",
-        "primary_language": "Other",
+        "primary_language": "Go",
         "topics": [
-          "jwt",
+          "auth",
           "authentication",
           "identity",
-          "oidc",
+          "jwt",
           "oauth2",
-          "security",
-          "auth",
-          "rbac"
+          "oidc",
+          "rbac",
+          "security"
         ],
         "tech_stack": [
           "Go",
@@ -893,16 +897,16 @@
         "full_name": "sample-platform/sample-patient-records",
         "html_url": "https://github.com/sample-platform/sample-patient-records",
         "description": "Electronic health record (EHR/EMR) service with HL7 FHIR interoperability, clinical notes, and HIPAA compliant patient store.",
-        "primary_language": "Other",
+        "primary_language": "Go",
         "topics": [
-          "medical",
+          "clinical",
+          "ehr",
+          "fhir",
           "healthcare",
           "hipaa",
+          "medical",
           "patient",
-          "fhir",
-          "clinical",
-          "records",
-          "ehr"
+          "records"
         ],
         "tech_stack": [
           "Docker",
@@ -929,15 +933,15 @@
         "full_name": "sample-platform/sample-telehealth-portal",
         "html_url": "https://github.com/sample-platform/sample-telehealth-portal",
         "description": "Clinical patient and physician portal for telemedicine appointments, medical charts, and telehealth video consultations.",
-        "primary_language": "Other",
+        "primary_language": "TypeScript",
         "topics": [
-          "medical",
-          "healthcare",
-          "telehealth",
-          "portal",
-          "patient",
           "clinical",
-          "react"
+          "healthcare",
+          "medical",
+          "patient",
+          "portal",
+          "react",
+          "telehealth"
         ],
         "tech_stack": [
           "Next.js",
@@ -964,21 +968,21 @@
         "full_name": "sample-platform/sample-genomics-pipeline",
         "html_url": "https://github.com/sample-platform/sample-genomics-pipeline",
         "description": "High-throughput bioinformatics pipeline for DNA/RNA sequencing variant analysis and molecular genetics assays.",
-        "primary_language": "Other",
+        "primary_language": "Python",
         "topics": [
+          "bioinformatics",
           "biology",
+          "biotech",
+          "dna",
           "genetics",
           "genomics",
-          "biotech",
-          "sequencing",
-          "bioinformatics",
-          "dna"
+          "sequencing"
         ],
         "tech_stack": [
           "C++",
+          "Flink",
           "Nextflow",
-          "Python",
-          "Spark"
+          "Python"
         ],
         "stars": 510,
         "forks": 76,
@@ -999,15 +1003,15 @@
         "full_name": "sample-platform/sample-clinical-trials",
         "html_url": "https://github.com/sample-platform/sample-clinical-trials",
         "description": "Life sciences research platform for managing clinical trials, participant cohorts, biomarker datasets, and bio-specimens.",
-        "primary_language": "Other",
+        "primary_language": "Python",
         "topics": [
-          "clinical-trials",
-          "specimen",
-          "laboratory",
+          "bioinformatics",
           "biomarker",
-          "research",
+          "clinical-trials",
+          "laboratory",
           "pharma",
-          "bioinformatics"
+          "research",
+          "specimen"
         ],
         "tech_stack": [
           "FastAPI",
@@ -1032,22 +1036,22 @@
         "name": "sample-billing-engine",
         "full_name": "sample-platform/sample-billing-engine",
         "html_url": "https://github.com/sample-platform/sample-billing-engine",
-        "description": "Subscription lifecycle, usage meter aggregation, invoice generation, and Stripe payment webhook processing service.",
-        "primary_language": "Other",
+        "description": "Subscription lifecycle, usage meter aggregation, invoice generation, and payment gateway webhook processing service.",
+        "primary_language": "Python",
         "topics": [
-          "finance",
-          "stripe",
-          "billing",
-          "invoice",
           "accounting",
-          "subscription",
-          "payment"
+          "billing",
+          "checkout",
+          "finance",
+          "invoice",
+          "payment",
+          "subscription"
         ],
         "tech_stack": [
           "FastAPI",
           "PostgreSQL",
           "Python",
-          "Stripe"
+          "Webhooks"
         ],
         "stars": 328,
         "forks": 41,
@@ -1068,15 +1072,15 @@
         "full_name": "sample-platform/sample-ai-engine",
         "html_url": "https://github.com/sample-platform/sample-ai-engine",
         "description": "LLM inference orchestrator, vector embeddings pipeline, and automated anomaly detection model.",
-        "primary_language": "Other",
+        "primary_language": "Python",
         "topics": [
-          "vector",
-          "rag",
-          "inference",
+          "ai",
           "embeddings",
-          "ml",
+          "inference",
           "llm",
-          "ai"
+          "ml",
+          "rag",
+          "vector"
         ],
         "tech_stack": [
           "ClickHouse",
@@ -1103,21 +1107,21 @@
         "full_name": "sample-platform/sample-data-pipeline",
         "html_url": "https://github.com/sample-platform/sample-data-pipeline",
         "description": "Distributed real-time streaming pipeline and ETL workers aggregating telemetry events into data warehouse.",
-        "primary_language": "Other",
+        "primary_language": "Python",
         "topics": [
-          "pipeline",
-          "kafka",
-          "spark",
-          "warehouse",
           "analytics",
           "data",
-          "etl"
+          "etl",
+          "flink",
+          "kafka",
+          "pipeline",
+          "warehouse"
         ],
         "tech_stack": [
           "ClickHouse",
+          "Flink",
           "Kafka",
-          "Python",
-          "Spark"
+          "Python"
         ],
         "stars": 419,
         "forks": 58,
@@ -1138,14 +1142,14 @@
         "full_name": "sample-platform/sample-user-service",
         "html_url": "https://github.com/sample-platform/sample-user-service",
         "description": "User profiles, tenant management, and organization membership service.",
-        "primary_language": "Other",
+        "primary_language": "Go",
         "topics": [
-          "tenancy",
-          "user-service",
-          "membership",
           "grpc",
+          "membership",
           "organization",
-          "tenant"
+          "tenancy",
+          "tenant",
+          "user-service"
         ],
         "tech_stack": [
           "Go",
@@ -1172,14 +1176,14 @@
         "full_name": "sample-platform/sample-notification-service",
         "html_url": "https://github.com/sample-platform/sample-notification-service",
         "description": "Multi-channel notification dispatcher for transactional email, SMS, and webhook alerts.",
-        "primary_language": "Other",
+        "primary_language": "Go",
         "topics": [
-          "notification",
-          "dispatch",
-          "service",
-          "sms",
           "alerts",
-          "email"
+          "dispatch",
+          "email",
+          "notification",
+          "service",
+          "sms"
         ],
         "tech_stack": [
           "Docker",
@@ -1205,13 +1209,13 @@
         "full_name": "sample-platform/sample-python-sdk",
         "html_url": "https://github.com/sample-platform/sample-python-sdk",
         "description": "Python SDK and CLI client for automation scripts, data science workloads, and backend integration.",
-        "primary_language": "Other",
+        "primary_language": "Python",
         "topics": [
-          "tooling",
+          "cli",
+          "client-library",
           "python",
           "sdk",
-          "cli",
-          "client-library"
+          "tooling"
         ],
         "tech_stack": [
           "PyPI",
@@ -1237,13 +1241,13 @@
         "full_name": "sample-platform/sample-js-sdk",
         "html_url": "https://github.com/sample-platform/sample-js-sdk",
         "description": "Official TypeScript and JavaScript client SDK for integrating with platform APIs.",
-        "primary_language": "Other",
+        "primary_language": "TypeScript",
         "topics": [
-          "sdk",
-          "typescript",
+          "client-library",
           "npm",
+          "sdk",
           "tooling",
-          "client-library"
+          "typescript"
         ],
         "tech_stack": [
           "Node.js",
@@ -1269,20 +1273,21 @@
         "full_name": "sample-platform/sample-infrastructure",
         "html_url": "https://github.com/sample-platform/sample-infrastructure",
         "description": "Terraform modules, Kubernetes Helm charts, and CI/CD pipelines deploying the entire platform to multi-region cloud.",
-        "primary_language": "Other",
+        "primary_language": "HCL",
         "topics": [
-          "terraform",
+          "ci-cd",
+          "docker",
+          "helm",
           "infra",
-          "kubernetes",
           "infrastructure",
           "k8s",
-          "helm",
-          "docker",
-          "ci-cd"
+          "kubernetes",
+          "terraform"
         ],
         "tech_stack": [
           "Docker",
           "GitHub Actions",
+          "HCL",
           "Helm",
           "Kubernetes",
           "Terraform"
@@ -1306,15 +1311,15 @@
         "full_name": "sample-platform/sample-common-lib",
         "html_url": "https://github.com/sample-platform/sample-common-lib",
         "description": "Shared Go and Python utilities, protocol buffer contracts, structured logging, and database helpers.",
-        "primary_language": "Other",
+        "primary_language": "Go",
         "topics": [
-          "core-lib",
-          "shared",
           "common",
-          "utils",
-          "types",
+          "core-lib",
+          "proto",
           "schemas",
-          "proto"
+          "shared",
+          "types",
+          "utils"
         ],
         "tech_stack": [
           "Go",
@@ -1341,14 +1346,14 @@
         "full_name": "sample-platform/sample-architecture-docs",
         "html_url": "https://github.com/sample-platform/sample-architecture-docs",
         "description": "System architecture blueprints, technical RFCs, security whitepapers, and developer documentation.",
-        "primary_language": "Other",
+        "primary_language": "Markdown",
         "topics": [
-          "documentation",
+          "architecture",
           "docs",
+          "documentation",
           "guide",
           "rfc",
-          "spec",
-          "architecture"
+          "spec"
         ],
         "tech_stack": [
           "Markdown",

@@ -46,17 +46,21 @@ SYNONYMS: Dict[str, Set[str]] = {
 
 
 from scripts.clusterer import RepositoryClusterer
+from scripts.security_utils import MAX_JSON_DATA_BYTES, load_json_limited, validate_path_safe
 
 
 class RepositoryQueryEngine:
     """Matches user capability queries against repository metadata and returns ranked recommendations."""
 
     def __init__(self, knowledge_base: Optional[Dict[str, Any]] = None, kb_path: Optional[str] = None):
-        if knowledge_base:
+        if knowledge_base is not None:
             self.kb = knowledge_base
         elif kb_path and os.path.isfile(kb_path):
-            with open(kb_path, "r", encoding="utf-8") as f:
-                self.kb = json.load(f)
+            safe_path = validate_path_safe(kb_path, for_write=False)
+            loaded = load_json_limited(safe_path, max_bytes=MAX_JSON_DATA_BYTES)
+            if not isinstance(loaded, dict):
+                raise ValueError("Knowledge base JSON root must be an object.")
+            self.kb = loaded
         else:
             self.kb = {}
 
@@ -72,10 +76,13 @@ class RepositoryQueryEngine:
 
     def load_kb_file(self, kb_path: str) -> None:
         """Load knowledge base from a JSON file path."""
-        if not os.path.isfile(kb_path):
+        safe_path = validate_path_safe(kb_path, for_write=False)
+        if not os.path.isfile(safe_path):
             raise FileNotFoundError(f"Knowledge base file not found: {kb_path}")
-        with open(kb_path, "r", encoding="utf-8") as f:
-            self.kb = json.load(f)
+        loaded = load_json_limited(safe_path, max_bytes=MAX_JSON_DATA_BYTES)
+        if not isinstance(loaded, dict):
+            raise ValueError("Knowledge base JSON root must be an object.")
+        self.kb = loaded
         self.repositories = self.kb.get("repositories", [])
         self.clusters = self.kb.get("clusters", [])
         if self.repositories and (not self.clusters or not self.repositories[0].get("cluster_name")):

@@ -7,7 +7,10 @@ merely technical frameworks or programming languages.
 """
 
 import re
-from typing import Any, Dict, List, Optional
+import sys
+from typing import Any, Dict, List, Optional, Tuple
+
+from scripts.security_utils import sanitize_hex_color, validate_safe_regex
 
 
 THEMATIC_TAXONOMY = [
@@ -45,7 +48,7 @@ THEMATIC_TAXONOMY = [
         "color": "#10B981",  # Emerald
         "priority": 9,
         "keywords": [
-            "billing", "payment", "invoice", "subscription", "stripe", "checkout",
+            "billing", "payment", "invoice", "subscription", "checkout",
             "finance", "banking", "accounting", "tax", "ecommerce", "order",
             "cart", "currency", "wallet", "ledger", "transaction", "pricing"
         ],
@@ -72,7 +75,7 @@ THEMATIC_TAXONOMY = [
         "color": "#8B5CF6",  # Purple
         "priority": 8,
         "keywords": [
-            "ai", "ml", "analytics", "pipeline", "etl", "kafka", "spark", "warehouse",
+            "ai", "ml", "analytics", "pipeline", "etl", "kafka", "flink", "warehouse",
             "lake", "embeddings", "rag", "llm", "model", "inference", "nlp", "vision",
             "dataset", "clickhouse", "dbt", "vector", "telemetry", "prediction", "forecast"
         ],
@@ -100,7 +103,7 @@ THEMATIC_TAXONOMY = [
         "keywords": [
             "infra", "infrastructure", "terraform", "k8s", "kubernetes", "docker",
             "helm", "ansible", "ci-cd", "actions", "monitoring", "prometheus",
-            "grafana", "cloud", "aws", "gcp", "azure", "deployment", "cluster", "gitops"
+            "grafana", "cloud", "deployment", "cluster", "gitops"
         ],
         "languages": ["HCL", "Dockerfile", "Shell", "Yaml"],
     },
@@ -163,6 +166,24 @@ class RepositoryClusterer:
         self.taxonomy = [dict(c) for c in THEMATIC_TAXONOMY]
         self.custom_rules = custom_rules or []
         self.taxonomy_by_id = {c["id"]: c for c in self.taxonomy}
+        self._compiled_custom_rules: List[Tuple[re.Pattern, Dict[str, Any]]] = []
+
+        for rule in self.custom_rules:
+            if not isinstance(rule, dict):
+                print("[Warning] Skipping non-object custom clustering rule.", file=sys.stderr)
+                continue
+            pattern = rule.get("pattern", "")
+            cluster_id = rule.get("cluster_id", "")
+            if not pattern or not isinstance(cluster_id, str) or not cluster_id.strip():
+                continue
+            compiled = validate_safe_regex(pattern)
+            if compiled is None:
+                print(
+                    f"[Warning] Skipping invalid or unsafe regex pattern in custom clustering rule for '{cluster_id}'.",
+                    file=sys.stderr,
+                )
+                continue
+            self._compiled_custom_rules.append((compiled, rule))
 
     def classify_repository(self, repo: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -176,10 +197,9 @@ class RepositoryClusterer:
         lang = repo.get("primary_language", "")
 
         # 1. Custom User Rules from Config (Highest Precedence)
-        for rule in self.custom_rules:
-            pattern = rule.get("pattern", "")
+        for compiled_pattern, rule in self._compiled_custom_rules:
             cluster_id = rule.get("cluster_id", "")
-            if pattern and re.search(pattern, name, re.IGNORECASE):
+            if compiled_pattern.search(name):
                 if cluster_id in self.taxonomy_by_id:
                     return self.taxonomy_by_id[cluster_id]
                 else:
@@ -187,7 +207,7 @@ class RepositoryClusterer:
                         "id": cluster_id,
                         "name": rule.get("name", cluster_id.replace("-", " ").title()),
                         "description": rule.get("description", "Custom configured thematic domain."),
-                        "color": rule.get("color", "#6366F1"),
+                        "color": sanitize_hex_color(rule.get("color"), default="#6366F1"),
                     }
 
         # 2. Thematic Scoring across predefined taxonomy
@@ -237,13 +257,14 @@ class RepositoryClusterer:
         for repo in repositories:
             cluster = self.classify_repository(repo)
             cid = cluster["id"]
+            safe_color = sanitize_hex_color(cluster.get("color"), default="#3B82F6")
 
             if cid not in cluster_map:
                 cluster_map[cid] = {
                     "id": cid,
                     "name": cluster["name"],
                     "description": cluster["description"],
-                    "color": cluster.get("color", "#3B82F6"),
+                    "color": safe_color,
                     "repositories": [],
                     "total_stars": 0,
                     "languages": {},
@@ -252,7 +273,7 @@ class RepositoryClusterer:
             repo_copy = dict(repo)
             repo_copy["cluster_id"] = cid
             repo_copy["cluster_name"] = cluster["name"]
-            repo_copy["cluster_color"] = cluster.get("color", "#3B82F6")
+            repo_copy["cluster_color"] = safe_color
 
             cluster_map[cid]["repositories"].append(repo_copy["id"])
             cluster_map[cid]["total_stars"] += repo_copy.get("stars", 0)

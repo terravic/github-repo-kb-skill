@@ -17,7 +17,7 @@
       "cluster_id": "life-sciences-bio"
     },
     {
-      "pattern": ".*-billing|.*-payment|.*-invoice|.*-stripe",
+      "pattern": ".*-billing|.*-payment|.*-invoice|.*-checkout",
       "cluster_id": "finance-billing"
     },
     {

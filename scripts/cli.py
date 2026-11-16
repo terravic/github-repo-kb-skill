@@ -17,17 +17,46 @@ from scripts.graph_builder import KnowledgeGraphBuilder
 from scripts.kb_generator import KnowledgeBaseGenerator
 from scripts.dashboard_generator import DashboardGenerator
 from scripts.query_engine import RepositoryQueryEngine
+from scripts.security_utils import (
+    MAX_CONFIG_BYTES,
+    is_placeholder_token,
+    load_json_limited,
+    redact_secrets,
+    strip_control_chars,
+    validate_path_safe,
+)
 
 
 def load_config(config_path: str) -> Dict[str, Any]:
-    """Load scanner configuration JSON file."""
-    if not os.path.isfile(config_path):
+    """Load and validate scanner configuration JSON file with size limits."""
+    try:
+        safe_path = validate_path_safe(config_path, for_write=False)
+    except ValueError as e:
+        print(f"[Warning] Invalid config path '{config_path}': {redact_secrets(e)}", file=sys.stderr)
+        return {}
+
+    if not os.path.isfile(safe_path):
         return {}
     try:
-        with open(config_path, "r", encoding="utf-8") as f:
-            return json.load(f)
+        data = load_json_limited(safe_path, max_bytes=MAX_CONFIG_BYTES)
+        if not isinstance(data, dict):
+            print(f"[Warning] Config file '{config_path}' root must be a JSON object.", file=sys.stderr)
+            return {}
+        if "scan_options" in data and not isinstance(data["scan_options"], dict):
+            print("[Warning] Ignoring non-object 'scan_options' in config file.", file=sys.stderr)
+            data["scan_options"] = {}
+        if "output" in data and not isinstance(data["output"], dict):
+            print("[Warning] Ignoring non-object 'output' in config file.", file=sys.stderr)
+            data["output"] = {}
+        if "clustering_rules" in data:
+            if not isinstance(data["clustering_rules"], list):
+                print("[Warning] Ignoring non-list 'clustering_rules' in config file.", file=sys.stderr)
+                data["clustering_rules"] = []
+            else:
+                data["clustering_rules"] = [r for r in data["clustering_rules"] if isinstance(r, dict)]
+        return data
     except Exception as e:
-        print(f"[Warning] Failed to parse config file '{config_path}': {e}", file=sys.stderr)
+        print(f"[Warning] Failed to parse config file '{config_path}': {redact_secrets(e)}", file=sys.stderr)
         return {}
 
 
@@ -35,39 +64,45 @@ def query_knowledge_base(user_query: str, kb_path: str = "output/knowledge_base.
     """
     Search a generated knowledge base for the best matching repository for a given query.
     """
-    if not os.path.isfile(kb_path):
+    safe_kb_path = validate_path_safe(kb_path, for_write=False)
+    if not os.path.isfile(safe_kb_path):
         # Check sample output fallback
         sample_path = os.path.join("examples", "sample_output", "knowledge_base.json")
         if os.path.isfile(sample_path):
-            kb_path = sample_path
+            safe_kb_path = sample_path
         else:
             raise FileNotFoundError(
                 f"Knowledge base file not found at '{kb_path}'. "
                 "Please run a repository scan first to generate the knowledge base."
             )
 
-    engine = RepositoryQueryEngine(kb_path=kb_path)
+    engine = RepositoryQueryEngine(kb_path=safe_kb_path)
     result = engine.query(user_query)
 
-    print(f"\nQuery: \"{user_query}\"")
+    print(f"\nQuery: \"{strip_control_chars(user_query)}\"")
     print("-" * 60)
     if result.get("matched"):
         best = result["best_match"]
-        print(f"Best Matched Repository: {best['name']}")
-        print(f"Confidence: {best['confidence']} (Score: {best['match_score']})")
-        print(f"Domain Cluster: {best['cluster_name']}")
-        print(f"Primary Language: {best['primary_language']}")
-        print(f"GitHub URL: {best['html_url']}")
-        print(f"Description: {best['description']}")
-        print(f"Why this repo fits: {best['justification']}")
+        print(f"Best Matched Repository: {strip_control_chars(best.get('name'))}")
+        print(f"Confidence: {strip_control_chars(best.get('confidence'))} (Score: {best.get('match_score')})")
+        print(f"Domain Cluster: {strip_control_chars(best.get('cluster_name'))}")
+        print(f"Primary Language: {strip_control_chars(best.get('primary_language'))}")
+        print(f"GitHub URL: {strip_control_chars(best.get('html_url'))}")
+        print(f"Description: {strip_control_chars(best.get('description'))}")
+        print(f"Why this repo fits: {strip_control_chars(best.get('justification'))}")
 
         candidates = result.get("candidates", [])
         if len(candidates) > 1:
             print("\nAlternative Candidates:")
             for cand in candidates[1:]:
-                print(f"- {cand['name']} ({cand['primary_language']}, {cand['cluster_name']}) - {cand['description']}")
+                print(
+                    f"- {strip_control_chars(cand.get('name'))} "
+                    f"({strip_control_chars(cand.get('primary_language'))}, "
+                    f"{strip_control_chars(cand.get('cluster_name'))}) - "
+                    f"{strip_control_chars(cand.get('description'))}"
+                )
     else:
-        print(f"Result: {result.get('message')}")
+        print(f"Result: {strip_control_chars(result.get('message'))}")
 
     print("-" * 60)
     return result
@@ -89,36 +124,70 @@ def run_pipeline(
     for any public GitHub account (organization or user), single repository, or offline fixture.
     """
     config: Dict[str, Any] = {}
+    config_base_dir = os.getcwd()
     if config_path and os.path.isfile(config_path):
         config = load_config(config_path)
+        config_base_dir = os.path.dirname(os.path.abspath(config_path))
 
-    scan_opts = config.get("scan_options", {})
+    scan_opts = config.get("scan_options", {}) if isinstance(config.get("scan_options"), dict) else {}
 
-    # Correct resolution hierarchy:
-    # 1. Explicit fixture CLI argument
-    # 2. Explicit URL CLI argument
-    # 3. Config offline_fixture (if non-empty)
-    # 4. Config target_url
-    # 5. Default URL
-    resolved_token = token or config.get("auth_token") or os.environ.get("GITHUB_TOKEN")
-    resolved_max_repos = max_repos or scan_opts.get("max_repos", 100)
-    resolved_include_forks = include_forks or scan_opts.get("include_forks", False)
-    resolved_include_archived = include_archived if include_archived is not None else scan_opts.get("include_archived", True)
+    # Credential resolution with placeholder filtering and non-breaking security warnings
+    cli_token = None if is_placeholder_token(token) else token.strip() if isinstance(token, str) else None
+    cfg_raw_token = config.get("auth_token")
+    cfg_token = None if is_placeholder_token(cfg_raw_token) else cfg_raw_token.strip() if isinstance(cfg_raw_token, str) else None
+    env_raw_token = os.environ.get("GITHUB_TOKEN")
+    env_token = None if is_placeholder_token(env_raw_token) else env_raw_token.strip() if isinstance(env_raw_token, str) else None
 
-    out_cfg = config.get("output", {})
-    resolved_out_dir = output_dir or out_cfg.get("output_dir", "output")
+    if cli_token:
+        print(
+            "[Security Warning] Passing a GitHub token via --token exposes it in process listings "
+            "and shell history. Prefer setting the GITHUB_TOKEN environment variable instead.",
+            file=sys.stderr,
+        )
+    elif cfg_token:
+        print(
+            "[Security Warning] Plaintext 'auth_token' detected in configuration file. "
+            "Prefer setting the GITHUB_TOKEN environment variable and leaving 'auth_token' empty.",
+            file=sys.stderr,
+        )
+
+    resolved_token = cli_token or cfg_token or env_token
+    active_secrets = [s for s in (cli_token, cfg_token, env_token, resolved_token) if s]
+
+    raw_max_repos = max_repos or scan_opts.get("max_repos", 100)
+    try:
+        resolved_max_repos = max(1, min(int(raw_max_repos), 1000))
+    except (TypeError, ValueError):
+        resolved_max_repos = 100
+
+    resolved_include_forks = bool(include_forks or scan_opts.get("include_forks", False))
+    resolved_include_archived = include_archived if include_archived is not None else bool(scan_opts.get("include_archived", True))
+
+    out_cfg = config.get("output", {}) if isinstance(config.get("output"), dict) else {}
+    if output_dir is not None:
+        resolved_out_dir = validate_path_safe(output_dir, for_write=True)
+    else:
+        cfg_out_dir = out_cfg.get("output_dir", "output")
+        resolved_out_dir = validate_path_safe(
+            cfg_out_dir,
+            base_dir=config_base_dir,
+            must_be_within_base=True,
+            for_write=True,
+        )
+
     custom_rules = config.get("clustering_rules", [])
 
-    print(f"[Step 1/5] Ingesting repository metadata...")
+    print("[Step 1/5] Ingesting repository metadata...")
     scanner = GitHubScanner(token=resolved_token)
 
     if fixture_path:
         # User explicitly passed a fixture
-        print(f"Loading offline synthetic dataset: {fixture_path}")
-        raw_result = scanner.load_fixture(fixture_path)
+        safe_fixture = validate_path_safe(fixture_path, for_write=False)
+        print(f"Loading offline synthetic dataset: {safe_fixture}")
+        raw_result = scanner.load_fixture(safe_fixture)
     elif target_url:
         # User explicitly passed a GitHub URL
-        print(f"Scanning public GitHub target: {target_url}")
+        print(f"Scanning public GitHub target: {strip_control_chars(target_url)}")
         try:
             raw_result = scanner.scan_online(
                 url=target_url,
@@ -127,7 +196,7 @@ def run_pipeline(
                 max_repos=resolved_max_repos,
             )
         except Exception as e:
-            print(f"[Notice] Online scan encountered: {e}")
+            print(f"[Notice] Online scan encountered: {redact_secrets(e, active_secrets)}")
             fallback_fixture = os.path.join("examples", "synthetic_sample_org.json")
             if os.path.isfile(fallback_fixture):
                 print(f"[Fallback] Using synthetic dataset for demonstration: {fallback_fixture}")
@@ -135,14 +204,20 @@ def run_pipeline(
             else:
                 raise e
     elif scan_opts.get("offline_fixture"):
-        # Config specifies an offline fixture
-        print(f"Loading configured offline dataset: {scan_opts.get('offline_fixture')}")
-        raw_result = scanner.load_fixture(scan_opts.get("offline_fixture"))
+        # Config specifies an offline fixture -- confine within config base directory
+        safe_cfg_fixture = validate_path_safe(
+            scan_opts.get("offline_fixture"),
+            base_dir=config_base_dir,
+            must_be_within_base=True,
+            for_write=False,
+        )
+        print(f"Loading configured offline dataset: {safe_cfg_fixture}")
+        raw_result = scanner.load_fixture(safe_cfg_fixture)
     else:
         # Use target_url from config or fallback to synthetic sample
         resolved_target = config.get("target_url")
         if resolved_target:
-            print(f"Scanning public GitHub target: {resolved_target}")
+            print(f"Scanning public GitHub target: {strip_control_chars(resolved_target)}")
             try:
                 raw_result = scanner.scan_online(
                     url=resolved_target,
@@ -151,7 +226,7 @@ def run_pipeline(
                     max_repos=resolved_max_repos,
                 )
             except Exception as e:
-                print(f"[Notice] Online scan encountered: {e}")
+                print(f"[Notice] Online scan encountered: {redact_secrets(e, active_secrets)}")
                 fallback_fixture = os.path.join("examples", "synthetic_sample_org.json")
                 if os.path.isfile(fallback_fixture):
                     print(f"[Fallback] Using synthetic dataset for demonstration: {fallback_fixture}")
@@ -175,12 +250,12 @@ def run_pipeline(
         print("[Warning] No repositories found matching the filter criteria.")
         return {"status": "empty", "total_repos": 0}
 
-    print(f"[Step 2/5] Performing domain clustering and taxonomy assignment...")
+    print("[Step 2/5] Performing domain clustering and taxonomy assignment...")
     clusterer = RepositoryClusterer(custom_rules=custom_rules)
     clusters_data = clusterer.cluster_repositories(repositories)
     print(f"Categorized into {clusters_data.get('cluster_count', 0)} functional domains.")
 
-    print(f"[Step 3/5] Building architecture knowledge graph and calculating centrality...")
+    print("[Step 3/5] Building architecture knowledge graph and calculating centrality...")
     graph_builder = KnowledgeGraphBuilder()
     graph_data = graph_builder.build_graph(
         repositories=clusters_data.get("repositories", []),
@@ -189,7 +264,7 @@ def run_pipeline(
     print(f"Constructed {graph_data.get('total_nodes', 0)} nodes and {graph_data.get('total_edges', 0)} graph relationships.")
     print(f"Detected {len(graph_data.get('hub_repositories', []))} hub architectures and {graph_data.get('cross_cluster_edges_count', 0)} cross-domain links.")
 
-    print(f"[Step 4/5] Generating structured Knowledge Base files (JSON, Markdown)...")
+    print("[Step 4/5] Generating structured Knowledge Base files (JSON, Markdown)...")
     kb_gen = KnowledgeBaseGenerator(output_dir=resolved_out_dir)
     kb_files = kb_gen.generate_all(
         metadata=metadata,
@@ -200,7 +275,7 @@ def run_pipeline(
     print(f"Created: {kb_files.get('knowledge_graph_json')}")
     print(f"Created: {kb_files.get('knowledge_base_md')}")
 
-    print(f"[Step 5/5] Generating interactive summary dashboard...")
+    print("[Step 5/5] Generating interactive summary dashboard...")
     dash_gen = DashboardGenerator(output_dir=resolved_out_dir)
     dash_path = dash_gen.generate(
         metadata=metadata,
@@ -255,13 +330,13 @@ def main():
         "--token", "-t",
         type=str,
         default=None,
-        help="GitHub Personal Access Token (or set GITHUB_TOKEN environment variable)"
+        help="GitHub Personal Access Token (prefer GITHUB_TOKEN environment variable to avoid exposing tokens in process listings)"
     )
     parser.add_argument(
         "--max-repos",
         type=int,
         default=100,
-        help="Maximum repositories to scan (default: 100)"
+        help="Maximum repositories to scan (default: 100, max: 1000)"
     )
     parser.add_argument(
         "--include-forks",
@@ -287,6 +362,7 @@ def main():
     )
 
     args = parser.parse_args()
+    runtime_secrets = [args.token, os.environ.get("GITHUB_TOKEN")]
 
     try:
         if args.query:
@@ -318,10 +394,10 @@ def main():
         print("\nOperation interrupted by user.", file=sys.stderr)
         sys.exit(130)
     except Exception as e:
-        print(f"\n[Error] Operation failed: {e}", file=sys.stderr)
+        print(f"\n[Error] Operation failed: {redact_secrets(e, runtime_secrets)}", file=sys.stderr)
         if args.verbose:
             import traceback
-            traceback.print_exc()
+            print(redact_secrets(traceback.format_exc(), runtime_secrets), file=sys.stderr)
         sys.exit(1)
 
 

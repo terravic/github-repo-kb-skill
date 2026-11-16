@@ -32,9 +32,9 @@ class TestRepositoryClusterer(unittest.TestCase):
         repo = {
             "id": 3,
             "name": "subscription-billing-service",
-            "description": "Automated recurring invoice generation and Stripe checkout integration",
+            "description": "Automated recurring invoice generation and payment checkout integration",
             "primary_language": "Python",
-            "topics": ["billing", "payment", "stripe", "finance"],
+            "topics": ["billing", "payment", "checkout", "finance"],
         }
         cluster = self.clusterer.classify_repository(repo)
         self.assertEqual(cluster["id"], "finance-billing")
