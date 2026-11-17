@@ -19,45 +19,57 @@ from scripts.dashboard_generator import DashboardGenerator
 from scripts.query_engine import RepositoryQueryEngine
 from scripts.security_utils import (
     MAX_CONFIG_BYTES,
+    delete_user_data,
+    export_user_data,
     is_placeholder_token,
     load_json_limited,
     redact_secrets,
     strip_control_chars,
+    validate_config_schema,
     validate_path_safe,
 )
 
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+def _display_path(path: Optional[str]) -> str:
+    """Format paths inside the repository root as relative paths for console output."""
+    if not path:
+        return ""
+    try:
+        real_repo = os.path.realpath(REPO_ROOT)
+        real_target = os.path.realpath(path)
+        if os.path.commonpath([real_repo, real_target]) == real_repo:
+            rel = os.path.relpath(real_target, real_repo)
+            return "." if rel == "." else rel
+    except (ValueError, OSError):
+        pass
+    return os.path.basename(path) if os.path.isabs(path) else path
+
+
+def _peek_config_secret(config_path: Optional[str]) -> Optional[str]:
+    """Extract auth_token from a config file solely for error-redaction coverage."""
+    if not config_path or not isinstance(config_path, str) or "\x00" in config_path:
+        return None
+    try:
+        if not os.path.isfile(config_path):
+            return None
+        raw = load_json_limited(config_path, max_bytes=MAX_CONFIG_BYTES)
+        if isinstance(raw, dict) and isinstance(raw.get("auth_token"), str):
+            tok = raw["auth_token"].strip()
+            return None if is_placeholder_token(tok) else tok
+    except Exception:
+        return None
+    return None
+
 
 def load_config(config_path: str) -> Dict[str, Any]:
-    """Load and validate scanner configuration JSON file with size limits."""
-    try:
-        safe_path = validate_path_safe(config_path, for_write=False)
-    except ValueError as e:
-        print(f"[Warning] Invalid config path '{config_path}': {redact_secrets(e)}", file=sys.stderr)
-        return {}
-
+    """Load and validate scanner configuration JSON file against strict schema and size limits."""
+    safe_path = validate_path_safe(config_path, for_write=False)
     if not os.path.isfile(safe_path):
         return {}
-    try:
-        data = load_json_limited(safe_path, max_bytes=MAX_CONFIG_BYTES)
-        if not isinstance(data, dict):
-            print(f"[Warning] Config file '{config_path}' root must be a JSON object.", file=sys.stderr)
-            return {}
-        if "scan_options" in data and not isinstance(data["scan_options"], dict):
-            print("[Warning] Ignoring non-object 'scan_options' in config file.", file=sys.stderr)
-            data["scan_options"] = {}
-        if "output" in data and not isinstance(data["output"], dict):
-            print("[Warning] Ignoring non-object 'output' in config file.", file=sys.stderr)
-            data["output"] = {}
-        if "clustering_rules" in data:
-            if not isinstance(data["clustering_rules"], list):
-                print("[Warning] Ignoring non-list 'clustering_rules' in config file.", file=sys.stderr)
-                data["clustering_rules"] = []
-            else:
-                data["clustering_rules"] = [r for r in data["clustering_rules"] if isinstance(r, dict)]
-        return data
-    except Exception as e:
-        print(f"[Warning] Failed to parse config file '{config_path}': {redact_secrets(e)}", file=sys.stderr)
-        return {}
+    data = load_json_limited(safe_path, max_bytes=MAX_CONFIG_BYTES)
+    return validate_config_schema(data)
 
 
 def query_knowledge_base(user_query: str, kb_path: str = "output/knowledge_base.json") -> Dict[str, Any]:
@@ -125,9 +137,11 @@ def run_pipeline(
     """
     config: Dict[str, Any] = {}
     config_base_dir = os.getcwd()
-    if config_path and os.path.isfile(config_path):
-        config = load_config(config_path)
-        config_base_dir = os.path.dirname(os.path.abspath(config_path))
+    if config_path:
+        safe_cfg_path = validate_path_safe(config_path, for_write=False)
+        if os.path.isfile(safe_cfg_path):
+            config = load_config(safe_cfg_path)
+            config_base_dir = os.path.dirname(os.path.abspath(safe_cfg_path))
 
     scan_opts = config.get("scan_options", {}) if isinstance(config.get("scan_options"), dict) else {}
 
@@ -183,7 +197,7 @@ def run_pipeline(
     if fixture_path:
         # User explicitly passed a fixture
         safe_fixture = validate_path_safe(fixture_path, for_write=False)
-        print(f"Loading offline synthetic dataset: {safe_fixture}")
+        print(f"Loading offline synthetic dataset: {_display_path(safe_fixture)}")
         raw_result = scanner.load_fixture(safe_fixture)
     elif target_url:
         # User explicitly passed a GitHub URL
@@ -199,7 +213,7 @@ def run_pipeline(
             print(f"[Notice] Online scan encountered: {redact_secrets(e, active_secrets)}")
             fallback_fixture = os.path.join("examples", "synthetic_sample_org.json")
             if os.path.isfile(fallback_fixture):
-                print(f"[Fallback] Using synthetic dataset for demonstration: {fallback_fixture}")
+                print(f"[Fallback] Using synthetic dataset for demonstration: {_display_path(fallback_fixture)}")
                 raw_result = scanner.load_fixture(fallback_fixture)
             else:
                 raise e
@@ -211,7 +225,7 @@ def run_pipeline(
             must_be_within_base=True,
             for_write=False,
         )
-        print(f"Loading configured offline dataset: {safe_cfg_fixture}")
+        print(f"Loading configured offline dataset: {_display_path(safe_cfg_fixture)}")
         raw_result = scanner.load_fixture(safe_cfg_fixture)
     else:
         # Use target_url from config or fallback to synthetic sample
@@ -229,14 +243,14 @@ def run_pipeline(
                 print(f"[Notice] Online scan encountered: {redact_secrets(e, active_secrets)}")
                 fallback_fixture = os.path.join("examples", "synthetic_sample_org.json")
                 if os.path.isfile(fallback_fixture):
-                    print(f"[Fallback] Using synthetic dataset for demonstration: {fallback_fixture}")
+                    print(f"[Fallback] Using synthetic dataset for demonstration: {_display_path(fallback_fixture)}")
                     raw_result = scanner.load_fixture(fallback_fixture)
                 else:
                     raise e
         else:
             fallback_fixture = os.path.join("examples", "synthetic_sample_org.json")
             if os.path.isfile(fallback_fixture):
-                print(f"No target URL specified. Loading sample demonstration dataset: {fallback_fixture}")
+                print(f"No target URL specified. Loading sample demonstration dataset: {_display_path(fallback_fixture)}")
                 raw_result = scanner.load_fixture(fallback_fixture)
             else:
                 raise ValueError("No target GitHub URL or fixture specified. Please provide --url <github-address>.")
@@ -271,9 +285,9 @@ def run_pipeline(
         clusters_data=clusters_data,
         graph_data=graph_data,
     )
-    print(f"Created: {kb_files.get('knowledge_base_json')}")
-    print(f"Created: {kb_files.get('knowledge_graph_json')}")
-    print(f"Created: {kb_files.get('knowledge_base_md')}")
+    print(f"Created: {_display_path(kb_files.get('knowledge_base_json'))}")
+    print(f"Created: {_display_path(kb_files.get('knowledge_graph_json'))}")
+    print(f"Created: {_display_path(kb_files.get('knowledge_base_md'))}")
 
     print("[Step 5/5] Generating interactive summary dashboard...")
     dash_gen = DashboardGenerator(output_dir=resolved_out_dir)
@@ -282,7 +296,7 @@ def run_pipeline(
         clusters_data=clusters_data,
         graph_data=graph_data,
     )
-    print(f"Created interactive dashboard: {dash_path}")
+    print(f"Created interactive dashboard: {_display_path(dash_path)}")
 
     print("\nKnowledge base and summary dashboard generation completed successfully.")
     return {
@@ -356,15 +370,52 @@ def main():
         help="Path to knowledge_base.json for query resolution (default: output/knowledge_base.json)"
     )
     parser.add_argument(
+        "--erase-user",
+        type=str,
+        default=None,
+        help="Permanently purge all stored records and output artifacts associated with a GitHub handle"
+    )
+    parser.add_argument(
+        "--export-user",
+        type=str,
+        default=None,
+        help="Export all stored records associated with a GitHub handle in JSON or CSV format"
+    )
+    parser.add_argument(
+        "--export-format",
+        type=str,
+        choices=["json", "csv"],
+        default="json",
+        help="Output format for --export-user (default: json)"
+    )
+    parser.add_argument(
         "--verbose", "-v",
         action="store_true",
         help="Enable verbose output"
     )
 
     args = parser.parse_args()
-    runtime_secrets = [args.token, os.environ.get("GITHUB_TOKEN")]
+    cfg_secret = _peek_config_secret(args.config)
+    runtime_secrets = [args.token, cfg_secret, os.environ.get("GITHUB_TOKEN")]
 
     try:
+        if args.erase_user:
+            erase_res = delete_user_data(
+                user_id=args.erase_user,
+                output_dir=args.output_dir or "output",
+            )
+            print(json.dumps(erase_res, indent=2))
+            return
+
+        if args.export_user:
+            export_res = export_user_data(
+                user_id=args.export_user,
+                output_dir=args.output_dir or "output",
+                fmt=args.export_format,
+            )
+            print(export_res["serialized"])
+            return
+
         if args.query:
             if args.url or (args.fixture and not os.path.isfile(args.kb)):
                 run_pipeline(

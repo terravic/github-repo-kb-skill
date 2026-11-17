@@ -15,7 +15,7 @@ import os
 import re
 from typing import Any, Dict
 
-from scripts.security_utils import assert_not_symlink_file, validate_path_safe
+from scripts.security_utils import validate_path_safe, write_text_safe
 
 
 class DashboardGenerator:
@@ -81,7 +81,6 @@ class DashboardGenerator:
         safe_output_dir = validate_path_safe(self.output_dir, for_write=True)
         os.makedirs(safe_output_dir, exist_ok=True)
         dashboard_path = os.path.join(safe_output_dir, "dashboard.html")
-        assert_not_symlink_file(dashboard_path)
 
         embedded_payload = {
             "metadata": metadata,
@@ -99,8 +98,7 @@ class DashboardGenerator:
         }
 
         html_content = self._build_html(embedded_payload)
-        with open(dashboard_path, "w", encoding="utf-8") as f:
-            f.write(html_content)
+        write_text_safe(dashboard_path, html_content)
 
         return dashboard_path
 
@@ -154,7 +152,7 @@ class DashboardGenerator:
       --bg-surface-subtle: rgba(30, 41, 59, 0.90);
       --border-color: #475569;
       --border-control: #7c8ea6;
-      --border-hover: #3b4b63;
+      --border-hover: #222e42;
       --text-main: #f8fafc;
       --text-muted: #cbd5e1;
       --text-dim: #94a3b8;
@@ -194,14 +192,14 @@ class DashboardGenerator:
       --bg-surface-subtle: rgba(255, 255, 255, 0.94);
       --border-color: #cbd5e1;
       --border-control: #64748b;
-      --border-hover: #dbe4ef;
+      --border-hover: #e8eef5;
       --text-main: #0f172a;
       --text-muted: #334155;
       --text-dim: #475569;
       --primary: #1d4ed8;
       --primary-hover: #1e40af;
       --primary-text: #1d4ed8;
-      --accent-text: #0e7490;
+      --accent-text: #0c637a;
       --tag-text: #1e40af;
       --tag-tech-text: #065f46;
       --success-text: #065f46;
@@ -1314,14 +1312,16 @@ class DashboardGenerator:
 
   <!-- Main Container with Tabs -->
   <main id="main-content" class="main-container" tabindex="-1">
-    <div class="nav-tabs" role="tablist" aria-label="Dashboard sections">
-      <button type="button" class="tab-btn active" role="tab" id="btn-tab-graph" aria-selected="true" aria-controls="tab-graph" tabindex="0" data-tab="tab-graph">Knowledge Graph</button>
-      <button type="button" class="tab-btn" role="tab" id="btn-tab-matcher" aria-selected="false" aria-controls="tab-matcher" tabindex="-1" data-tab="tab-matcher">Repository Matcher &amp; Chat</button>
-      <button type="button" class="tab-btn" role="tab" id="btn-tab-clusters" aria-selected="false" aria-controls="tab-clusters" tabindex="-1" data-tab="tab-clusters">Cluster Explorer</button>
-      <button type="button" class="tab-btn" role="tab" id="btn-tab-repos" aria-selected="false" aria-controls="tab-repos" tabindex="-1" data-tab="tab-repos">Repository Catalog</button>
-      <button type="button" class="tab-btn" role="tab" id="btn-tab-matrix" aria-selected="false" aria-controls="tab-matrix" tabindex="-1" data-tab="tab-matrix">Cross-Domain Flow</button>
-      <button type="button" class="tab-btn" role="tab" id="btn-tab-raw" aria-selected="false" aria-controls="tab-raw" tabindex="-1" data-tab="tab-raw">Raw JSON &amp; Config</button>
-    </div>
+    <nav aria-label="Dashboard view navigation">
+      <div class="nav-tabs" role="tablist" aria-label="Dashboard sections">
+        <button type="button" class="tab-btn active" role="tab" id="btn-tab-graph" aria-selected="true" aria-controls="tab-graph" tabindex="0" data-tab="tab-graph">Knowledge Graph</button>
+        <button type="button" class="tab-btn" role="tab" id="btn-tab-matcher" aria-selected="false" aria-controls="tab-matcher" tabindex="-1" data-tab="tab-matcher">Repository Matcher &amp; Chat</button>
+        <button type="button" class="tab-btn" role="tab" id="btn-tab-clusters" aria-selected="false" aria-controls="tab-clusters" tabindex="-1" data-tab="tab-clusters">Cluster Explorer</button>
+        <button type="button" class="tab-btn" role="tab" id="btn-tab-repos" aria-selected="false" aria-controls="tab-repos" tabindex="-1" data-tab="tab-repos">Repository Catalog</button>
+        <button type="button" class="tab-btn" role="tab" id="btn-tab-matrix" aria-selected="false" aria-controls="tab-matrix" tabindex="-1" data-tab="tab-matrix">Cross-Domain Flow</button>
+        <button type="button" class="tab-btn" role="tab" id="btn-tab-raw" aria-selected="false" aria-controls="tab-raw" tabindex="-1" data-tab="tab-raw">Raw JSON &amp; Config</button>
+      </div>
+    </nav>
 
     <!-- TAB 1: KNOWLEDGE GRAPH -->
     <div id="tab-graph" class="tab-pane active" role="tabpanel" aria-labelledby="btn-tab-graph">
@@ -1640,7 +1640,7 @@ class DashboardGenerator:
       const btnPrint = document.getElementById('btn-print-view');
       if (btnPrint) btnPrint.addEventListener('click', () => window.print());
 
-      // Accessible ARIA tab switching + Arrow/Home/End keyboard navigation
+      // Accessible ARIA tab switching + Arrow, Home, and End keyboard navigation
       const tabButtons = Array.from(document.querySelectorAll('.tab-btn[role="tab"]'));
       tabButtons.forEach((btn, index) => {
         btn.addEventListener('click', () => {
@@ -2191,7 +2191,10 @@ class DashboardGenerator:
         .attr('class', 'graph-node')
         .attr('tabindex', '0')
         .attr('role', 'button')
-        .attr('aria-label', d => `${d.name || 'Repository'}, cluster ${d.cluster_name || 'General'}, ${d.total_degree || 0} connections`)
+        .attr('aria-label', d => {
+          const roles = [d.is_hub ? '[HUB]' : '', d.is_bridge ? '[BRIDGE]' : ''].filter(Boolean).join(' ');
+          return `${d.name || 'Repository'}${roles ? ' ' + roles : ''}, cluster ${d.cluster_name || 'General'}, ${d.total_degree || 0} connections`;
+        })
         .call(d3.drag()
           .on('start', dragstarted)
           .on('drag', dragged)
@@ -2712,7 +2715,7 @@ class DashboardGenerator:
         const forceFull = isPrimaryFocus || isSearchHit || k >= 0.95;
 
         if (!result.chosen && !forceFull && rawName.length > 18) {
-          const shortName = rawName.slice(0, 17) + '\u2026';
+          const shortName = rawName.slice(0, 15) + '...';
           const shortRes = findBestCandidate(meta, shortName, labelFontScreen, order);
           if (shortRes.chosen || activeLabelMode === 'all') {
             finalText = shortName;
@@ -2843,7 +2846,7 @@ class DashboardGenerator:
       candidateLinks.forEach(l => {
         if (placedEdges.length >= 10) return;
         const rawLabel = String(l.label || l.type || '');
-        const text = rawLabel.length > 22 ? rawLabel.slice(0, 21) + '\u2026' : rawLabel;
+        const text = rawLabel.length > 22 ? rawLabel.slice(0, 19) + '...' : rawLabel;
         const wScreen = text.length * edgeFontScreen * 0.56 + 10;
         const hScreen = edgeFontScreen + 6;
         const screenLen = (l._worldLen || 0) * k;
@@ -3183,7 +3186,8 @@ class DashboardGenerator:
         <div>
           <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; margin-bottom: 6px;">
             ${renderClusterBadgeHtml(node.cluster_name, node.cluster_color)}
-            ${node.is_hub ? '<span class="badge badge-hub">Architecture Hub</span>' : ''}
+            ${node.is_hub ? '<span class="badge badge-hub">[HUB] Architecture Hub</span>' : ''}
+            ${node.is_bridge ? '<span class="badge badge-bridge">[BRIDGE] Cross-Domain Bridge</span>' : ''}
           </div>
           <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 4px; overflow-wrap: anywhere;">${escapeHtml(node.name)}</h3>
           ${repoLinkHtml}
@@ -3379,7 +3383,7 @@ class DashboardGenerator:
         const domainNames = (KB_DATA.clusters || []).map(c => c.name).join(', ');
         area.innerHTML = `
           <div class="matcher-no-match">
-            <div style="font-weight: 700; color: var(--danger-text); margin-bottom: 6px; font-size: 1rem;">No matching repository found</div>
+            <div style="font-weight: 700; color: var(--danger-text); margin-bottom: 6px; font-size: 1rem;">[NO MATCH] No matching repository found</div>
             <div style="font-size: 0.86rem; color: var(--text-main); line-height: 1.45;">
               No repository in this organization can answer your need for <strong>"${escapeHtml(query)}"</strong>.<br/>
               The scanned organization contains repositories across these domains: <em>${escapeHtml(domainNames || 'None')}</em>.
@@ -3391,7 +3395,7 @@ class DashboardGenerator:
 
       const best = finalResults[0];
       const isHigh = best.score >= 6.0;
-      const confidence = isHigh ? 'High Confidence' : 'Moderate Confidence';
+      const confidence = isHigh ? '[HIGH] High Confidence' : '[MODERATE] Moderate Confidence';
       const badgeClass = isHigh ? 'badge-high' : 'badge-moderate';
       const alternatives = finalResults.slice(1, 4);
 
@@ -3401,7 +3405,7 @@ class DashboardGenerator:
             <div>
               <span class="badge ${badgeClass}" style="margin-bottom: 6px;">${escapeHtml(confidence)} (Score: ${escapeHtml(best.score.toFixed(1))})</span>
               <h3 style="font-size: 1.25rem; font-weight: 700;">
-                ${renderSafeLinkHtml(best.repo.html_url, (best.repo.name || 'Repository') + ' \u2192')}
+                ${renderSafeLinkHtml(best.repo.html_url, best.repo.name || 'Repository')}
               </h3>
             </div>
             <button type="button" class="btn btn-primary btn-sm" data-focus-node="${escapeHtml(String(best.repo.id))}">Locate on Knowledge Graph</button>
@@ -3579,8 +3583,8 @@ class DashboardGenerator:
       tbody.innerHTML = repos.map(r => {
         const connections = r.centrality_score ? ((r.in_degree || 0) + (r.out_degree || 0)) : 0;
         const roleHtml = r.is_hub
-          ? '<span class="badge badge-hub">Hub</span>'
-          : (r.is_bridge ? '<span class="badge badge-bridge">Bridge</span>' : '<span style="color: var(--text-dim);">-</span>');
+          ? '<span class="badge badge-hub">[HUB]</span>'
+          : (r.is_bridge ? '<span class="badge badge-bridge">[BRIDGE]</span>' : '<span style="color: var(--text-dim);">-</span>');
         return `
         <tr data-name="${escapeHtml((r.name || '').toLowerCase())}" data-cluster="${escapeHtml(String(r.cluster_id || ''))}" data-lang="${escapeHtml((r.primary_language || '').toLowerCase())}">
           <td>
@@ -3730,10 +3734,19 @@ class DashboardGenerator:
     }
 
     async function fetchWithTimeout(url, timeoutMs = 15000) {
+      let parsedUrl;
+      try {
+        parsedUrl = new URL(url);
+      } catch (e) {
+        throw new Error('Invalid API URL');
+      }
+      if (parsedUrl.protocol !== 'https:' || parsedUrl.hostname.toLowerCase() !== 'api.github.com') {
+        throw new Error('Disallowed API endpoint');
+      }
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), timeoutMs);
       try {
-        return await fetch(url, {
+        return await fetch(parsedUrl.href, {
           signal: controller.signal,
           credentials: 'omit',
           referrerPolicy: 'no-referrer',
@@ -3828,9 +3841,14 @@ class DashboardGenerator:
       ];
 
       const repos = rawRepos.map((r, i) => {
-        const topics = Array.isArray(r.topics) ? r.topics.map(t => String(t)) : [];
-        const name = String(r.name || '');
-        const desc = String(r.description || '').toLowerCase();
+        const topics = Array.isArray(r.topics) ? r.topics.slice(0, 100).map(t => String(t).slice(0, 128)) : [];
+        const name = String(r.name || '').slice(0, 256);
+        const rawDesc = String(r.description || "No description provided.").slice(0, 4096);
+        const desc = rawDesc.toLowerCase();
+        const safeId = (typeof r.id === 'number' && Number.isFinite(r.id)) || (typeof r.id === 'string' && r.id.length <= 128)
+          ? r.id
+          : (i + 1);
+        const safeLang = String(r.language || "Other").slice(0, 128);
 
         let assignedCluster = taxonomy[taxonomy.length - 2];
         for (const tax of taxonomy) {
@@ -3841,17 +3859,17 @@ class DashboardGenerator:
         }
 
         return {
-          id: r.id || (i + 1),
+          id: safeId,
           name: name,
-          full_name: String(r.full_name || `${owner}/${name}`),
+          full_name: String(r.full_name || `${owner}/${name}`).slice(0, 512),
           html_url: sanitizeUrl(r.html_url),
-          description: String(r.description || "No description provided."),
-          primary_language: String(r.language || "Other"),
+          description: rawDesc,
+          primary_language: safeLang,
           topics: topics,
-          tech_stack: [r.language].filter(Boolean).map(String),
-          stars: Number(r.stargazers_count) || 0,
-          forks: Number(r.forks_count) || 0,
-          open_issues: Number(r.open_issues_count) || 0,
+          tech_stack: r.language ? [safeLang] : [],
+          stars: Math.max(0, Math.trunc(Number(r.stargazers_count) || 0)),
+          forks: Math.max(0, Math.trunc(Number(r.forks_count) || 0)),
+          open_issues: Math.max(0, Math.trunc(Number(r.open_issues_count) || 0)),
           cluster_id: assignedCluster.id,
           cluster_name: assignedCluster.name,
           cluster_color: assignedCluster.color,

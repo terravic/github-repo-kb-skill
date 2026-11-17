@@ -15,19 +15,23 @@ import time
 import unittest
 from unittest import mock
 
-from scripts.cli import query_knowledge_base, run_pipeline
+from scripts.cli import _peek_config_secret, load_config, query_knowledge_base, run_pipeline
 from scripts.clusterer import RepositoryClusterer
 from scripts.dashboard_generator import DashboardGenerator
+from scripts.graph_builder import KnowledgeGraphBuilder
 from scripts.kb_generator import KnowledgeBaseGenerator
 from scripts.query_engine import RepositoryQueryEngine
 from scripts.scanner import GitHubScanner, _SafeGitHubRedirectHandler, _assert_safe_api_url
 from scripts.security_utils import (
+    deleteUserData,
+    export_user_data,
     is_placeholder_token,
     load_json_limited,
     redact_secrets,
     sanitize_hex_color,
     sanitize_http_url,
     strip_control_chars,
+    validate_config_schema,
     validate_path_safe,
 )
 
@@ -417,11 +421,7 @@ class TestSecurityAndAccessibility(unittest.TestCase):
         self.assertNotIn("\x1b", strip_control_chars("\x1b[31mRed\x1b[0m\x1b]0;title\x07"))
 
     def test_cli_warns_on_cli_token_and_redacts_secrets(self):
-        fixture_path = os.path.join(
-            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-            "examples",
-            "synthetic_sample_org.json",
-        )
+        fixture_path = os.path.join("examples", "synthetic_sample_org.json")
         fake_token = "ghp_" + ("Z" * 36)
         stderr_buf = io.StringIO()
         stdout_buf = io.StringIO()
@@ -529,21 +529,27 @@ class TestSecurityAndAccessibility(unittest.TestCase):
                 ("--text-main", "--bg-base"),
                 ("--text-main", "--bg-surface"),
                 ("--text-main", "--bg-surface-elevated"),
+                ("--text-main", "--border-hover"),
                 ("--text-muted", "--bg-base"),
                 ("--text-muted", "--bg-surface"),
                 ("--text-muted", "--bg-surface-elevated"),
+                ("--text-muted", "--border-hover"),
                 ("--text-dim", "--bg-base"),
                 ("--text-dim", "--bg-surface"),
                 ("--text-dim", "--bg-surface-elevated"),
+                ("--text-dim", "--border-hover"),
                 ("--primary-text", "--bg-base"),
                 ("--primary-text", "--bg-surface"),
                 ("--primary-text", "--bg-surface-elevated"),
+                ("--primary-text", "--border-hover"),
                 ("--accent-text", "--bg-surface-elevated"),
+                ("--accent-text", "--border-hover"),
                 ("--tag-text", "--bg-surface-elevated"),
                 ("--tag-tech-text", "--bg-surface-elevated"),
                 ("--success-text", "--bg-surface-elevated"),
                 ("--warning-text", "--bg-surface-elevated"),
                 ("--danger-text", "--danger-bg"),
+                ("--text-main", "--danger-bg"),
                 ("--tooltip-title", "--bg-surface"),
                 ("--matrix-active-text", "--matrix-active-bg"),
             ]
@@ -569,6 +575,7 @@ class TestSecurityAndAccessibility(unittest.TestCase):
                 ("--border-control", "--bg-base"),
                 ("--border-control", "--bg-surface"),
                 ("--border-control", "--bg-surface-elevated"),
+                ("--border-control", "--border-hover"),
                 ("--focus-ring", "--bg-base"),
                 ("--focus-ring", "--bg-surface"),
                 ("--focus-ring", "--bg-surface-elevated"),
@@ -594,8 +601,16 @@ class TestSecurityAndAccessibility(unittest.TestCase):
         # Landmarks & skip link
         self.assertIn('<a href="#main-content" class="skip-link">Skip to main content</a>', html_out)
         self.assertIn('<h1 class="topbar-title">', html_out)
+        self.assertIn('<nav aria-label="Dashboard view navigation">', html_out)
         self.assertIn('<main id="main-content"', html_out)
         self.assertIn('<footer class="site-footer" role="contentinfo">', html_out)
+
+        # Explicit text-based state identifiers & zero decorative arrow escapes
+        self.assertIn("[HUB]", html_out)
+        self.assertIn("[BRIDGE]", html_out)
+        self.assertIn("[NO MATCH]", html_out)
+        self.assertNotIn("\\u2192", html_out)
+        self.assertNotIn("\\u2026", html_out)
 
         # Explicit label for every form control
         expected_labeled_ids = [
@@ -633,7 +648,125 @@ class TestSecurityAndAccessibility(unittest.TestCase):
         self.assertNotIn("outline: none", scan_input_css.group(1))
 
     # ------------------------------------------------------------------
-    # 9. CI Security Gate Integration Check
+    # 9. Strict Schema Validation, Payload Coercion & Privacy Rights
+    # ------------------------------------------------------------------
+    def test_config_schema_rejects_undefined_keys_and_invalid_types(self):
+        with self.assertRaises(ValueError):
+            validate_config_schema({"unknown_key": True})
+        with self.assertRaises(ValueError):
+            validate_config_schema({"scan_options": {"unexpected": 1}})
+        with self.assertRaises(ValueError):
+            validate_config_schema({"output": {"bad_flag": True}})
+        with self.assertRaises(ValueError):
+            validate_config_schema({"clustering_rules": [{"pattern": "x", "cluster_id": "y", "evil": 1}]})
+
+        bad_cfg = os.path.join(self.temp_dir, "bad_schema.json")
+        with open(bad_cfg, "w", encoding="utf-8") as f:
+            json.dump({"target_url": "https://github.com/pallets", "injected": "nope"}, f)
+        with self.assertRaises(ValueError):
+            load_config(bad_cfg)
+
+    def test_scanner_normalize_repo_coerces_malformed_types_and_bounds(self):
+        scanner = GitHubScanner()
+        malformed = {
+            "id": {"unhashable": True},
+            "name": "svc-" + ("x" * 500),
+            "stars": "not-an-int",
+            "forks": -99,
+            "open_issues": True,
+            "description": "D" * 9000,
+            "topics": ["ok", {"bad": 1}, "tag"],
+            "dependencies": [{"bad": 2}, "dep-one"],
+        }
+        norm = scanner._normalize_repo(malformed)
+        self.assertIsInstance(norm["id"], int)
+        self.assertEqual(norm["stars"], 0)
+        self.assertEqual(norm["forks"], 0)
+        self.assertEqual(norm["open_issues"], 0)
+        self.assertLessEqual(len(norm["name"]), 256)
+        self.assertLessEqual(len(norm["description"]), 4096)
+        self.assertEqual(norm["topics"], ["ok", "tag"])
+        self.assertEqual(norm["dependencies"], ["dep-one"])
+
+        clustered = RepositoryClusterer().cluster_repositories([norm])
+        graph = KnowledgeGraphBuilder().build_graph(clustered["repositories"], clustered["clusters"])
+        self.assertEqual(graph["total_nodes"], 1)
+
+    def test_config_auth_token_redacted_in_peek_and_errors(self):
+        cfg_file = os.path.join(self.temp_dir, "local_cfg.json")
+        custom_secret = "customEnterpriseToken987654321"
+        with open(cfg_file, "w", encoding="utf-8") as f:
+            json.dump({"auth_token": custom_secret}, f)
+        extracted = _peek_config_secret(cfg_file)
+        self.assertEqual(extracted, custom_secret)
+        scrubbed = redact_secrets(f"Error using {custom_secret}", [extracted])
+        self.assertNotIn(custom_secret, scrubbed)
+        self.assertIn("[REDACTED]", scrubbed)
+
+    def test_user_data_export_and_erasure_workflows(self):
+        fixture_path = os.path.join("examples", "synthetic_sample_org.json")
+        stdout_buf = io.StringIO()
+        with contextlib.redirect_stdout(stdout_buf):
+            run_pipeline(fixture_path=fixture_path, output_dir=self.temp_dir)
+
+        # 1. Portability export in JSON and CSV formats
+        json_exp = export_user_data("sample-platform", output_dir=self.temp_dir, fmt="json")
+        self.assertTrue(json_exp["matched_owner"])
+        self.assertEqual(json_exp["record_count"], 16)
+        parsed_export = json.loads(json_exp["serialized"])
+        self.assertEqual(parsed_export["record_count"], 16)
+
+        csv_exp = export_user_data("sample-platform", output_dir=self.temp_dir, fmt="csv")
+        self.assertIn("sample-patient-records", csv_exp["serialized"])
+
+        # 2. Full owner erasure purges all generated artifacts without soft-deletes
+        erase_res = deleteUserData("sample-platform", output_dir=self.temp_dir)
+        self.assertTrue(erase_res["purged"])
+        self.assertEqual(erase_res["deleted_repositories"], 16)
+        for fname in ("knowledge_base.json", "knowledge_graph.json", "KNOWLEDGE_BASE.md", "dashboard.html"):
+            self.assertFalse(os.path.exists(os.path.join(self.temp_dir, fname)))
+
+        # 3. Partial erasure in a multi-owner dataset regenerates artifacts cleanly
+        multi_dir = os.path.join(self.temp_dir, "multi")
+        os.makedirs(multi_dir, exist_ok=True)
+        mixed_fixture = os.path.join(self.temp_dir, "mixed.json")
+        with open(mixed_fixture, "w", encoding="utf-8") as f:
+            json.dump(
+                {
+                    "metadata": {"owner": "umbrella-org", "input_url": "https://github.com/umbrella-org"},
+                    "repositories": [
+                        {
+                            "id": 1,
+                            "name": "alice-repo",
+                            "full_name": "alice-handle/alice-repo",
+                            "html_url": "https://github.com/alice-handle/alice-repo",
+                            "description": "Alice personal repo",
+                            "primary_language": "Python",
+                        },
+                        {
+                            "id": 2,
+                            "name": "core-gateway",
+                            "full_name": "umbrella-org/core-gateway",
+                            "html_url": "https://github.com/umbrella-org/core-gateway",
+                            "description": "Core API gateway",
+                            "primary_language": "Go",
+                        },
+                    ],
+                },
+                f,
+            )
+        with contextlib.redirect_stdout(stdout_buf):
+            run_pipeline(fixture_path=mixed_fixture, output_dir=multi_dir)
+
+        partial_res = deleteUserData("alice-handle", output_dir=multi_dir)
+        self.assertTrue(partial_res["purged"])
+        self.assertEqual(partial_res["deleted_repositories"], 1)
+        for fname in ("knowledge_base.json", "KNOWLEDGE_BASE.md", "dashboard.html"):
+            with open(os.path.join(multi_dir, fname), "r", encoding="utf-8") as fh:
+                self.assertNotIn("alice-handle", fh.read())
+
+    # ------------------------------------------------------------------
+    # 10. CI Security Gate Integration Check
     # ------------------------------------------------------------------
     def test_ci_security_check_passes(self):
         repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

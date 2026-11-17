@@ -1,4 +1,4 @@
-> **DRAFT - REQUIRES LEGAL REVIEW**
+> **DRAFT — REQUIRES LEGAL REVIEW**
 > Replace all bracketed placeholders (`[LEGAL ENTITY NAME]`, `[JURISDICTION]`, `[CONTACT EMAIL]`, `[EFFECTIVE DATE]`) and confirm alignment with any hosting infrastructure (e.g., reverse proxy or SSO cookies added by your web server) before publishing.
 
 # Cookie and Browser Storage Policy

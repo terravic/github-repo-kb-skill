@@ -17,6 +17,8 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from scripts.security_utils import (
     MAX_JSON_DATA_BYTES,
+    MAX_STRING_FIELD_LENGTH,
+    MAX_TOPIC_ITEMS,
     deterministic_id,
     is_placeholder_token,
     is_public_ip,
@@ -65,7 +67,15 @@ class _SafeGitHubRedirectHandler(urllib.request.HTTPRedirectHandler):
     def redirect_request(self, req, fp, code, msg, headers, newurl):
         resolved = urllib.parse.urljoin(req.full_url, newurl)
         _assert_safe_api_url(resolved, check_dns=True)
-        return super().redirect_request(req, fp, code, msg, headers, resolved)
+        orig_host = (urllib.parse.urlsplit(req.full_url).hostname or "").lower()
+        new_host = (urllib.parse.urlsplit(resolved).hostname or "").lower()
+        redirected = super().redirect_request(req, fp, code, msg, headers, resolved)
+        if redirected is not None and orig_host != new_host:
+            for hdr_dict in (redirected.headers, redirected.unredirected_hdrs):
+                for key in list(hdr_dict.keys()):
+                    if key.lower() == "authorization":
+                        del hdr_dict[key]
+        return redirected
 
 
 class GitHubScanner:
@@ -339,45 +349,67 @@ class GitHubScanner:
             "total_count": len(repos),
         }
 
+    @staticmethod
+    def _coerce_nonneg_int(value: Any, default: int = 0) -> int:
+        if isinstance(value, bool) or value is None:
+            return default
+        try:
+            return max(0, int(value))
+        except (TypeError, ValueError):
+            return default
+
     def _normalize_repo(self, raw: Dict[str, Any]) -> Dict[str, Any]:
         """Standardize repository metadata dictionary and infer technology stack."""
-        name = str(raw.get("name", "unnamed-repo"))
-        full_name = str(raw.get("full_name", f"account/{name}"))
+        raw_name = raw.get("name")
+        name = (str(raw_name) if raw_name not in (None, "") else "unnamed-repo")[:256]
+        raw_full = raw.get("full_name")
+        full_name = (str(raw_full) if raw_full not in (None, "") else f"account/{name}")[:512]
         raw_html_url = raw.get("html_url", f"https://github.com/{full_name}")
-        html_url = sanitize_http_url(raw_html_url, default=f"https://github.com/{urllib.parse.quote(full_name, safe='/')}")
-        description = str(raw.get("description") or "No description provided.")
-        language = str(raw.get("language") or raw.get("primary_language") or "Other")
+        html_url = sanitize_http_url(
+            raw_html_url,
+            default=f"https://github.com/{urllib.parse.quote(full_name, safe='/')}",
+        )
+        description = str(raw.get("description") or "No description provided.")[:MAX_STRING_FIELD_LENGTH]
+        language = str(raw.get("language") or raw.get("primary_language") or "Other")[:128]
         topics = raw.get("topics") or []
         if not isinstance(topics, list):
             topics = []
-        stars = raw.get("stargazers_count", raw.get("stars", 0))
-        forks = raw.get("forks_count", raw.get("forks", 0))
-        open_issues = raw.get("open_issues_count", raw.get("open_issues", 0))
-        updated_at = raw.get("updated_at", "")
-        created_at = raw.get("created_at", "")
-        default_branch = raw.get("default_branch", "main")
+        stars = self._coerce_nonneg_int(raw.get("stargazers_count", raw.get("stars", 0)))
+        forks = self._coerce_nonneg_int(raw.get("forks_count", raw.get("forks", 0)))
+        open_issues = self._coerce_nonneg_int(raw.get("open_issues_count", raw.get("open_issues", 0)))
+        updated_at = str(raw.get("updated_at") or "")[:64]
+        created_at = str(raw.get("created_at") or "")[:64]
+        default_branch = str(raw.get("default_branch") or "main")[:128]
         is_fork = bool(raw.get("fork", False))
         is_archived = bool(raw.get("archived", False))
 
         license_info = raw.get("license")
         if isinstance(license_info, dict):
-            license_name = license_info.get("spdx_id") or license_info.get("name", "None")
+            license_name = str(license_info.get("spdx_id") or license_info.get("name") or "None")[:128]
         elif isinstance(license_info, str):
-            license_name = license_info
+            license_name = license_info[:128]
         else:
             license_name = "None"
 
-        dependencies = raw.get("dependencies", [])
-        if isinstance(dependencies, dict):
-            dependencies = list(dependencies.keys())
-        elif not isinstance(dependencies, list):
+        raw_deps = raw.get("dependencies", [])
+        if isinstance(raw_deps, dict):
+            dependencies = [str(k)[:256] for k in list(raw_deps.keys())[:MAX_TOPIC_ITEMS]]
+        elif isinstance(raw_deps, list):
+            dependencies = [str(d)[:256] for d in raw_deps[:MAX_TOPIC_ITEMS] if isinstance(d, (str, int))]
+        else:
             dependencies = []
 
-        tags = sorted(set(str(t).lower() for t in topics))
+        tags = sorted(
+            set(str(t).lower()[:128] for t in topics[:MAX_TOPIC_ITEMS] if isinstance(t, (str, int)))
+        )
 
         # Automatically extract tech stack from language, topics, and description
         raw_tech = raw.get("tech_stack", [])
-        tech_set = set(str(t) for t in raw_tech) if isinstance(raw_tech, list) else set()
+        tech_set = (
+            set(str(t)[:128] for t in raw_tech[:MAX_TOPIC_ITEMS] if isinstance(t, (str, int)))
+            if isinstance(raw_tech, list)
+            else set()
+        )
         if language and language != "Other":
             tech_set.add(language)
 
@@ -391,8 +423,16 @@ class GitHubScanner:
             if re.search(r"\b" + re.escape(kw) + r"\b", text_corpus):
                 tech_set.add(kw.title())
 
+        raw_id = raw.get("id")
+        if isinstance(raw_id, int) and not isinstance(raw_id, bool):
+            safe_id: Any = raw_id
+        elif isinstance(raw_id, str) and raw_id.strip() and len(raw_id) <= 128:
+            safe_id = raw_id.strip()
+        else:
+            safe_id = deterministic_id(full_name)
+
         return {
-            "id": raw.get("id") if raw.get("id") is not None else deterministic_id(full_name),
+            "id": safe_id,
             "name": name,
             "full_name": full_name,
             "html_url": html_url,
@@ -410,5 +450,5 @@ class GitHubScanner:
             "license": license_name,
             "dependencies": dependencies,
             "tech_stack": sorted(list(tech_set)),
-            "readme_summary": str(raw.get("readme_summary", "")),
+            "readme_summary": str(raw.get("readme_summary") or "")[:MAX_STRING_FIELD_LENGTH],
         }

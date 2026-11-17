@@ -82,6 +82,7 @@ All project files are organized relative to the repository root directory:
 |-- DESIGN.md                              # Dashboard visual, architecture, theme, and accessibility specification
 |-- LICENSE                                # Apache License 2.0 full text
 |-- README.md                              # Project documentation and non-technical user guide
+|-- SECURITY_AUDIT.md                      # Security, sanitization, privacy, and WCAG audit register
 |-- SKILL.md                               # Agent skill definition, workflow, and untrusted-data guardrails
 |-- THIRD_PARTY_LICENSES.md                # Third-party license attribution and vendored asset checksums
 |-- prd.md                                 # Product Requirements Document reflecting design and implementation
@@ -95,6 +96,7 @@ All project files are organized relative to the repository root directory:
 |       |-- ACCESSIBILITY_STATEMENT.md     # WCAG 2.2 AA accessibility statement template
 |       |-- COOKIE_AND_STORAGE_POLICY.md   # Zero-cookie and zero-storage disclosure template
 |       |-- PRIVACY_POLICY.md              # Privacy policy template for operators
+|       |-- REFUND_POLICY.md               # Refund and cancellation policy template for operators
 |       |-- ROPA_AND_GOVERNANCE.md         # Record of processing activities and governance template
 |       `-- TERMS_OF_USE.md                # Terms of use template
 |-- examples/
@@ -119,7 +121,7 @@ All project files are organized relative to the repository root directory:
 |   |-- kb_generator.py                    # Markdown and JSON knowledge base generator
 |   |-- query_engine.py                    # Natural-language repository capability matcher
 |   |-- scanner.py                         # GitHub REST API ingestion engine and fixture loader
-|   |-- security_utils.py                  # Shared path, URL, SSRF, ReDoS, and secret redaction utilities
+|   |-- security_utils.py                  # Schema validation, O_NOFOLLOW writes, redaction, and GDPR utilities
 |   `-- vendor/
 |       |-- D3_LICENSE                     # ISC license text for vendored D3.js v7.9.0
 |       `-- d3.v7.min.js                   # Vendored D3.js v7.9.0 minified bundle (SHA-256 verified)
@@ -131,7 +133,7 @@ All project files are organized relative to the repository root directory:
     |-- test_kb_generator.py               # Unit tests for Markdown and JSON artifact formatting
     |-- test_query_engine.py               # Unit tests for natural-language repository capability search
     |-- test_scanner.py                    # Unit tests for URL parsing and metadata normalization
-    `-- test_security_and_a11y.py          # Verification tests for security hardening and WCAG 2.2 AA
+    `-- test_security_and_a11y.py          # Verification tests for security hardening, privacy, and WCAG 2.2 AA
 ```
 
 ---
@@ -361,8 +363,8 @@ When `output/dashboard.html` opens in your web browser or assistant preview pane
 - **Architectural Knowledge Graph**: Generates directed dependency relationships, degree centrality scores, hub/bridge flags, and inter-cluster flow matrices.
 - **Multi-Cluster Auto-Framing and Semantic Zoom**: Keeps all clusters framed on load and reset, with configurable label visibility (`smart`, `all`, `hubs`) and spacing (`balanced`, `wide`, `compact`).
 - **Inspection Side Drawer**: Displays repository metadata, tech stack, topics, and navigable incoming/outgoing connections.
-- **Security Hardening and WCAG 2.2 AA Accessibility**: Enforces SHA-256 verified vendored D3.js, hash-locked CSP, SSRF/path/ReDoS defenses, keyboard navigation, and verified Dark/Light contrast ratios.
-- **Automated Verification Suite**: Includes synthetic non-PHI fixtures, 48 automated unit/integration/security/accessibility tests, and an offline CI security gate.
+- **Security Hardening and WCAG 2.2 AA Accessibility**: Enforces SHA-256 verified vendored D3.js, hash-locked CSP, SSRF/path/symlink/ReDoS defenses, strict configuration schema validation, keyboard navigation, semantic landmarks, and verified Dark/Light contrast ratios across default and hover states.
+- **Automated Verification Suite**: Includes synthetic non-PHI fixtures, 52 automated unit/integration/security/privacy/accessibility tests, and an offline CI security gate.
 
 ---
 
@@ -504,7 +506,9 @@ python3 scripts/cli.py --url https://github.com/your-private-org/private-service
 ```text
 usage: cli.py [-h] [--url URL] [--config CONFIG] [--fixture FIXTURE]
               [--output-dir OUTPUT_DIR] [--token TOKEN] [--max-repos MAX_REPOS]
-              [--include-forks] [--query QUERY] [--kb KB] [--verbose]
+              [--include-forks] [--query QUERY] [--kb KB]
+              [--erase-user ERASE_USER] [--export-user EXPORT_USER]
+              [--export-format {json,csv}] [--verbose]
 
 Options:
   -h, --help            Show help message and exit
@@ -522,6 +526,12 @@ Options:
   --query QUERY, -q QUERY
                         Ask about a software need or program to find the best suited repository
   --kb KB               Path to knowledge_base.json for query resolution
+  --erase-user ERASE_USER
+                        Permanently purge all stored records and output artifacts for a GitHub handle
+  --export-user EXPORT_USER
+                        Export stored records for a GitHub handle in JSON or CSV format
+  --export-format {json,csv}
+                        Output format for --export-user (default: json)
   --verbose, -v         Enable verbose logging
 ```
 
@@ -539,7 +549,7 @@ Run the offline supply-chain, secret-scanning, and CSP verification gate:
 python3 scripts/ci_security_check.py
 ```
 
-The 48 unit, integration, security, and accessibility tests verify URL parsing, SSRF protection, path confinement, ReDoS rejection, metadata normalization, thematic clustering, graph centrality, capability search, Markdown/JSON sanitization, CSP hash integrity, vendored D3.js checksum verification, and WCAG 2.2 AA dashboard requirements.
+The 52 unit, integration, security, privacy, and accessibility tests verify URL parsing, SSRF protection, strict config schema validation, `O_NOFOLLOW` path confinement, ReDoS rejection, metadata normalization, thematic clustering, graph centrality, capability search, user data erasure/portability, Markdown/JSON sanitization, CSP hash integrity, vendored D3.js checksum verification, and WCAG 2.2 AA dashboard requirements.
 
 ---
 
@@ -628,13 +638,13 @@ The generated standalone dashboard (`output/dashboard.html`) includes the follow
    - Dark / Light theme button (`Theme`).
    - `Export JSON` and `Print View` buttons.
 2. **Metric Summary Cards**:
-   - Live counts for Total Repositories, Thematic Clusters, Graph Relationships, Cross-Cluster Edges, Aggregate Stars, and Architecture Hubs.
+   - Live counts for Total Repositories, Domain Clusters, Graph Relationships (with cross-cluster edge subtext), Aggregate Stars, and Hub Architectures.
 3. **Knowledge Graph Viewport (Vendored D3.js v7.9.0)**:
    - Zoom, pan, node dragging, cluster region hulls, and zoom bar (`+`, `%`, `-`, `Fit`).
    - Color-coded thematic nodes with hub highlight rings and dashed cross-cluster edges.
    - Live search input, cluster filter, relationship filter, label visibility selector, spacing selector, Reset View, and Pause Physics toggle.
 4. **Inspection Side Drawer**:
-   - Shows repository metadata, tech stack, topics, external GitHub link, incoming consumers, and outgoing dependencies with clickable node focus navigation.
+   - Shows repository metadata, `[HUB]` and `[BRIDGE]` role badges, tech stack, topics, external GitHub link, incoming consumers, and outgoing dependencies with clickable node focus navigation.
 5. **Repository Matcher & Chat Tab**:
    - Local capability search input, suggestion query buttons, confidence scoring, rationale list, and **Locate on Knowledge Graph** action.
 6. **Cluster Explorer Tab**:
@@ -649,14 +659,16 @@ The generated standalone dashboard (`output/dashboard.html`) includes the follow
 ## Security, Accessibility, and Compliance
 
 - **No PHI/PII**: Sample datasets in `examples/` and test suites use synthetic, fictional repository names and descriptions. This tool is not designed or certified to store or process Protected Health Information (PHI) or Personally Identifiable Information (PII).
+- **Data Erasure & Portability (`GDPR Art. 17 & Art. 20`)**: Operators can permanently purge individual GitHub account metadata across `output/` via `python3 scripts/cli.py --erase-user <handle>` (`deleteUserData`) or export structured records in JSON/CSV via `python3 scripts/cli.py --export-user <handle> --export-format json|csv`.
 - **Token Protection & Sanitization**: Use `GITHUB_TOKEN` with a Fine-grained Personal Access Token (Metadata: Read-only). Tokens are redacted from error logs, transmitted only over HTTPS (`TLS >= 1.2`) to `https://api.github.com`, and never persisted to output files.
-- **Offline-First & Hardened Dashboard**: D3.js v7.9.0 is vendored locally with SHA-256 verification. Generated `dashboard.html` enforces a hash-locked Content Security Policy (`script-src 'sha256-...'`), `Referrer-Policy: no-referrer`, zero cookies or browser storage, and zero outbound requests on load.
-- **WCAG 2.2 AA Accessibility**: Full keyboard navigation (skip link, ARIA tablist, focusable graph nodes, semantic buttons and tables), verified Dark and Light contrast ratios, `prefers-reduced-motion` support, and `320px` responsive reflow.
+- **Offline-First & Hardened Dashboard**: D3.js v7.9.0 is vendored locally with SHA-256 verification. Generated `dashboard.html` enforces a hash-locked Content Security Policy (`script-src 'sha256-...'`), `Referrer-Policy: no-referrer`, zero cookies or browser storage, and zero outbound requests on load. When hosting `dashboard.html` on a web server, configure `Strict-Transport-Security`, `X-Content-Type-Options: nosniff`, `Cross-Origin-Opener-Policy: same-origin`, and restrictive CORS headers.
+- **WCAG 2.2 AA Accessibility**: Full keyboard navigation (skip link, semantic `<header>`/`<nav>`/`<main>`/`<aside>`/`<footer>` landmarks, ARIA tablist, focusable graph nodes, semantic buttons and tables), explicit text role tags (`[HUB]`, `[BRIDGE]`), verified Dark and Light contrast ratios across default and hover states, `prefers-reduced-motion` support, and `320px` responsive reflow.
 - **Project Documentation & Governance**:
+  - [SECURITY_AUDIT.md](SECURITY_AUDIT.md) - Security, sanitization, privacy, and WCAG 2.2 AA audit findings register
   - [prd.md](prd.md) - Product Requirements Document covering architecture, functional scope, security, and verification gates
   - [DESIGN.md](DESIGN.md) - Dashboard visual tokens, layout rules, theme definitions, and accessibility specification
   - [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md) - Vendored dependency license attribution and SHA-256 checksums
-  - [docs/legal/](docs/legal/) - Privacy Policy, Terms of Use, Cookie/Storage Policy, ROPA/Governance, and Accessibility Statement templates (require operator legal review before public hosting)
+  - [docs/legal/](docs/legal/) - Privacy Policy, Terms of Use, Refund Policy, Cookie/Storage Policy, ROPA/Governance, and Accessibility Statement templates (require operator legal review before public hosting)
 
 ---
 

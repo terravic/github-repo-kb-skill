@@ -31,6 +31,7 @@ EXPECTED_VENDOR_HASHES = {
 }
 
 REQUIRED_FILES = [
+    "SECURITY_AUDIT.md",
     "THIRD_PARTY_LICENSES.md",
     ".env.example",
     "DESIGN.md",
@@ -38,6 +39,7 @@ REQUIRED_FILES = [
     os.path.join("scripts", "security_utils.py"),
     os.path.join("docs", "legal", "PRIVACY_POLICY.md"),
     os.path.join("docs", "legal", "TERMS_OF_USE.md"),
+    os.path.join("docs", "legal", "REFUND_POLICY.md"),
     os.path.join("docs", "legal", "COOKIE_AND_STORAGE_POLICY.md"),
     os.path.join("docs", "legal", "ROPA_AND_GOVERNANCE.md"),
     os.path.join("docs", "legal", "ACCESSIBILITY_STATEMENT.md"),
@@ -49,10 +51,15 @@ SECRET_REGEXES: List[Tuple[str, re.Pattern]] = [
     ("GitHub Fine-Grained PAT", re.compile(r"\bgithub_pat_[A-Za-z0-9_]{20,}\b")),
     ("Provider API Key (sk-ant)", re.compile(r"\bsk-ant-[A-Za-z0-9_-]{16,}\b")),
     ("Provider API Key (sk-proj)", re.compile(r"\bsk-proj-[A-Za-z0-9_-]{16,}\b")),
+    ("Provider API Key (sk-)", re.compile(r"\bsk-(?:live-|test-)?[A-Za-z0-9]{20,}\b")),
     ("Cloud Access Key (AKIA)", re.compile(r"\bAKIA[0-9A-Z]{16}\b")),
     ("Cloud API Key (AIza)", re.compile(r"\bAIza[0-9A-Za-z_-]{35}\b")),
+    ("OAuth Access Token (ya29)", re.compile(r"\bya29\.[0-9A-Za-z_-]{16,}\b")),
     ("Workspace Token (xox)", re.compile(r"\bxox[bpas]-[0-9A-Za-z-]{10,}\b")),
-    ("Private Key Header", re.compile(r"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----")),
+    (
+        "Private Key Header",
+        re.compile(r"-----BEGIN (?:RSA |EC |DSA |OPENSSH |ENCRYPTED )?PRIVATE KEY-----"),
+    ),
 ]
 
 SKIP_DIRS = {".git", "__pycache__", ".venv", "venv", "node_modules", ".pytest_cache"}
@@ -137,11 +144,14 @@ def check_dashboard_html(rel_path: str, errors: List[str]) -> None:
     if re.search(r"<link[^>]+href\s*=\s*[\"']https?://", html_text, re.IGNORECASE):
         errors.append(f"[DASHBOARD] External <link href=http...> found in {rel_path}")
 
-    # 2. Referrer-Policy meta check
+    # 2. Referrer-Policy meta and semantic HTML landmark checks
     if not re.search(
         r'<meta\s+name="referrer"\s+content="no-referrer"\s*/?>', html_text, re.IGNORECASE
     ):
         errors.append(f"[DASHBOARD] Missing Referrer-Policy no-referrer meta tag in {rel_path}")
+    for landmark in ("header", "nav", "main", "footer"):
+        if not re.search(rf"<{landmark}\b", html_text, re.IGNORECASE):
+            errors.append(f"[DASHBOARD] Missing semantic <{landmark}> landmark in {rel_path}")
 
     # 3. CSP meta & exact SHA-256 script hash validation
     csp_match = re.search(

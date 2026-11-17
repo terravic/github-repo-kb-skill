@@ -1,4 +1,4 @@
-> **DRAFT - REQUIRES LEGAL REVIEW**
+> **DRAFT — REQUIRES LEGAL REVIEW**
 > Replace bracketed placeholders (`[LEGAL ENTITY NAME]`, `[JURISDICTION]`, `[CONTACT EMAIL]`, `[EFFECTIVE DATE]`) and perform assistive-technology verification with screen readers before publishing.
 
 # Accessibility Statement
@@ -21,10 +21,10 @@
   - Keyboard-focusable SVG graph nodes (`tabindex="0"`, `role="button"`, `Enter` / `Space` to inspect in the side drawer).
   - High-contrast `:focus-visible` outlines across all controls in both Dark and Light themes.
 - **Color Contrast & Non-Color Cues**:
-  - Text contrast ratios verified >= `4.5:1` and interactive UI borders/focus rings >= `3.0:1` across both Dark and Light themes.
-  - Cluster badges pair geometric color indicators (`aria-hidden="true"`) with high-contrast text labels so color never carries meaning alone.
+  - Text contrast ratios verified >= `4.5:1` across default, elevated, and hover states, and interactive UI borders/focus rings >= `3.0:1` across both Dark and Light themes.
+  - Cluster badges pair geometric color indicators (`aria-hidden="true"`) with high-contrast text labels, and architectural roles/confidence states use explicit text tags (`[HUB]`, `[BRIDGE]`, `[HIGH]`, `[MODERATE]`, `[NO MATCH]`) so color never carries meaning alone.
 - **Screen Reader & Semantic Structure**:
-  - Single semantic `<h1>`, logical `<h2>`/`<h3>` heading hierarchy, landmark regions (`<header>`, `<main>`, `<aside>`, `<footer>`), explicit `<label for="...">` associations for all inputs/selects/textareas, table `<caption>` and `scope` attributes, `aria-sort` state, `aria-live="polite"` status announcements, and `(opens in new tab)` screen-reader context on external links.
+  - Single semantic `<h1>`, logical `<h2>`/`<h3>` heading hierarchy without skipped levels, semantic landmarks (`<header>`, `<nav>`, `<main>`, `<aside>`, `<footer>`), explicit `<label for="...">` associations for all inputs/selects/textareas, table `<caption>` and `scope` attributes, `aria-sort` state, `aria-live="polite"` status announcements, and `(opens in new tab)` screen-reader context on external links.
 - **Motion, Reflow & Target Size**:
   - Respects `@media (prefers-reduced-motion: reduce)` in CSS and D3 zoom animations.
   - Responsive layout reflows cleanly down to `320px` CSS viewport width without page-level horizontal scrolling.

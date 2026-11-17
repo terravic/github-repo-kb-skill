@@ -8,11 +8,7 @@ from scripts.cli import run_pipeline
 class TestEndToEndPipeline(unittest.TestCase):
     def setUp(self):
         self.temp_dir = tempfile.mkdtemp()
-        self.fixture_path = os.path.join(
-            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-            "examples",
-            "synthetic_sample_org.json",
-        )
+        self.fixture_path = os.path.join("examples", "synthetic_sample_org.json")
 
     def tearDown(self):
         shutil.rmtree(self.temp_dir, ignore_errors=True)

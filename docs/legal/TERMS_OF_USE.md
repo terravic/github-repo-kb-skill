@@ -1,4 +1,4 @@
-> **DRAFT - REQUIRES LEGAL REVIEW**
+> **DRAFT — REQUIRES LEGAL REVIEW**
 > This template is provided as a starting point for operators deploying `github-repo-kb-skill` or hosting its generated outputs. Replace all bracketed placeholders (`[LEGAL ENTITY NAME]`, `[JURISDICTION]`, `[CONTACT EMAIL]`, `[EFFECTIVE DATE]`) and obtain review from qualified legal counsel before publishing.
 
 # Terms of Use

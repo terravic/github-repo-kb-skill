@@ -5,11 +5,7 @@ from scripts.query_engine import RepositoryQueryEngine
 
 class TestRepositoryQueryEngine(unittest.TestCase):
     def setUp(self):
-        fixture_path = os.path.join(
-            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-            "examples",
-            "synthetic_sample_org.json"
-        )
+        fixture_path = os.path.join("examples", "synthetic_sample_org.json")
         self.engine = RepositoryQueryEngine(kb_path=fixture_path)
 
     def test_medical_query(self):

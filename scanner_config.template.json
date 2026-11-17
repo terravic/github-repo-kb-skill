@@ -1,6 +1,6 @@
 {
   "target_url": "https://github.com/YOUR_ORGANIZATION_OR_USERNAME",
-  "auth_token": "YOUR_GITHUB_PERSONAL_ACCESS_TOKEN_OPTIONAL",
+  "auth_token": "",
   "scan_options": {
     "include_forks": false,
     "include_archived": true,

@@ -12,10 +12,10 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List
 
 from scripts.security_utils import (
-    assert_not_symlink_file,
     sanitize_http_url,
     strip_control_chars,
     validate_path_safe,
+    write_text_safe,
 )
 
 
@@ -95,15 +95,13 @@ class KnowledgeBaseGenerator:
 
         # 1. Write knowledge_base.json
         kb_json_path = os.path.join(safe_output_dir, "knowledge_base.json")
-        assert_not_symlink_file(kb_json_path)
-        with open(kb_json_path, "w", encoding="utf-8") as f:
-            json.dump(kb_dict, f, indent=2)
+        write_text_safe(kb_json_path, json.dumps(kb_dict, indent=2))
 
         # 2. Write knowledge_graph.json
         graph_json_path = os.path.join(safe_output_dir, "knowledge_graph.json")
-        assert_not_symlink_file(graph_json_path)
-        with open(graph_json_path, "w", encoding="utf-8") as f:
-            json.dump(
+        write_text_safe(
+            graph_json_path,
+            json.dumps(
                 {
                     "nodes": graph_data.get("nodes", []),
                     "links": graph_data.get("edges", []),
@@ -111,18 +109,16 @@ class KnowledgeBaseGenerator:
                         "total_nodes": graph_data.get("total_nodes", 0),
                         "total_edges": graph_data.get("total_edges", 0),
                         "cross_cluster_edges": graph_data.get("cross_cluster_edges_count", 0),
-                    }
+                    },
                 },
-                f,
-                indent=2
-            )
+                indent=2,
+            ),
+        )
 
         # 3. Write KNOWLEDGE_BASE.md
         kb_md_path = os.path.join(safe_output_dir, "KNOWLEDGE_BASE.md")
-        assert_not_symlink_file(kb_md_path)
         md_content = self._build_markdown_report(kb_dict)
-        with open(kb_md_path, "w", encoding="utf-8") as f:
-            f.write(md_content)
+        write_text_safe(kb_md_path, md_content)
 
         return {
             "knowledge_base_json": kb_json_path,

@@ -11,16 +11,16 @@ This document defines the visual, structural, security, and accessibility specif
 | **Typography** | Native system typefaces with clear separation between UI prose and technical identifiers. | Use `--font-sans: system-ui, ui-sans-serif, Helvetica, Arial, sans-serif` for headers, prose, and controls; use `--font-mono: ui-monospace, "Liberation Mono", "DejaVu Sans Mono", monospace` for repository names, URLs, JSON payloads, and metrics. Zero external web font requests (`font-src 'none'`). |
 | **Surfaces and Boundaries** | Structured surface layers with defined borders and spacing. | Use solid surface tokens (`--bg-base`, `--bg-surface`, `--bg-surface-elevated`) with `1px solid` borders (`--border-color`, `--border-control`) and `6px` to `10px` radii. |
 | **Container Layout** | Single-level responsive grid layout. | Partition the viewport into a sticky header bar, top metric grid, six-tab navigation bar, active view container, and footer. Collapse multi-column layouts to a single column on narrow viewports down to `320px`. |
-| **Status Indicators** | Explicit visual and textual state encoding. | Distinguish architecture hubs, cross-domain bridges, match confidence tiers, and scan status notices using both color tokens and plain text labels so color never acts as the sole indicator. |
+| **Status Indicators** | Explicit visual and textual state encoding. | Distinguish architecture hubs, cross-domain bridges, match confidence tiers, and scan status notices using both color tokens and explicit text identifiers (`[HUB]`, `[BRIDGE]`, `[HIGH]`, `[MODERATE]`, `[NO MATCH]`) so color never acts as the sole indicator. |
 | **Control Surfaces** | Text-based interactive buttons and semantic form elements. | Render all navigation tabs, zoom controls, theme switches, sort headers, and export buttons with explicit text labels and accessible names (`aria-label` or `<label for="...">`). |
 
 ---
 
 ## 2. Runtime Environment and Technical Architecture
 
-- **Self-Contained Single File (`output/dashboard.html`)**: Emitted as a standalone HTML5 document containing inline CSS, embedded JSON payload (`<script type="application/json" id="kb-initial-data">`), vendored `scripts/vendor/d3.v7.min.js` (`7.9.0`), and the client-side application script.
+- **Self-Contained Single File (`output/dashboard.html`)**: Emitted as a standalone HTML5 document containing inline CSS, embedded JSON payload (`<script id="kb-data" type="application/json">`), vendored `scripts/vendor/d3.v7.min.js` (`7.9.0`), and the client-side application script.
 - **Offline-First Execution**: Loads with zero external network requests. All graph physics, filtering, sorting, repository capability matching, and JSON exports execute locally in browser memory.
-- **Hash-Locked Content Security Policy (CSP)**: Enforces `default-src 'none'`, exact `sha256` hashes in `script-src` for both the vendored D3.js block and the application script block, `style-src 'unsafe-inline'`, `connect-src https://api.github.com`, `img-src 'self' data:`, `font-src 'none'`, `object-src 'none'`, `base-uri 'none'`, and `form-action 'none'`.
+- **Hash-Locked Content Security Policy (CSP) & Hosting Headers**: Enforces `default-src 'none'`, exact `sha256` hashes in `script-src` for both the vendored D3.js block and the application script block, `style-src 'unsafe-inline'`, `connect-src https://api.github.com`, `img-src 'self' data:`, `font-src 'none'`, `object-src 'none'`, `base-uri 'none'`, and `form-action 'none'`. When serving `dashboard.html` over an HTTPS web server, operators should also set HTTP response headers `Strict-Transport-Security: max-age=63072000; includeSubDomains; preload`, `X-Content-Type-Options: nosniff`, `Cross-Origin-Opener-Policy: same-origin`, and restrictive `Access-Control-Allow-Origin` rules.
 - **Zero Client-Side Storage**: Sets zero HTTP or JavaScript cookies (`document.cookie`) and makes zero accesses to `localStorage`, `sessionStorage`, or `IndexedDB`. Active theme and filter states exist exclusively in DOM memory for the current session.
 - **User-Triggered Live Scanning**: Outbound network requests occur only when the user invokes **Scan Address** or selects a live preset (`pallets`, `fastapi`), sending anonymous `GET` requests (`credentials: 'omit'`, `referrerPolicy: 'no-referrer'`) strictly to `https://api.github.com`.
 - **Embedded Webview and Browser Support**: Renders inside standalone web browsers as well as sandboxed iframes and embedded webviews without external build steps or server dependencies.
@@ -32,13 +32,14 @@ This document defines the visual, structural, security, and accessibility specif
 The dashboard supports a default **Dark** theme and a high-contrast **Light** theme controlled via the `data-theme` attribute on `<html>` (`data-theme="dark"` or `data-theme="light"`).
 
 - **Theme Control (`#btn-toggle-theme`)**: A single text button (`Theme`) in the header toggles between Dark and Light modes, updates `aria-pressed` (`true` when Light is active, `false` when Dark is active), updates `aria-label` (`Switch to light theme` / `Switch to dark theme`), and re-renders active D3 SVG graph strokes and label halos immediately.
-- **Color Tokens (Verified >= 4.5:1 Text Contrast, >= 3.0:1 UI Border Contrast)**:
+- **Color Tokens (Verified >= 4.5:1 Text Contrast Across Default, Elevated, and Hover States; >= 3.0:1 UI Border Contrast)**:
 
 | Token | Dark Theme (`data-theme="dark"`) | Light Theme (`data-theme="light"`) | Role |
 |---|---|---|---|
 | `--bg-base` | `#0f172a` | `#f8fafc` | Page viewport background |
 | `--bg-surface` | `#1e293b` | `#ffffff` | Header, cards, tables, inspector drawer |
 | `--bg-surface-elevated` | `#293548` | `#eef2f6` | Control backgrounds, pill containers, table headers |
+| `--border-hover` | `#222e42` | `#e8eef5` | Interactive button, sidebar link, and list item hover fill |
 | `--border-color` | `#475569` | `#cbd5e1` | Structural card and section dividers |
 | `--border-control` | `#7c8ea6` | `#64748b` | Interactive input, select, and button borders |
 | `--text-main` | `#f8fafc` | `#0f172a` | Primary headings, labels, body text |
@@ -46,7 +47,7 @@ The dashboard supports a default **Dark** theme and a high-contrast **Light** th
 | `--text-dim` | `#94a3b8` | `#475569` | Tertiary labels, counts, captions |
 | `--primary` | `#2563eb` | `#1d4ed8` | Primary action button fill |
 | `--primary-text` | `#60a5fa` | `#1d4ed8` | Primary links and outgoing dependency labels |
-| `--accent-text` | `#22d3ee` | `#0e7490` | Incoming dependency labels and highlights |
+| `--accent-text` | `#22d3ee` | `#0c637a` | Incoming dependency labels and highlights |
 | `--focus-ring` | `#38bdf8` | `#1d4ed8` | Keyboard `:focus-visible` outline (`2px solid`) |
 | `--graph-hub-stroke` | `#fbbf24` | `#b45309` | Highlight ring around architectural hub nodes |
 
@@ -59,8 +60,8 @@ The dashboard supports a default **Dark** theme and a high-contrast **Light** th
    - Public GitHub target search input (`#scan-target-input`) and `Scan Address` button.
    - Dataset preset selector (`current`, `synthetic`, `pallets`, `fastapi`), `Theme` button, `Export JSON` button, and `Print View` button.
 2. **Metric Summary Grid (`#metric-summary-container`)**:
-   - Responsive auto-fit summary cards displaying Total Repositories, Thematic Clusters, Graph Relationships, Cross-Cluster Edges, Aggregate Stars, and Architecture Hubs.
-3. **Six-Tab Main Workspace (`<main id="main-content">`)**:
+   - Responsive auto-fit summary cards displaying Total Repositories, Domain Clusters, Graph Relationships (with cross-cluster edge subtext), Aggregate Stars, and Hub Architectures.
+3. **Six-Tab Main Workspace (`<main id="main-content">` with `<nav aria-label="Dashboard view navigation">`)**:
    - **Knowledge Graph (`#tab-graph`)**: Split layout pairing the D3 force-directed SVG viewport (`#graph-container`) with the repository inspector side drawer (`#graph-sidebar`). Includes filter controls (search, cluster filter, relationship filter, label visibility mode, cluster spacing mode, Reset View, Pause Physics) and zoom bar (`+`, percentage indicator, `-`, `Fit`).
    - **Repository Matcher & Chat (`#tab-matcher`)**: Natural-language capability search input, suggestion query buttons, and ranked result cards with confidence score, matching rationale, and **Locate on Knowledge Graph** action.
    - **Cluster Explorer (`#tab-clusters`)**: Responsive grid of expandable thematic domain cards displaying descriptions, repository counts, stars, top languages, and selectable repository rosters.
@@ -90,7 +91,7 @@ Each thematic domain cluster maps to a consistent hex accent used for graph node
 
 ### Graph Encoding Rules
 - **Node Radius**: Scaled by total connection degree so central hubs are visually larger than leaf repositories.
-- **Hub Ring**: Architectural hub nodes render with a `--graph-hub-stroke` outer ring.
+- **Hub Ring**: Architectural hub nodes render with a `--graph-hub-stroke` outer ring and `[HUB]` text role tag in accessible labels and badges.
 - **Edges**: Intra-cluster dependencies render as solid paths; cross-cluster edges render as dashed paths (`stroke-dasharray`).
 - **Semantic Zoom and Spacing**: Supports three label visibility modes (`smart`, `all`, `hubs`) and three force-layout spacing profiles (`balanced`, `wide`, `compact`), auto-fitting all clusters into the viewport on load and reset.
 
@@ -100,7 +101,7 @@ Each thematic domain cluster maps to a consistent hex accent used for graph node
 
 - **Keyboard Navigation**: Skip-to-main-content link as the first focusable element; ARIA `tablist` with `ArrowLeft`, `ArrowRight`, `Home`, and `End` navigation; semantic `<button type="button">` elements; focusable SVG graph nodes (`tabindex="0"`, `role="button"`, `Enter` and `Space` activation).
 - **Focus Visibility**: High-contrast `2px solid var(--focus-ring)` outlines with offset on `:focus-visible`.
-- **Assistive Technology Semantics**: Landmark regions (`<header>`, `<main>`, `<aside>`, `<footer>`), explicit `<label for="...">` associations on all form controls, `aria-live="polite"` status announcements, and `(opens in new tab)` screen-reader context on external links.
+- **Assistive Technology Semantics**: Landmark regions (`<header>`, `<nav>`, `<main>`, `<aside>`, `<footer>`), explicit `<label for="...">` associations on all form controls, `aria-live="polite"` status announcements, and `(opens in new tab)` screen-reader context on external links.
 - **Reduced Motion**: Honors `@media (prefers-reduced-motion: reduce)` in CSS transitions and D3 zoom animations.
 - **Target Size and Reflow**: Interactive controls meet `24x24` CSS pixel minimum target size; layout reflows cleanly down to `320px` CSS viewport width with zero horizontal page overflow.
 

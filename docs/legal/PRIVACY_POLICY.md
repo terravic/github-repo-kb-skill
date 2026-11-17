@@ -1,11 +1,12 @@
-> **DRAFT - REQUIRES LEGAL REVIEW**
-> This template is provided as a starting point for operators deploying `github-repo-kb-skill` or hosting its generated `dashboard.html` output. Replace all bracketed placeholders (`[LEGAL ENTITY NAME]`, `[JURISDICTION]`, `[CONTACT EMAIL]`, `[EFFECTIVE DATE]`) and obtain review from qualified legal counsel before publishing.
+> **DRAFT — REQUIRES LEGAL REVIEW**
+> This template is provided as a starting point for operators deploying `github-repo-kb-skill` or hosting its generated `dashboard.html` output. Replace all bracketed placeholders (`[LEGAL ENTITY NAME]`, `[JURISDICTION]`, `[PRIMARY HOSTING REGION]`, `[BACKUP STORAGE REGION]`, `[LLM API REGION]`, `[CONTACT EMAIL]`, `[EFFECTIVE DATE]`) and obtain review from qualified legal counsel before publishing.
 
 # Privacy Policy
 
 **Effective Date:** `[EFFECTIVE DATE]`
 **Data Controller / Operator:** `[LEGAL ENTITY NAME]`
 **Jurisdiction:** `[JURISDICTION]`
+**Primary Hosting & Backup Region:** `[PRIMARY HOSTING REGION]` / `[BACKUP STORAGE REGION]`
 **Privacy Contact / DPO:** `[CONTACT EMAIL]`
 
 ---
@@ -15,7 +16,8 @@ This Privacy Policy explains how `[LEGAL ENTITY NAME]` processes data when opera
 
 ## 2. Data Processed
 When configured to scan a GitHub organization, user account, or repository, the tool ingests repository metadata returned by the GitHub REST API (`https://api.github.com`):
-- **Repository & Account Metadata**: GitHub owner/user handle (`owner`, `full_name`), repository name, description, topics, primary language, star/fork/issue counts, archive/fork flags, default branch, license metadata, and repository URL (`html_url`).
+- **Repository & Account Metadata**: GitHub owner/user handle (`owner`, `full_name`), repository name, description, topics, primary language, star/fork/issue counts, archive/fork flags, default branch, license metadata, timestamps, and repository URL (`html_url`).
+- **Network Connection Data (IP Addresses)**: IP addresses are treated as personal data under GDPR (*Breyer*, Case C-582/14). Offline fixture runs and initial `dashboard.html` page loads make zero external requests and transmit no IP addresses to third parties. When a user explicitly initiates a live GitHub scan, the requesting client's IP address is transmitted over HTTPS (`TLS >= 1.2`) directly to `https://api.github.com`.
 - **Authentication Credentials (Transient Only)**: If you provide a GitHub Personal Access Token (`GITHUB_TOKEN`), it is transmitted strictly in the `Authorization` HTTPS header to `https://api.github.com` and is **never** written to generated JSON, Markdown, or HTML files, nor retained in application logs.
 - **Offline / Synthetic Mode**: When executed against synthetic offline fixtures (`examples/synthetic_sample_org.json`), no real personal data is processed.
 
@@ -25,17 +27,21 @@ Note: For individual GitHub user accounts (as opposed to organizations), a GitHu
 - **Purpose**: Constructing software architecture catalogs, thematic domain clusters, dependency knowledge graphs, and capability search indices for engineering and architectural review.
 - **Lawful Basis (EEA/UK)**: Legitimate interests (`Art. 6(1)(f) GDPR`) in documenting and understanding software ecosystems, or consent (`Art. 6(1)(a)`) / contract performance (`Art. 6(1)(b)`) as determined by `[LEGAL ENTITY NAME]`.
 
-## 4. Third-Party Network Transfers & Recipients
-- **On Dashboard Load**: The generated `dashboard.html` is **100% offline-first** (D3.js v7 is vendored inline). Loading the dashboard makes **zero external network requests**, sets **zero cookies**, and writes **zero browser storage**.
-- **User-Initiated Live Scans**: Only when a user explicitly invokes the CLI `--url` flag, clicks **Scan Address**, or selects a live repository preset (`Pallets Org` / `FastAPI Ecosystem`) does the tool send direct HTTPS requests (`Referrer-Policy: no-referrer`, `credentials: omit` in browser) to the GitHub API (`https://api.github.com`). GitHub's processing is governed by the [GitHub Privacy Statement](https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement).
-- **No Analytics, Advertising, or Tracking Sub-Processors**: No third-party telemetry, analytics, or CDN scripts are included.
+## 4. Regional Hosting, Third-Party Processors & Cross-Border Transfers
+- **On Dashboard Load**: The generated `dashboard.html` operates offline on initial load (D3.js v7.9.0 is vendored inline). Loading the dashboard makes **zero external network requests**, sets **zero cookies**, and writes **zero browser storage**.
+- **Jurisdictional Hosting**: Local CLI outputs reside in `[PRIMARY HOSTING REGION]` with encrypted backups pinned to `[BACKUP STORAGE REGION]`. When invoked through an external AI agent harness, operators serving EEA users must pin LLM endpoints to `[LLM API REGION, e.g., European Union / EEA region with data-residency guarantees]`.
+- **User-Initiated Live Scans & Transfer Mechanisms**: Only when a user explicitly invokes the CLI `--url` flag, clicks **Scan Address**, or selects a live repository preset (`Pallets Org` / `FastAPI Ecosystem`) does the tool send direct HTTPS requests (`Referrer-Policy: no-referrer`, `credentials: omit` in browser) to the GitHub REST API (`https://api.github.com`, operated by GitHub, Inc., primarily hosted in the United States). Cross-border transfers from the EEA/UK/Switzerland to GitHub, Inc. require reliance on applicable adequacy mechanisms (such as the EU-U.S. Data Privacy Framework) and executed Standard Contractual Clauses (SCCs) / Data Processing Agreements reviewed by `[LEGAL ENTITY NAME]` legal counsel. See the [GitHub Privacy Statement](https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement).
+- **No Analytics, Advertising, or Tracking Sub-Processors**: No third-party telemetry, analytics, web fonts, or CDN scripts are included.
 
 ## 5. Retention & Deletion
 - Generated files (`output/knowledge_base.json`, `output/knowledge_graph.json`, `output/KNOWLEDGE_BASE.md`, `output/dashboard.html`) reside solely on the local filesystem or operator-controlled storage.
-- Operators should define and enforce a retention schedule (`[RETENTION PERIOD, e.g. 90 days]`) and delete obsolete exports containing GitHub user handles or private repository metadata.
+- Operators must enforce a documented retention schedule (`[RETENTION PERIOD, e.g., 90 days]`) and permanently purge obsolete exports containing individual GitHub handles.
 
-## 6. Data Subject Rights
-Depending on `[JURISDICTION]` (including EEA/UK GDPR and California CCPA/CPRA), individuals whose GitHub handle appears in operator-hosted outputs may have rights of access, rectification, erasure, restriction, portability, or objection. To exercise these rights, contact `[CONTACT EMAIL]`.
+## 6. Data Subject Rights, Erasure & Portability Workflows
+Depending on `[JURISDICTION]` (including EEA/UK GDPR and California CCPA/CPRA), individuals whose GitHub handle appears in operator-hosted outputs have rights of access, rectification, erasure (`GDPR Art. 17`), restriction, data portability (`GDPR Art. 20`), and objection:
+- **Verified Erasure (Right to be Forgotten)**: Operators can permanently purge all stored records and generated artifacts associated with a GitHub handle (with zero soft-deleted remnants) via `python3 scripts/cli.py --erase-user <github-handle>` or `scripts.security_utils.deleteUserData(user_id)`.
+- **Data Portability**: Operators can generate a structured machine-readable export of all stored records for a GitHub handle in JSON or CSV format via `python3 scripts/cli.py --export-user <github-handle> --export-format json|csv` or `scripts.security_utils.export_user_data(user_id)`.
+- **Response SLA**: `[LEGAL ENTITY NAME]` will verify and fulfill valid data subject access, portability, and erasure requests within **30 calendar days** of receipt (GDPR Art. 12(3)). Contact `[CONTACT EMAIL]` to submit a request.
 
 ## 7. Automated Analysis & AI Usage Disclosure
 The tool performs deterministic keyword/regex thematic clustering and graph centrality scoring. When invoked inside an AI agent harness (via `SKILL.md`), AI models may summarize generated artifacts for the user. Automated outputs are advisory and must not be used for solely automated decisions with legal or similarly significant effects on individuals (`GDPR Art. 22`).

@@ -6,11 +6,7 @@ from scripts.scanner import GitHubScanner
 class TestGitHubScanner(unittest.TestCase):
     def setUp(self):
         self.scanner = GitHubScanner()
-        self.fixture_path = os.path.join(
-            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-            "examples",
-            "synthetic_sample_org.json",
-        )
+        self.fixture_path = os.path.join("examples", "synthetic_sample_org.json")
 
     def test_parse_github_url_org(self):
         target_type, owner, repo = GitHubScanner.parse_github_url("https://github.com/pallets")
